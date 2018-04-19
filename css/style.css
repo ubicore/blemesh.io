@@ -1,0 +1,194 @@
+@CHARSET "ISO-8859-1";
+
+
+html, body {
+    height: 100%;
+    width: 98%;
+    min-height: 100%;
+    padding: 0;
+	font-size: 1.0vw;
+	font-family: verdana, arial, 'sans serif';
+	background-color: #000000;
+	color: #FFFFFF;
+}
+
+select {
+	font-size: 1.5vw;
+    background-color: white;
+    color: black;
+    font-family: "Courier New";
+}
+
+h1 {
+	font-size: 3.0vw;
+    color:#00ffff;
+}
+
+h2 {
+	font-size: 2.5vw;
+    color:#00ffff;
+}
+
+h3 {
+	font-size: 2.0vw;
+    color:#00ffff;
+}
+
+h4 {
+	font-size: 1.5vw;
+    color:#ffffff;
+    margin-bottom: 5px;
+}
+
+.comment {
+    color: white;
+    font-size: 1.0vw;
+    font-style: italic;
+}
+
+.note {
+    color: #0082fc;
+    font-size: 1.0vw;
+    font-style: italic;
+}
+
+.emphasised {
+    color: #0082fc;
+    font-size: 1.5vw;
+    font-weight: bold;
+}
+
+.important {
+    color: red;
+}
+
+.fixed {
+    font-family: monospace;
+}
+
+a:link {color: #00FFFF; text-decoration: underline; }
+a:active {color: #00FFFF; text-decoration: underline; }
+a:visited {color: #00FFFF; text-decoration: underline; }
+a:hover {color: #00FFFF; text-decoration: underline; }
+
+.hidden {
+    visibility: false;
+}
+
+.full_screen {
+    width: 0.98vw;
+    height: 1vh;
+}
+
+.full_width {
+    width: 100%;
+}
+
+.std_button {
+    background-color:#0082fc;
+    border: none;
+    color: white;
+    padding: 1vw 1vw; 
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1.0vw;
+    width: 80%;
+    cursor: pointer;
+    margin-bottom: 1vw;
+    margin-top: 2vw;
+    outline: none;
+}
+
+table {
+	width: 100%;
+    border-spacing: 5px;
+    border: 1px solid white;
+
+}
+
+tr, td {
+    height: 0px;
+}
+
+.centred_row {
+    vertical-align: center;
+    height: 100%
+}
+
+.test_cell {
+    width: 50%;
+    overflow: hidden;
+    vertical-align: top;
+    background-color:#000000;    
+    padding-left: 10px;
+}
+
+.test_label {
+    width: 50%;
+    overflow: hidden;
+    vertical-align: center;
+}
+
+.arg {
+	font-size: 1.0vw;
+    background-color: white;
+    color: black;
+    font-family: "Courier New";
+}
+
+.result {
+    background-color: grey;
+    color: white;
+    font-family: "Courier New";
+}
+
+td textarea {
+    width: 100%;
+    height: 90%;
+    font-family: "Courier New";
+}
+
+.white_bg {
+    background-color: #ffffff;
+}
+
+.white_bg {
+    background-color: #ffffff;
+}
+
+.third_width {
+    width: 33%;
+}
+
+.quarter_width {
+    width: 25%;
+}
+
+.col1 {
+    width: 33%;
+}
+
+.col2 {
+    width: 33%;
+}
+
+.col3 {
+    width: 34%;
+}
+
+.field { 
+    font-size:1.0vw; 
+}
+
+.indent1 {
+    padding-left: 5px;
+}
+
+.indent2 {
+    padding-left: 10px;
+}
+
+.indent3 {
+    padding-left: 15px;
+}
