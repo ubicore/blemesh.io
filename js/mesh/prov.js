@@ -2,7 +2,7 @@
 .
 */
 
-var ecc = require("./ecc.js");
+// /var ecc = require("./ecc.js");
 
 
 
@@ -36,32 +36,39 @@ const PROV_ERR_UNEXPECTED_ERR = 0x07;
 const PROV_ERR_CANT_ASSIGN_ADDR = 0x08;
 
 
-// use it as module
-var Enum = require('enum');
-//Output OOB
-var Output_OOB_Action = new Enum([
-    'Output_OOB_Action_Blink',
-    'Output_OOB_Action_Beep',
-    'Output_OOB_Action_Vibrate',
-    'Output_OOB_Action_Output_Numeric',
-    'Output_OOB_Action_Output_Alphanumeric',
-]);
+
+const PROVISIONING_CAPABILITIES_PARAM_SIZE = 11;
 
 
-//Input OOB
-var Input_OOB_Action = new Enum([
-    'Input_OOB_Action_Push',
-    'Input_OOB_Action_Twist',
-    'Input_OOB_Action_Input_Number',
-    'Input_OOB_Action_Input_Alphanumeric',
-]);
+//
+// // use it as module
+// var Enum = require('enum');
+// //Output OOB
+// var Output_OOB_Action = new Enum([
+//     'Output_OOB_Action_Blink',
+//     'Output_OOB_Action_Beep',
+//     'Output_OOB_Action_Vibrate',
+//     'Output_OOB_Action_Output_Numeric',
+//     'Output_OOB_Action_Output_Alphanumeric',
+// ]);
+//
+//
+// //Input OOB
+// var Input_OOB_Action = new Enum([
+//     'Input_OOB_Action_Push',
+//     'Input_OOB_Action_Twist',
+//     'Input_OOB_Action_Input_Number',
+//     'Input_OOB_Action_Input_Alphanumeric',
+// ]);
 
 //
 const PDU_Parameters_Offset = 1;
 
 const PROV_Attention_Duration = 0x10;
 
-const ProxyPDU = require("./ProxyPDU.js");
+
+
+//const ProxyPDU = require("./ProxyPDU.js");
 
 class Conf_Caps {
     constructor() {
@@ -110,13 +117,13 @@ class Provisionner {
 
 
         //Prov_PublicKey
-        this.Ecc_1 = new ecc;
+        this.Ecc_1 = new Ecc;
 
         this.Dev_Confirmation;
 
 
-        this.Prov_PublicKey = this.Ecc_1.GetPublic();
-        this.Dev_PublicKey;
+      //  this.Prov_PublicKey = this.Ecc_1.ProvPublicKeyHex;
+      //  this.Dev_PublicKey;
     };
 
 
@@ -132,26 +139,31 @@ class Provisionner {
         }
 
         //Check PDU Type
-        var PDU_Type = PDU[0];
+        var PDU_Type = new Uint8Array(PDU)[0];
         if (PDU_Type != PROV_CAPS) {
             this.CurrentStepReject("error : Invalid PDU : " + PDU)
             return;
         }
-
         //Get PDU Parameters
-        var PDU_Parameter = PDU.subarray(PDU_Parameters_Offset);
-        this.ProvisioningCapabilitiesPDUValue = Buffer.from(PDU_Parameter);
+        //var PDU_Parameter = PDU.subarray(PDU_Parameters_Offset);
+        //this.ProvisioningCapabilitiesPDUValue = Buffer.from(PDU_Parameter);
+      //  this.ProvisioningCapabilitiesPDUValue = PDU.slice(PDU_Parameters_Offset);
+      //  this.ProvisioningCapabilitiesPDUValue = new Uint8Array(PROVISIONING_CAPABILITIES_PARAM_SIZE);
+        //console.log('PDU : ' + PDU.length);
+        this.ProvisioningCapabilitiesPDUValue = PDU.slice(1);;
+      //  this.ProvisioningCapabilitiesPDUValue.set(PDU.slice(1), 0);
         console.log('ProvisioningCapabilitiesPDUValue : ' + this.ProvisioningCapabilitiesPDUValue.toString('hex'));
 
+        var view = new DataView(this.ProvisioningCapabilitiesPDUValue);
         //Save caps value
-        this.IN_Conf_Caps.num_ele = this.ProvisioningCapabilitiesPDUValue.readUInt8(0);
-        this.IN_Conf_Caps.algorithms = this.ProvisioningCapabilitiesPDUValue.readUInt16BE(1);
-        this.IN_Conf_Caps.pub_type = this.ProvisioningCapabilitiesPDUValue.readUInt8(3);
-        this.IN_Conf_Caps.static_type = this.ProvisioningCapabilitiesPDUValue.readUInt8(4);
-        this.IN_Conf_Caps.output_size = this.ProvisioningCapabilitiesPDUValue.readUInt8(5);
-        this.IN_Conf_Caps.output_action = this.ProvisioningCapabilitiesPDUValue.readUInt16BE(6);
-        this.IN_Conf_Caps.input_size = this.ProvisioningCapabilitiesPDUValue.readUInt8(8);
-        this.IN_Conf_Caps.input_action = this.ProvisioningCapabilitiesPDUValue.readUInt16BE(9);
+        this.IN_Conf_Caps.num_ele = view.getUint8(0);
+        this.IN_Conf_Caps.algorithms = view.getUint16(1);
+        this.IN_Conf_Caps.pub_type = view.getUint8(3);
+        this.IN_Conf_Caps.static_type = view.getUint8(4);
+        this.IN_Conf_Caps.output_size = view.getUint8(5);
+        this.IN_Conf_Caps.output_action = view.getUint16(6);
+        this.IN_Conf_Caps.input_size = view.getUint8(8);
+        this.IN_Conf_Caps.input_action = view.getUint16(9);
 
         console.log('IN_Conf_Caps : ' + Object.keys(this.IN_Conf_Caps));
         console.log('IN_Conf_Caps : ' + Object.values(this.IN_Conf_Caps));
@@ -180,28 +192,33 @@ class Provisionner {
             return;
         }
 
+        var PDU_view = new Uint8Array(PDU);
+
         //Check PDU Type
-        var PDU_Type = PDU[0];
+//        var PDU_Type = PDU[0];
+        var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_PUB_KEY) {
             this.CurrentStepReject("error : Invalid PDU : " + PDU)
             return;
         }
 
         //Get PDU Parameters
-        this.Dev_PublicKey = Buffer.alloc(1 + 64);
-        this.Dev_PublicKey[0] = 0x04; //PubKey Tag uncompressed = 0x04
-        this.Dev_PublicKey.fill(PDU.subarray(PDU_Parameters_Offset), 1);
+        var Buffer = new ArrayBuffer(1 + 64);
+        var Buffer_view = new Uint8Array(Buffer);
+        Buffer_view[0] = 0x04; //PubKey Tag uncompressed = 0x04
+        Buffer_view.set(PDU_view.slice(1), 1);
+        this.Ecc_1.DevPubKey = Buffer;
 
-        console.log('this.Dev_PublicKey : ' + this.Dev_PublicKey.toString('hex'));
+        console.log('this.Dev_PublicKey : ' + new Uint8Array(this.Ecc_1.DevPubKey).toString());
 
-        if (this.Dev_PublicKey.length != 65) {
-
-            this.CurrentStepReject("error : Invalid Dev_PublicKey")
-            return;
-        }
+        // if (this.Dev_PublicKey.length != 65) {
+        //
+        //     this.CurrentStepReject("error : Invalid Dev_PublicKey")
+        //     return;
+        // }
 
         //Compute ECDH secret
-        this.Ecc_1.ComputeSecret(this.Dev_PublicKey);
+        this.Ecc_1.ComputeSecret();
 
         //Step Finished
         this.CurrentStepResolve();
@@ -229,7 +246,7 @@ class Provisionner {
         this.Dev_Confirmation.fill(PDU.subarray(PDU_Parameters_Offset));
 
         console.log('this.DevConfirmation : ' + this.Dev_Confirmation.toString('hex'));
-  
+
         //Step Finished
         this.CurrentStepResolve();
     };
@@ -294,20 +311,22 @@ class Provisionner {
             this.CurrentStepResolve = resolve;
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = this.OUT_Capabilities;
-            
+
             var index = 0
-            this.PDU_Invite = Buffer.alloc(1 + 1 + 1);
+            //this.PDU_Invite = Buffer.alloc(1 + 1 + 1);
+            this.PDU_Invite = new ArrayBuffer(1 + 1 + 1);
+            var PDU = new Uint8Array(this.PDU_Invite);
 
             //Fill PDU_Invite
-            this.PDU_Invite[index++] = PROXY_PROVISIONING_PDU;
-            this.PDU_Invite[index++] = PROV_INVITE;
+            PDU[index++] = PROXY_PROVISIONING_PDU;
+            PDU[index++] = PROV_INVITE;
             //PDU_Invite Data
-            this.PDU_Invite[index++] = PROV_Attention_Duration;
-        
-            var PDU = new Uint8Array(this.PDU_Invite);
+            PDU[index++] = PROV_Attention_Duration;
+
+
             console.log('Invite PDU ' + PDU);
             console.log('Invite PDU ' + PDU.length);
-    
+
             this.In.writeValue(PDU)
                 .then(() => {
                 })
@@ -334,12 +353,12 @@ class Provisionner {
     Select_Ouput_OOB() {
         var OOB = this.IN_Conf_Caps.output_action;
 
-        console.log('Output_OOB_Action availables : ')
-        console.log(Output_OOB_Action.get(OOB).value + '=> ' + Output_OOB_Action.get(OOB).key);
+        console.log('Output_OOB_Action availables : ' + OOB);
+//        console.log(Output_OOB_Action.get(OOB).value + '=> ' + Output_OOB_Action.get(OOB).key);
 
         var res = this.Get_highest_bit_u16(OOB);
-        console.log('Output_OOB_Action select : ')
-        console.log(Output_OOB_Action.get(res).value + '=> ' + Output_OOB_Action.get(res).key);
+        console.log('Output_OOB_Action select : ' + res);
+//        console.log(Output_OOB_Action.get(res).value + '=> ' + Output_OOB_Action.get(res).key);
 
         var id = 0;
         while (res >>= 1) {
@@ -353,12 +372,12 @@ class Provisionner {
     Select_Input_OOB() {
         var OOB = this.IN_Conf_Caps.input_action;
 
-        console.log('Input_OOB_Action availables : ')
-        console.log(Input_OOB_Action.get(OOB).value + '=> ' + Input_OOB_Action.get(OOB).key);
+        console.log('Input_OOB_Action availables : ' + OOB);
+        //console.log(Input_OOB_Action.get(OOB).value + '=> ' + Input_OOB_Action.get(OOB).key);
 
         var res = this.Get_highest_bit_u16(OOB);
-        console.log('Input_OOB_Action select : ')
-        console.log(Input_OOB_Action.get(res).value + '=> ' + Input_OOB_Action.get(res).key);
+        console.log('Input_OOB_Action select : ' + res);
+        //console.log(Input_OOB_Action.get(res).value + '=> ' + Input_OOB_Action.get(res).key);
 
         return res;
     }
@@ -371,7 +390,7 @@ class Provisionner {
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = null;
 
-            this.Prov_Start.algorithm = 0; //FIPS P-256 Elliptic Curve 
+            this.Prov_Start.algorithm = 0; //FIPS P-256 Elliptic Curve
             this.Prov_Start.pub_key = 0; //No OOB Public Key is used
 
             //Select OOB Action
@@ -401,21 +420,21 @@ class Provisionner {
             console.log(Object.values(this.Prov_Start));
 
             var index = 0
-            this.PDU_Start = Buffer.alloc(1 + 1 + 5);
+            this.PDU_Start = new ArrayBuffer(1 + 1 + 5);
+            var PDU = new Uint8Array(this.PDU_Start);
 
             //Fill PDU_Start
-            this.PDU_Start[index++] = PROXY_PROVISIONING_PDU;
-            this.PDU_Start[index++] = PROV_START;
+            PDU[index++] = PROXY_PROVISIONING_PDU;
+            PDU[index++] = PROV_START;
             //PDU Start Data
-            this.PDU_Start[index++] = this.Prov_Start.algorithm;
-            this.PDU_Start[index++] = this.Prov_Start.pub_key;
-            this.PDU_Start[index++] = this.Prov_Start.auth_method;
-            this.PDU_Start[index++] = this.Prov_Start.auth_action;
-            this.PDU_Start[index++] = this.Prov_Start.auth_size;
+            PDU[index++] = this.Prov_Start.algorithm;
+            PDU[index++] = this.Prov_Start.pub_key;
+            PDU[index++] = this.Prov_Start.auth_method;
+            PDU[index++] = this.Prov_Start.auth_action;
+            PDU[index++] = this.Prov_Start.auth_size;
 
             //PDU_Start.set (Object.values(Prov_Start_1), 1+1);
 
-            var PDU = new Uint8Array(this.PDU_Start);
             console.log('Start PDU ' + PDU);
             console.log('Start PDU ' + PDU.length);
 
@@ -449,14 +468,16 @@ class Provisionner {
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = this.OUT_Public_Key;
 
-            var PDU_Public_Key = Buffer.alloc(1 + 1 + 64);
+            var PDU_Public_Key = new ArrayBuffer(1 + 1 + 64);
+            var PDU = new Uint8Array(PDU_Public_Key);
 
             var index = 0
             //Fill PDU_Public_Key
-            PDU_Public_Key[index++] = PROXY_PROVISIONING_PDU;
-            PDU_Public_Key[index++] = PROV_PUB_KEY;
+            PDU[index++] = PROXY_PROVISIONING_PDU;
+            PDU[index++] = PROV_PUB_KEY;
 
-            console.log('PubKey : ' + this.Prov_PublicKey.toString('hex'));
+            var view = new Uint8Array(this.Ecc_1.ProvPublicKey.slice(1));
+            console.log('PubKey : ' + view.toString());
 
             // const tmpKey = Buffer.from([0x3f, 0x76 , 0x78 , 0x89 , 0x14 , 0x7d , 0x27 , 0x90 , 0x83 , 0xd4 , 0xbf , 0xb7 , 0xd5 , 0xb0 , 0xbc , 0xac , 0x02 , 0x20 , 0x50 , 0xe6
             //     , 0xc3 , 0xc4 , 0x91 , 0xba , 0x27 , 0x43 , 0xf0 , 0xba , 0x97 , 0xdf , 0xfd , 0x4b , 0x0e , 0xb1 , 0x49 , 0x57 , 0x99 , 0x40 , 0xe9 , 0x5f , 0x04 , 0x9e ,
@@ -468,9 +489,9 @@ class Provisionner {
             //           var tmpKey = Buffer.alloc(64);
             //           this.copy_and_swap_PublicKey(tmpKey, this.Prov_PublicKey.slice(1));//skip PubKeyTag
             //           var copied = tmpKey.copy(PDU_Public_Key, index, 0); //Copy to PDU parameters
-            var copied = this.Prov_PublicKey.copy(PDU_Public_Key, index, 1); //Copy to PDU parameters
+          //  var copied = view.copy(PDU, index, 1); //Copy to PDU parameters
+            PDU.set(view, index);
 
-            var PDU = new Uint8Array(PDU_Public_Key);
             console.log('Public_Key PDU : ' + PDU);
             console.log('Public_Key PDU : ' + PDU.length);
 
@@ -513,7 +534,7 @@ class Provisionner {
 
             console.log('ConfirmationProvisioner =>');
             var ConfirmationProvisioner = this.Ecc_1.ConfirmationProvisioner();
-            
+
             PDU_Confirmation.fill(ConfirmationProvisioner, index);
 
             var PDU = new Uint8Array(PDU_Confirmation);
@@ -740,26 +761,7 @@ class Provisionner {
                 });
         });
     };
-
-}
-
-
-module.exports = Provisionner;
+};
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//module.exports = Provisionner;

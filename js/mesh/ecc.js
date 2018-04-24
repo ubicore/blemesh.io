@@ -5,23 +5,70 @@
 class Ecc {
     constructor() {
         console.log('constructor Ecc');
-        const crypto = require('crypto');
-        this.ProvKey = crypto.createECDH('prime256v1');
-
-        // ProvKey uses a newly generated cryptographically strong
-        // pseudorandom key pair
         console.log('generateKeys');
-        this.ProvKey.generateKeys();
+
+        // generate Prov's private and public key
+        window.crypto.subtle.generateKey(
+          {
+            name: 'ECDH',
+            namedCurve: 'P-256'
+          },
+          false, // no need to make Bob's private key exportable
+          ['deriveKey', 'deriveBits'])
+          .then(Key => {
+            this.ProvKey = Key
+            // export Prov's public key
+            return window.crypto.subtle.exportKey(
+              'raw', Key.publicKey
+            )
+          })
+          .then(ProvPublicKeyExported => {
+            this.ProvPublicKey = ProvPublicKeyExported;
+
+//            this.ProvPublicKeyHex = this.buf2Hex(ProvPublicKeyExported)
+            // display and send Bob's public key to Alice
+          //  console.log(`Prov's publicKey: ${ProvPublicKeyExported}`)
+            var view = new Uint8Array(this.ProvPublicKey);
+            //console.log(`Prov's publicKey: ` + view.toString('hex'));
+            console.log(`Prov's publicKey: ` + view.toString());
+
+          })
+          .catch(err => {
+                console.log(err)
+          })
 
         //ECDH secret
         this.ProvEDCHSecret;
 
+        //Device Key
+        this.DevPubKey;
+
+        //Other
+        this.ConfirmationKey;
+        this.OOBhexBuffer;
+
+        //Random
         this.Prov_RandomBuff;
         this.Dev_RandomBuff;
-        this.ConfirmationKey;
-        this.DevPubKey;
-        this.OOBhexBuffer;
     };
+
+    hex2Arr (str){
+        if (!str) {
+            return new Uint8Array()
+        }
+        const arr = []
+        for (let i = 0, len = str.length; i < len; i+=2) {
+            arr.push(parseInt(str.substr(i, 2), 16))
+        }
+        return new Uint8Array(arr)
+    }
+
+    buf2Hex (buf){
+        return Array.from(new Uint8Array(buf))
+            .map(x => ('00' + x.toString(16)).slice(-2))
+            .join('')
+    }
+
 
 
     GetPublic() {
@@ -30,11 +77,43 @@ class Ecc {
 
     };
 
-    ComputeSecret(DevPubKey) {
+    ComputeSecret() {
         //
-        this.DevPubKey = DevPubKey;
-        console.log('this.DevPubKey : ' + this.DevPubKey.toString('hex'));
-        this.ProvEDCHSecret = this.ProvKey.computeSecret(this.DevPubKey);
+        this.DevPubKey;
+        var view = new Uint8Array(this.DevPubKey);
+        console.log('this.DevPubKey : ' + view.toString());
+        // /this.ProvEDCHSecret = this.ProvKey.computeSecret(this.DevPubKey);
+        //this.ProvEDCHSecret = window.crypto.subtle. .computeSecret(this.DevPubKey);
+
+        // import Alice's public key
+        window.crypto.subtle.importKey(
+          'raw',
+          this.DevPubKey,
+          {
+            name: 'ECDH',
+            namedCurve: 'P-256'
+          },
+          true,
+          [])
+          .then(Dev_KeyImported => {
+            // use Alice's imported public key and
+            // Bob's private key to compute the shared secret
+            return window.crypto.subtle.deriveBits(
+              {
+                name: 'ECDH',
+                namedCurve: 'P-256',
+                public: Dev_KeyImported
+              },
+              this.ProvKey.privateKey,
+              256)
+            })
+            .then(sharedSecret => {
+              const sharedSecretHex = buf2Hex(sharedSecret)
+              console.log(`sharedSecret: ${sharedSecretHex}`)
+            })
+            .catch(err => {
+              console.log(err)
+            });
     };
 
 
@@ -336,4 +415,4 @@ class Ecc {
 
 
 
-module.exports = Ecc;
+//module.exports = Ecc;

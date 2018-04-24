@@ -18,11 +18,13 @@ const SAR_DataOffset = 1;
 
 class ProxyPDU {
     constructor() {
-        this.gatt_pkt = new Uint8Array(MAX_GATT_SIZE);
+        this.gatt_pkt = new ArrayBuffer(MAX_GATT_SIZE);
+        this.gatt_pkt_Uint8view = new Uint8Array(this.gatt_pkt);
+
         //this.gatt_pkt = Buffer.alloc(MAX_GATT_SIZE);
         this.size = 0;
         this.PDU_IN_CallBack = function(){};
-        this.PDU;
+        //this.PDU;
 
     };
 
@@ -31,7 +33,7 @@ class ProxyPDU {
     }
 
     Failed() {
-        size = 0;
+        this.size = 0;
         /* Invalidate packet and return failure */
         /* Disconnect GATT per last paragraph sec 6.6 */
         console.log('Prov abord');
@@ -49,7 +51,9 @@ class ProxyPDU {
          switch (sarBits) {
             case GATT_SAR_FIRST:
                 console.log('GATT_SAR_FIRST');
-                this.gatt_pkt.fill(0);
+                var view = new Uint8Array(this.gatt_pkt);
+                this.gatt_pkt_Uint8view.fill(0);
+                //this.gatt_pkt.fill(0);
                 this.gatt_pkt[0] = type;
                 this.size = 1;
             /* TODO: Start Proxy Timeout */
@@ -63,8 +67,8 @@ class ProxyPDU {
                     mesh_gatt_sar_fail();
                     return;
                 }
-                this.gatt_pkt.set(SAR_data, this.size);
-                size += SAR_data.length;
+                this.gatt_pkt_Uint8view.set(SAR_data, this.size);
+                this.size += SAR_data.length;
                 console.log('this.gatt_pkt : ' + this.gatt_pkt);
                 console.log('size : ' + this.size);
                 /* We are good to this point, but incomplete */
@@ -73,7 +77,8 @@ class ProxyPDU {
             default:
             case GATT_SAR_COMPLETE:
                 console.log('GATT_SAR_COMPLETE');
-                this.gatt_pkt.fill(0);
+                this.gatt_pkt_Uint8view.fill(0);
+                //this.gatt_pkt.fill(0);
                 this.gatt_pkt[0] = type;
                 this.size = 1;
             /* fall through */
@@ -87,7 +92,7 @@ class ProxyPDU {
                     return;
                 }
 
-                this.gatt_pkt.set(SAR_data, this.size);
+                this.gatt_pkt_Uint8view.set(SAR_data, this.size);
 
                 this.size += SAR_data.length;
                 //console.log('this.gatt_pkt : ' + this.gatt_pkt);
@@ -95,8 +100,10 @@ class ProxyPDU {
 
                 if(this.PDU_IN_CallBack && typeof( this.PDU_IN_CallBack) === "function") {
                     console.log('Call PDU_IN_CallBack ');
-                    this.PDU = this.gatt_pkt.subarray(SAR_DataOffset);
-                    this.PDU_IN_CallBack(this.PDU);
+                    //var PDU = this.gatt_pkt.slice(SAR_DataOffset, this.size);
+                    //var PDU = this.gatt_pkt_Uint8view.subarray(SAR_DataOffset, this.size);
+                    var PDU = this.gatt_pkt.slice(SAR_DataOffset, this.size);
+                    this.PDU_IN_CallBack(PDU);
                 } else {
                     console.log('error : no PDU Callback');
                 }
@@ -108,8 +115,8 @@ class ProxyPDU {
     EventListener(event) {
         console.log('Event');
 
-        if (event.value.buffer.byteLength) {
-            this.sar(event.value);
+        if (event.target.value.buffer.byteLength) {
+            this.sar(event.target.value);
         } else {
             this.Failed();
         }
@@ -119,4 +126,4 @@ class ProxyPDU {
 
 //ProxyPDU.GATT_TYPE_MASK = 0x3f;
 
-module.exports = ProxyPDU;
+//module.exports = ProxyPDU;

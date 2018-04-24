@@ -23,8 +23,9 @@
 * SOFTWARE.
 */
 
-var bluetooth = require('webbluetooth').bluetooth;
-const Provisionner = require("./mesh/prov.js");
+//var bluetooth = require('webbluetooth').bluetooth;
+var bluetooth = navigator.bluetooth;
+//const Provisionner = require("./mesh/prov.js");
 /****************************/
 //Test scratch pad
 
@@ -49,7 +50,6 @@ var MESH_ProvisioninigService_UUID = 0x1827;
 var MESH_ProvisioninigDataIn_UUID = 0x2ADB;
 var MESH_ProvisioninigDataOut_UUID = 0x2ADC;
 
-provisionner_1 = new Provisionner;
 
 
 var charIn;
@@ -58,11 +58,15 @@ var characteristicOut;
 var characteristicInt;
 var NodeServer = null;
 
+var prov = {};
 
-console.log('Requesting Bluetooth Devices...');
-bluetooth.requestDevice({
-	filters: [{ services: [0x1827] }]
-})
+prov.start = function () {
+	provisionner_1 = new Provisionner;
+
+	console.log('Requesting Bluetooth Devices...');
+	bluetooth.requestDevice({
+		filters: [{ services: [0x1827] }]
+	})
 	.then(device => {
 		console.log('Found device: ' + device.name);
 		return device.gatt.connect();
@@ -105,8 +109,7 @@ bluetooth.requestDevice({
 			console.log('disconnected');
 		}
 
-		process.exit();
+		//process.exit();
 	});
 
-
-
+};
