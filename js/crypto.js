@@ -27,9 +27,9 @@ crypto.k1 = function (N, SALT, P) {
     console.log('P: ' + P);
 
     var T = crypto.getAesCmac(SALT, N );
-		console.log(T.toString());
-    var cmac = crypto.getAesCmac(T.toString(), P);
-    console.log(cmac.toString());
+		console.log('T: ' + T.toString());
+  //  var cmac = crypto.getAesCmac(T.toString(), P);
+		var cmac = CryptoJS.CMAC(T, P);
     return cmac.toString();
 }
 

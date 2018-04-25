@@ -197,13 +197,14 @@ class Provisionner {
         }
 
         //Get PDU Parameters
-        var Buffer = new ArrayBuffer(1 + 64);
-        var Buffer_view = new Uint8Array(Buffer);
-        Buffer_view[0] = 0x04; //PubKey Tag uncompressed = 0x04
-        Buffer_view.set(PDU_view.slice(1), 1);//skip PDU tag
-        this.Ecc_1.DevPubKey = Buffer;
+        // var Buffer = new ArrayBuffer(1 + 64);
+        // var Buffer_view = new Uint8Array(Buffer);
+        // Buffer_view[0] = 0x04; //PubKey Tag uncompressed = 0x04
+        // Buffer_view.set(PDU_view.slice(1), 1);
+        var key =  PDU_view.slice(1);//skip PDU tag
+        this.Ecc_1.DevPubKey = '04'+ utils.bytesToHex(key);
 
-        console.log('this.Dev_PublicKey : ' + new Uint8Array(this.Ecc_1.DevPubKey).toString());
+        console.log('this.Ecc_1.DevPubKey : ' + this.Ecc_1.DevPubKey);
 
         // if (this.Dev_PublicKey.length != 65) {
         //
@@ -466,16 +467,14 @@ class Provisionner {
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = this.OUT_Public_Key;
 
-            var PDU_Public_Key = new ArrayBuffer(1 + 1 + 64);
-            var PDU = new Uint8Array(PDU_Public_Key);
-
+            var PDU = new Uint8Array(1 + 1 + 64);
             var index = 0
             //Fill PDU_Public_Key
             PDU[index++] = PROXY_PROVISIONING_PDU;
             PDU[index++] = PROV_PUB_KEY;
 
-            var view = new Uint8Array(this.Ecc_1.ProvPublicKey.slice(1));
-            console.log('PubKey : ' + view.toString());
+            var ProvPublicKey = utils.hexToBytes(this.Ecc_1.ProvPublicKey);
+            console.log('this.Ecc_1.ProvPublicKey : ' + this.Ecc_1.ProvPublicKey);
 
             // const tmpKey = Buffer.from([0x3f, 0x76 , 0x78 , 0x89 , 0x14 , 0x7d , 0x27 , 0x90 , 0x83 , 0xd4 , 0xbf , 0xb7 , 0xd5 , 0xb0 , 0xbc , 0xac , 0x02 , 0x20 , 0x50 , 0xe6
             //     , 0xc3 , 0xc4 , 0x91 , 0xba , 0x27 , 0x43 , 0xf0 , 0xba , 0x97 , 0xdf , 0xfd , 0x4b , 0x0e , 0xb1 , 0x49 , 0x57 , 0x99 , 0x40 , 0xe9 , 0x5f , 0x04 , 0x9e ,
@@ -488,7 +487,7 @@ class Provisionner {
             //           this.copy_and_swap_PublicKey(tmpKey, this.Prov_PublicKey.slice(1));//skip PubKeyTag
             //           var copied = tmpKey.copy(PDU_Public_Key, index, 0); //Copy to PDU parameters
           //  var copied = view.copy(PDU, index, 1); //Copy to PDU parameters
-            PDU.set(view, index);
+            PDU.set(ProvPublicKey.slice(1), index); //Skip key tag
 
             console.log('Public_Key PDU : ' + PDU);
             console.log('Public_Key PDU : ' + PDU.length);
@@ -510,9 +509,7 @@ class Provisionner {
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = this.OUT_Confirmation;
 
-            var PDU_Confirmation = new ArrayBuffer(1 + 1 + 16);
-            var PDU = new Uint8Array(PDU_Confirmation);
-
+            var PDU = new Uint8Array(1 + 1 + 16);
             var index = 0
             //Fill PDU_Public_Key
             PDU[index++] = PROXY_PROVISIONING_PDU;
@@ -522,15 +519,17 @@ class Provisionner {
             ConfirmationInputs.set(this.PDU_Invite.slice(2), 0); //size 1
             ConfirmationInputs.set(new Uint8Array(this.ProvisioningCapabilitiesPDUValue), 1); //size 11
             ConfirmationInputs.set(this.PDU_Start.slice(2), 12);
-            ConfirmationInputs.set(new Uint8Array(this.Ecc_1.ProvPublicKey).slice(1), 17);//Skip Tag
-            ConfirmationInputs.set(new Uint8Array(this.Ecc_1.DevPubKey).slice(1), 81);//Skip Tag
-
-            console.log('ConfirmationInputs len :' + ConfirmationInputs.length);
+            var ProvPublicKey = utils.hexToBytes(this.Ecc_1.ProvPublicKey);
+            ConfirmationInputs.set(ProvPublicKey.slice(1), 17);//Skip Tag
+            var DevPubKey = utils.hexToBytes(this.Ecc_1.DevPubKey);
+            ConfirmationInputs.set(DevPubKey.slice(1), 81);//Skip Tag
+            var ConfirmationInputsHex = utils.bytesToHex(ConfirmationInputs);
+            console.log('ConfirmationInputsHex len :' + ConfirmationInputs.length);
+            console.log('ConfirmationInputsHex :' + ConfirmationInputsHex);
 
             this.Ecc_1.Set_AuthValue(this.OOB);
             this.Ecc_1.CreateRandomProvisionner();
-            console.log('CreateConfirmationKey  =>');
-            this.Ecc_1.CreateConfirmationKey(ConfirmationInputs);
+            this.Ecc_1.CreateConfirmationKey(ConfirmationInputsHex);
 
             console.log('ConfirmationProvisioner =>');
             var ConfirmationProvisioner = this.Ecc_1.ConfirmationProvisioner();
@@ -554,16 +553,13 @@ class Provisionner {
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = this.OUT_PROV_RANDOM;
 
-            var PDU_Random = new ArrayBuffer(1 + 1 + 16);
-
+            var PDU = new Uint8Array(1 + 1 + 16);
             var index = 0
             //Fill PDU_Random
-            PDU_Random[index++] = PROXY_PROVISIONING_PDU;
-            PDU_Random[index++] = PROV_RANDOM;
+            PDU[index++] = PROXY_PROVISIONING_PDU;
+            PDU[index++] = PROV_RANDOM;
+            PDU.set(utils.hexToBytes(this.Ecc_1.Prov_Random), index);
 
-            PDU_Random.fill(this.Ecc_1.Prov_RandomBuff, index);
-
-            var PDU = new Uint8Array(PDU_Random);
             console.log('PDU_Random : ' + PDU);
             console.log('PDU_Random : ' + PDU.length);
             this.In.writeValue(PDU)
