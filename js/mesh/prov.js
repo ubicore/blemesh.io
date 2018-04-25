@@ -282,19 +282,18 @@ class Provisionner {
             return;
         }
 
+        var PDU_view = new Uint8Array(PDU);
         //Check PDU Type
-        var PDU_Type = PDU[0];
+        var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_RANDOM) {
             this.CurrentStepReject("error : Invalid PDU : " + PDU)
             return;
         }
 
         //Get PDU Parameters
-        this.Ecc_1.Dev_RandomBuff = new ArrayBuffer(16);
-        this.Ecc_1.Dev_RandomBuff.fill(PDU.subarray(PDU_Parameters_Offset));
-
-        console.log('this.Ecc_1.Dev_RandomBuff : ' + this.Ecc_1.Dev_RandomBuff.toString('hex'));
-
+        var Dev_RandomBuff = PDU_view.slice(PDU_Parameters_Offset);
+        this.Ecc_1.Dev_RandomBuff = utils.bytesToHex(Dev_RandomBuff);
+        console.log('this.Ecc_1.Dev_RandomBuff : ' + this.Ecc_1.Dev_RandomBuff);
 
         console.log('Get a PROV_INP_CMPLT PDU');
 
@@ -593,7 +592,7 @@ class Provisionner {
         console.log('Request OOB Number : ');
         app.showMessage("Request OOB Number :");
 
-        var input = prompt("Please enter OOB Number", "------");
+        var input = prompt("Please enter OOB Number", "");
         if (isNaN(input)) {
           console.log('This is not a number');
           reject();
@@ -754,10 +753,10 @@ class Provisionner {
                     return this.CheckConfirmation();
                 })
                 .then(() => {
-                    const os = require('os');
-                    console.log('OS endianness is : ' + os.endianness());
-                    console.log('5.1 Endianness \n ' +
-                        'Unless stated otherwise, all multiple-octet numeric values in this layer shall be “big endian”, as described in Section 3.1.1.1. : ');
+                    // const os = require('os');
+                    // console.log('OS endianness is : ' + os.endianness());
+                    // console.log('5.1 Endianness \n ' +
+                    //     'Unless stated otherwise, all multiple-octet numeric values in this layer shall be “big endian”, as described in Section 3.1.1.1. : ');
 
                     //
                     {
