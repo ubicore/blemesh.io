@@ -120,10 +120,6 @@ class Provisionner {
         this.Ecc_1 = new Ecc;
 
         this.Dev_Confirmation;
-
-
-      //  this.Prov_PublicKey = this.Ecc_1.ProvPublicKeyHex;
-      //  this.Dev_PublicKey;
     };
 
 
@@ -152,7 +148,7 @@ class Provisionner {
         //console.log('PDU : ' + PDU.length);
         this.ProvisioningCapabilitiesPDUValue = PDU.slice(1);;
       //  this.ProvisioningCapabilitiesPDUValue.set(PDU.slice(1), 0);
-        console.log('ProvisioningCapabilitiesPDUValue : ' + this.ProvisioningCapabilitiesPDUValue.toString('hex'));
+        console.log('ProvisioningCapabilitiesPDUValue : ' + new Uint8Array(this.ProvisioningCapabilitiesPDUValue).toString(16));
 
         var view = new DataView(this.ProvisioningCapabilitiesPDUValue);
         //Save caps value
@@ -193,9 +189,7 @@ class Provisionner {
         }
 
         var PDU_view = new Uint8Array(PDU);
-
         //Check PDU Type
-//        var PDU_Type = PDU[0];
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_PUB_KEY) {
             this.CurrentStepReject("error : Invalid PDU : " + PDU)
@@ -206,7 +200,7 @@ class Provisionner {
         var Buffer = new ArrayBuffer(1 + 64);
         var Buffer_view = new Uint8Array(Buffer);
         Buffer_view[0] = 0x04; //PubKey Tag uncompressed = 0x04
-        Buffer_view.set(PDU_view.slice(1), 1);
+        Buffer_view.set(PDU_view.slice(1), 1);//skip PDU tag
         this.Ecc_1.DevPubKey = Buffer;
 
         console.log('this.Dev_PublicKey : ' + new Uint8Array(this.Ecc_1.DevPubKey).toString());
@@ -218,10 +212,11 @@ class Provisionner {
         // }
 
         //Compute ECDH secret
-        this.Ecc_1.ComputeSecret();
-
-        //Step Finished
-        this.CurrentStepResolve();
+        this.Ecc_1.ComputeSecret()
+        .then(() => {
+                  //Step Finished
+                  this.CurrentStepResolve();
+        })
     };
 
     OUT_Confirmation(PDU) {
@@ -234,18 +229,20 @@ class Provisionner {
             return;
         }
 
+        var PDU_view = new Uint8Array(PDU);
         //Check PDU Type
-        var PDU_Type = PDU[0];
+        var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_CONFIRM) {
             this.CurrentStepReject("error : Invalid PDU : " + PDU)
             return;
         }
 
         //Get PDU Parameters
-        this.Dev_Confirmation = Buffer.alloc(16);
-        this.Dev_Confirmation.fill(PDU.subarray(PDU_Parameters_Offset));
-
-        console.log('this.DevConfirmation : ' + this.Dev_Confirmation.toString('hex'));
+        // this.Dev_Confirmation = new ArrayBuffer(16);
+        // this.Dev_Confirmation.fill(PDU.subarray(PDU_Parameters_Offset));
+        var Dev_Confirmation = PDU_view.slice(PDU_Parameters_Offset);
+        this.Dev_Confirmation = utils.bytesToHex(Dev_Confirmation);
+        console.log('this.DevConfirmation : ' + this.Dev_Confirmation);
 
         //Step Finished
         this.CurrentStepResolve();
@@ -292,7 +289,7 @@ class Provisionner {
         }
 
         //Get PDU Parameters
-        this.Ecc_1.Dev_RandomBuff = Buffer.alloc(16);
+        this.Ecc_1.Dev_RandomBuff = new ArrayBuffer(16);
         this.Ecc_1.Dev_RandomBuff.fill(PDU.subarray(PDU_Parameters_Offset));
 
         console.log('this.Ecc_1.Dev_RandomBuff : ' + this.Ecc_1.Dev_RandomBuff.toString('hex'));
@@ -313,9 +310,10 @@ class Provisionner {
             this.CurrentStepProcess = this.OUT_Capabilities;
 
             var index = 0
-            //this.PDU_Invite = Buffer.alloc(1 + 1 + 1);
-            this.PDU_Invite = new ArrayBuffer(1 + 1 + 1);
-            var PDU = new Uint8Array(this.PDU_Invite);
+            //this.PDU_Invite = new ArrayBuffer(1 + 1 + 1);
+  //          this.PDU_Invite = new ArrayBuffer(1 + 1 + 1);
+//            var PDU = new Uint8Array(this.PDU_Invite);
+            var PDU = new Uint8Array(1 + 1 + 1);
 
             //Fill PDU_Invite
             PDU[index++] = PROXY_PROVISIONING_PDU;
@@ -326,6 +324,7 @@ class Provisionner {
 
             console.log('Invite PDU ' + PDU);
             console.log('Invite PDU ' + PDU.length);
+            this.PDU_Invite = PDU;
 
             this.In.writeValue(PDU)
                 .then(() => {
@@ -420,8 +419,7 @@ class Provisionner {
             console.log(Object.values(this.Prov_Start));
 
             var index = 0
-            this.PDU_Start = new ArrayBuffer(1 + 1 + 5);
-            var PDU = new Uint8Array(this.PDU_Start);
+            var PDU = new Uint8Array(1 + 1 + 5);
 
             //Fill PDU_Start
             PDU[index++] = PROXY_PROVISIONING_PDU;
@@ -437,7 +435,7 @@ class Provisionner {
 
             console.log('Start PDU ' + PDU);
             console.log('Start PDU ' + PDU.length);
-
+            this.PDU_Start = PDU;
             this.In.writeValue(PDU)
                 .then(() => {
                     resolve();
@@ -486,7 +484,7 @@ class Provisionner {
 
             //PubKey is already recorded in Big endian
             //           //Swap the 256 bytes of the two half Public key parameters (X and Y) to mesh byte order
-            //           var tmpKey = Buffer.alloc(64);
+            //           var tmpKey = new ArrayBuffer(64);
             //           this.copy_and_swap_PublicKey(tmpKey, this.Prov_PublicKey.slice(1));//skip PubKeyTag
             //           var copied = tmpKey.copy(PDU_Public_Key, index, 0); //Copy to PDU parameters
           //  var copied = view.copy(PDU, index, 1); //Copy to PDU parameters
@@ -512,20 +510,22 @@ class Provisionner {
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = this.OUT_Confirmation;
 
-            var PDU_Confirmation = Buffer.alloc(1 + 1 + 16);
+            var PDU_Confirmation = new ArrayBuffer(1 + 1 + 16);
+            var PDU = new Uint8Array(PDU_Confirmation);
 
             var index = 0
             //Fill PDU_Public_Key
-            PDU_Confirmation[index++] = PROXY_PROVISIONING_PDU;
-            PDU_Confirmation[index++] = PROV_CONFIRM;
+            PDU[index++] = PROXY_PROVISIONING_PDU;
+            PDU[index++] = PROV_CONFIRM;
 
+            var ConfirmationInputs = new Uint8Array(1 + 11 + 5 + 64 + 64);
+            ConfirmationInputs.set(this.PDU_Invite.slice(2), 0); //size 1
+            ConfirmationInputs.set(new Uint8Array(this.ProvisioningCapabilitiesPDUValue), 1); //size 11
+            ConfirmationInputs.set(this.PDU_Start.slice(2), 12);
+            ConfirmationInputs.set(new Uint8Array(this.Ecc_1.ProvPublicKey).slice(1), 17);//Skip Tag
+            ConfirmationInputs.set(new Uint8Array(this.Ecc_1.DevPubKey).slice(1), 81);//Skip Tag
 
-            var ConfirmationInputs = Buffer.alloc(1 + 11 + 5 + 64 + 64);
-            ConfirmationInputs.fill(this.PDU_Invite.slice(2), 0); //size 1
-            ConfirmationInputs.fill(this.ProvisioningCapabilitiesPDUValue, 1); //size 11
-            ConfirmationInputs.fill(this.PDU_Start.slice(2), 1 + 11);
-            ConfirmationInputs.fill(this.Prov_PublicKey.slice(1), 1 + 11 + 5);//Skip Tag
-            ConfirmationInputs.fill(this.Dev_PublicKey.slice(1), 1 + 11 + 5 + 64);//Skip Tag
+            console.log('ConfirmationInputs len :' + ConfirmationInputs.length);
 
             this.Ecc_1.Set_AuthValue(this.OOB);
             this.Ecc_1.CreateRandomProvisionner();
@@ -535,9 +535,8 @@ class Provisionner {
             console.log('ConfirmationProvisioner =>');
             var ConfirmationProvisioner = this.Ecc_1.ConfirmationProvisioner();
 
-            PDU_Confirmation.fill(ConfirmationProvisioner, index);
+            PDU.set(utils.hexToBytes(ConfirmationProvisioner), index);
 
-            var PDU = new Uint8Array(PDU_Confirmation);
             console.log('Confirmation PDU : ' + PDU);
             console.log('Confirmation PDU : ' + PDU.length);
             this.In.writeValue(PDU)
@@ -555,7 +554,7 @@ class Provisionner {
             this.CurrentStepReject = reject;
             this.CurrentStepProcess = this.OUT_PROV_RANDOM;
 
-            var PDU_Random = Buffer.alloc(1 + 1 + 16);
+            var PDU_Random = new ArrayBuffer(1 + 1 + 16);
 
             var index = 0
             //Fill PDU_Random
@@ -580,10 +579,11 @@ class Provisionner {
 
             var Calc_ConfirmationDevice = this.Ecc_1.ConfirmationDevice();
 
-            if (Buffer.compare(Calc_ConfirmationDevice, this.Dev_Confirmation) != 0) {
+            if (Calc_ConfirmationDevice != this.Dev_Confirmation) {
+//            if (Buffer.compare(Calc_ConfirmationDevice, this.Dev_Confirmation) != 0) {
                 console.log('Error : Calc_ConfirmationProvisioner is diff! ');
-                console.log('Calc_ConfirmationDevice: \n' + Calc_ConfirmationDevice.toString('hex'));
-                console.log('this.Dev_Confirmation: \n' + this.Dev_Confirmation.toString('hex'));
+                console.log('Calc_ConfirmationDevice: \n' + Calc_ConfirmationDevice);
+                console.log('this.Dev_Confirmation: \n' + this.Dev_Confirmation);
                 reject();
                 return;
             } else {
@@ -595,31 +595,47 @@ class Provisionner {
 
     Get_OOB_FromUser(resolve, reject) {
         console.log('Request OOB Number : ');
+        app.showMessage("Request OOB Number :");
 
-        process.stdin.setEncoding('utf8');
-        process.stdin.on('readable', () => {
-            //  console.log(`you entered : ${chunk}`);
-            const chunk = process.stdin.read();
-            if (chunk !== null) {
-                // process.stdout.write(`data: ${chunk}`);
-                console.log(`data: ${chunk}`);
-                //
-                if (isNaN(chunk)) {
+        var input = prompt("Please enter OOB Number", "------");
+        if (isNaN(input)) {
+          console.log('This is not a number');
+          reject();
+          return;
+        }
 
-                    console.log('This is not number');
-                    return;
-                }
-                this.OOB = parseInt(chunk);
-                console.log('This is a number : ' + this.OOB);
-                resolve();
-            }
+        document.getElementById("InputOOB").innerHTML =
+        "Input OOB is : " + input;
 
-        });
-        process.stdin.on('end', () => {
-            process.stdout.write('end');
-        });
+        this.OOB = parseInt(input);
+        console.log('This is a number : ' + this.OOB);
+        resolve();
+
+
+
+        // process.stdin.setEncoding('utf8');
+        // process.stdin.on('readable', () => {
+        //     //  console.log(`you entered : ${chunk}`);
+        //     const chunk = process.stdin.read();
+        //     if (chunk !== null) {
+        //         // process.stdout.write(`data: ${chunk}`);
+        //         console.log(`data: ${chunk}`);
+        //         //
+        //         if (isNaN(chunk)) {
+        //
+        //             console.log('This is not number');
+        //             return;
+        //         }
+        //         this.OOB = parseInt(chunk);
+        //         console.log('This is a number : ' + this.OOB);
+        //         resolve();
+        //     }
+        //
+        // });
+        // process.stdin.on('end', () => {
+        //     process.stdout.write('end');
+        // });
     }
-
 
     PROV_NO_OOB_Complete() {
         return new Promise((resolve, reject) => {
@@ -655,7 +671,7 @@ class Provisionner {
 
 
     ProcessPDU(PDU) {
-        console.log('Get a complete PDU ' + PDU);
+        console.log('Get a complete PDU ' + new Uint8Array(PDU));
 
         if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
             this.CurrentStepProcess(PDU);
@@ -762,6 +778,8 @@ class Provisionner {
         });
     };
 };
+
+
 
 
 //module.exports = Provisionner;

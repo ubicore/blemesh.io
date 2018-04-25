@@ -109,3 +109,20 @@ utils.xorU8Array = function(bytes1, bytes2) {
 utils.leastSignificantBit = function(number) {
     return number & 1;
 }
+
+utils.hex2Arr = function(str){
+    if (!str) {
+        return new Uint8Array()
+    }
+    const arr = []
+    for (let i = 0, len = str.length; i < len; i+=2) {
+        arr.push(parseInt(str.substr(i, 2), 16))
+    }
+    return new Uint8Array(arr)
+}
+
+// utils.buf2Hex = function(buf){
+//     return Array.from(new Uint8Array(buf))
+//         .map(x => ('00' + x.toString(16)).slice(-2))
+//         .join('')
+// }

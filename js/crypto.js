@@ -16,7 +16,21 @@ crypto.getAesCmac = function (hex_key, hex_message) {
 
 crypto.s1 = function (M) {
 	cmac = crypto.getAesCmac(ZERO, M);
-	return cmac;
+	return cmac.toString();
+}
+
+
+crypto.k1 = function (N, SALT, P) {
+    console.log('AES_CMAC_k1');
+    console.log('N: ' + N);
+    console.log('SALT: ' + SALT);
+    console.log('P: ' + P);
+
+    var T = crypto.getAesCmac(SALT, N );
+		console.log(T.toString());
+    var cmac = crypto.getAesCmac(T.toString(), P);
+    console.log(cmac.toString());
+    return cmac.toString();
 }
 
 crypto.k2 = function (N, P) {
@@ -156,5 +170,3 @@ crypto.obfuscate = function (enc_dst, enc_transport_pdu, netmic, ctl, ttl, seq, 
 	result.obfuscated_ctl_ttl_seq_src = utils.u8AToHexString(obf);
 	return result;
 }
-
-

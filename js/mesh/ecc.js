@@ -45,29 +45,14 @@ class Ecc {
 
         //Other
         this.ConfirmationKey;
-        this.OOBhexBuffer;
+        this.OOBhexstring;
 
         //Random
-        this.Prov_RandomBuff;
+        this.Prov_Random;
         this.Dev_RandomBuff;
     };
 
-    hex2Arr (str){
-        if (!str) {
-            return new Uint8Array()
-        }
-        const arr = []
-        for (let i = 0, len = str.length; i < len; i+=2) {
-            arr.push(parseInt(str.substr(i, 2), 16))
-        }
-        return new Uint8Array(arr)
-    }
 
-    buf2Hex (buf){
-        return Array.from(new Uint8Array(buf))
-            .map(x => ('00' + x.toString(16)).slice(-2))
-            .join('')
-    }
 
 
 
@@ -78,15 +63,16 @@ class Ecc {
     };
 
     ComputeSecret() {
+
+      return new Promise((resolve, reject) => {
+
         //
         this.DevPubKey;
         var view = new Uint8Array(this.DevPubKey);
         console.log('this.DevPubKey : ' + view.toString());
-        // /this.ProvEDCHSecret = this.ProvKey.computeSecret(this.DevPubKey);
-        //this.ProvEDCHSecret = window.crypto.subtle. .computeSecret(this.DevPubKey);
 
-        // import Alice's public key
-        window.crypto.subtle.importKey(
+        // import Device's public key
+        return window.crypto.subtle.importKey(
           'raw',
           this.DevPubKey,
           {
@@ -96,8 +82,8 @@ class Ecc {
           true,
           [])
           .then(Dev_KeyImported => {
-            // use Alice's imported public key and
-            // Bob's private key to compute the shared secret
+            // use Device's imported public key and
+            // Prov's private key to compute the shared secret
             return window.crypto.subtle.deriveBits(
               {
                 name: 'ECDH',
@@ -105,16 +91,22 @@ class Ecc {
                 public: Dev_KeyImported
               },
               this.ProvKey.privateKey,
-              256)
+              256);
             })
             .then(sharedSecret => {
-              const sharedSecretHex = buf2Hex(sharedSecret)
-              console.log(`sharedSecret: ${sharedSecretHex}`)
+              this.ProvEDCHSecret = sharedSecret;
+              console.log('this.ProvEDCHSecret :' + new Uint8Array(sharedSecret).toString());
+
+              resolve();
+              return;
             })
             .catch(err => {
               console.log(err)
+              reject(err);
             });
-    };
+            console.log('ComputeSecret Finished\n\n');
+          });
+        };
 
 
     AES_CMAC_test() {
@@ -298,22 +290,24 @@ class Ecc {
 
 
     CreateRandomProvisionner() {
-        const crypto = require('crypto');
+        //const crypto = require('crypto');
         console.log('CreateRandomProvisionner :');
-
-        this.Prov_RandomBuff = crypto.randomBytes(16);
-        console.log('this.Prov_RandomBuff: ' + this.Prov_RandomBuff.toString('hex'));
+        var random = new Uint8Array(16);
+        window.crypto.getRandomValues(random);
+        this.Prov_Random = utils.bytesToHex(random);
+        console.log('this.Prov_Random: ' + this.Prov_Random);
         return;
     };
 
 
     CreateConfirmationKey(ConfirmationInputs) {
         console.log('CreateConfirmationKey :');
+        var M = utils.bytesToHex(ConfirmationInputs);
+        var SALT = crypto.s1(M);
+        var N = utils.bytesToHex(new Uint8Array(this.ProvEDCHSecret));
 
-        var ConfirmationSalt = this.AES_CMAC_s1(ConfirmationInputs);
-        this.ConfirmationKey = this.AES_CMAC_k1(this.ProvEDCHSecret, ConfirmationSalt, 'prck');
-        console.log('this.ConfirmationKey : ' + this.ConfirmationKey.toString('hex'));
-
+        this.ConfirmationKey = crypto.k1(N, SALT, 'prck');
+        console.log('this.ConfirmationKey : ' + this.ConfirmationKey);
         return;
     };
 
@@ -331,88 +325,121 @@ class Ecc {
         var OOBhexstring = OOB.toString(16);
         console.log('OOBhexstring : ' + OOBhexstring + ' len: ' + OOBhexstring.length);
 
-        const OOBhexstringof16B = this.FormatNumberLength(OOBhexstring, 32);
-        console.log('OOBhexstringof16B : ' + OOBhexstringof16B + ' len: ' + OOBhexstringof16B.length);
-
-        this.OOBhexBuffer = new Buffer(OOBhexstringof16B, 'hex');
-        console.log('this.OOBhexBuffer : ' + this.OOBhexBuffer.toString('hex') );
+        this.OOBhexstring = this.FormatNumberLength(OOBhexstring, 32);
+        console.log('this.OOBhexstring : ' + this.OOBhexstring + ' len: ' + this.OOBhexstring.length);
         return;
     };
 
     ConfirmationProvisioner() {
-        var aesCmac = require('node-aes-cmac').aesCmac;
-
         console.log('ConfirmationProvisioner');
-
-        var message = Buffer.alloc(16 + 16, 0);
-        message.fill(this.Prov_RandomBuff, 0);
-        message.fill(this.OOBhexBuffer, 16);
-
-        console.log('message: ' + message.toString('hex'));
-
-        var options = { returnAsBuffer: true };
-        var ConfirmationProvisioner = aesCmac(this.ConfirmationKey, message, options);
-
-        console.log('ConfirmationProvisioner: ' + ConfirmationProvisioner.toString('hex'));
-        return ConfirmationProvisioner;
+        var message = this.Prov_Random + this.OOBhexstring;
+        console.log('message: ' + message);
+        var ConfirmationProvisioner = crypto.getAesCmac(this.ConfirmationKey, message);
+        console.log('ConfirmationProvisioner: ' + ConfirmationProvisioner.toString());
+        return ConfirmationProvisioner.toString();
     };
 
     ConfirmationDevice() {
-        var aesCmac = require('node-aes-cmac').aesCmac;
-
         console.log('ConfirmationDevice');
-
-        var message = Buffer.alloc(16 + 16, 0);
-        message.fill(this.Dev_RandomBuff, 0);
-        message.fill(this.OOBhexBuffer, 16);
-
-        console.log('message: ' + message.toString('hex'));
-
-        var options = { returnAsBuffer: true };
-        var ConfirmationDevice = aesCmac(this.ConfirmationKey, message, options);
-
-        console.log('ConfirmationDevice: ' + ConfirmationDevice.toString('hex'));
-        return ConfirmationDevice;
+        var message = this.Dev_RandomBuff + this.OOBhexstring;
+        console.log('message: ' + message);
+        var ConfirmationDevice = crypto.getAesCmac(this.ConfirmationKey, message);
+        console.log('ConfirmationDevice: ' + ConfirmationDevice.toString());
+        return ConfirmationDevice.toString();
     };
 
 
-    AES_CMAC_s1(M) {
-        console.log('AES_CMAC_s1');
-
-        var aesCmac = require('node-aes-cmac').aesCmac;
-        const bufferKey = Buffer.alloc(16, 0);
-
-        var options = { returnAsBuffer: true };
-        var cmac = aesCmac(bufferKey, M, options);
-
-        console.log(M);
-        console.log(cmac.toString('hex'));
-        return cmac;
-    };
-
-    AES_CMAC_k1(N, SALT, P) {
-        console.log('AES_CMAC_k1');
-
-        var aesCmac = require('node-aes-cmac').aesCmac;
-
-        console.log(N.toString('hex'));
-        console.log(SALT.toString('hex'));
-        console.log(P.toString('hex'));
-
-        var options = { returnAsBuffer: true };
-        var T = aesCmac(SALT, N, options);
-        var cmac = aesCmac(T, P, options);
-
-        console.log(T.toString('hex'));
-
-        console.log(cmac.toString('hex'));
-        return cmac;
-    };
+    // AES_CMAC_s1(M) {
+    //     console.log('AES_CMAC_s1');
+    //
+    //     var aesCmac = require('node-aes-cmac').aesCmac;
+    //     const bufferKey = Buffer.alloc(16, 0);
+    //
+    //     var options = { returnAsBuffer: true };
+    //     var cmac = aesCmac(bufferKey, M, options);
+    //
+    //     console.log(M);
+    //     console.log(cmac.toString('hex'));
+    //     return cmac;
+    // };
+    //
+    // AES_CMAC_k1(N, SALT, P) {
+    //     console.log('AES_CMAC_k1');
+    //
+    //     var aesCmac = require('node-aes-cmac').aesCmac;
+    //
+    //     console.log(N.toString('hex'));
+    //     console.log(SALT.toString('hex'));
+    //     console.log(P.toString('hex'));
+    //
+    //     var options = { returnAsBuffer: true };
+    //     var T = aesCmac(SALT, N, options);
+    //     var cmac = aesCmac(T, P, options);
+    //
+    //     console.log(T.toString('hex'));
+    //
+    //     console.log(cmac.toString('hex'));
+    //     return cmac;
+    // };
 
 
 
 };
 
+CryptoJS.enc.u8array = {
+        /**
+         * Converts a word array to a Uint8Array.
+         *
+         * @param {WordArray} wordArray The word array.
+         *
+         * @return {Uint8Array} The Uint8Array.
+         *
+         * @static
+         *
+         * @example
+         *
+         *     var u8arr = CryptoJS.enc.u8array.stringify(wordArray);
+         */
+        stringify: function (wordArray) {
+            // Shortcuts
+            var words = wordArray.words;
+            var sigBytes = wordArray.sigBytes;
 
+            // Convert
+            var u8 = new Uint8Array(sigBytes);
+            for (var i = 0; i < sigBytes; i++) {
+                var byte = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+                u8[i]=byte;
+            }
+
+            return u8;
+        },
+
+        /**
+         * Converts a Uint8Array to a word array.
+         *
+         * @param {string} u8Str The Uint8Array.
+         *
+         * @return {WordArray} The word array.
+         *
+         * @static
+         *
+         * @example
+         *
+         *     var wordArray = CryptoJS.enc.u8array.parse(u8arr);
+         */
+        parse: function (u8arr) {
+            // Shortcut
+            var len = u8arr.length;
+
+            // Convert
+            var words = [];
+            for (var i = 0; i < len; i++) {
+                words[i >>> 2] |= (u8arr[i] & 0xff) << (24 - (i % 4) * 8);
+            }
+
+            return CryptoJS.lib.WordArray.create(words, len);
+        }
+    };
 
 //module.exports = Ecc;
