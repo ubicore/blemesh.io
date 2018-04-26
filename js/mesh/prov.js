@@ -2,13 +2,7 @@
 .
 */
 
-// /var ecc = require("./ecc.js");
-
-
-
 const PROXY_PROVISIONING_PDU = 0x03;
-
-
 
 const PROV_INVITE = 0x00;
 const PROV_CAPS = 0x01;
@@ -35,10 +29,7 @@ const PROV_ERR_DECRYPT_FAILED = 0x06;
 const PROV_ERR_UNEXPECTED_ERR = 0x07;
 const PROV_ERR_CANT_ASSIGN_ADDR = 0x08;
 
-
-
 const PROVISIONING_CAPABILITIES_PARAM_SIZE = 11;
-
 
 //
 // // use it as module
@@ -93,7 +84,6 @@ class Prov_Start {
     };
 };
 
-
 class Provisionner {
     constructor() {
         // this.PDU = [];
@@ -119,12 +109,7 @@ class Provisionner {
         this.Ecc_1 = new Ecc;
 
         this.Dev_Confirmation;
-
-        //
-
     };
-
-
 
     OUT_Capabilities(PDU) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
@@ -143,13 +128,7 @@ class Provisionner {
             return;
         }
         //Get PDU Parameters
-        //var PDU_Parameter = PDU.subarray(PDU_Parameters_Offset);
-        //this.ProvisioningCapabilitiesPDUValue = Buffer.from(PDU_Parameter);
-      //  this.ProvisioningCapabilitiesPDUValue = PDU.slice(PDU_Parameters_Offset);
-      //  this.ProvisioningCapabilitiesPDUValue = new Uint8Array(PROVISIONING_CAPABILITIES_PARAM_SIZE);
-        //console.log('PDU : ' + PDU.length);
         this.ProvisioningCapabilitiesPDUValue = PDU.slice(1);;
-      //  this.ProvisioningCapabilitiesPDUValue.set(PDU.slice(1), 0);
         console.log('ProvisioningCapabilitiesPDUValue : ' + new Uint8Array(this.ProvisioningCapabilitiesPDUValue).toString(16));
 
         var view = new DataView(this.ProvisioningCapabilitiesPDUValue);
@@ -199,20 +178,15 @@ class Provisionner {
         }
 
         //Get PDU Parameters
-        // var Buffer = new ArrayBuffer(1 + 64);
-        // var Buffer_view = new Uint8Array(Buffer);
-        // Buffer_view[0] = 0x04; //PubKey Tag uncompressed = 0x04
-        // Buffer_view.set(PDU_view.slice(1), 1);
         var key =  PDU_view.slice(1);//skip PDU tag
+        if (key.length != 64) {
+            this.CurrentStepReject("error : Invalid Dev_PublicKey")
+            return;
+        }
+
         this.Ecc_1.DevPubKey = '04'+ utils.bytesToHex(key);
 
         console.log('this.Ecc_1.DevPubKey : ' + this.Ecc_1.DevPubKey);
-
-        // if (this.Dev_PublicKey.length != 65) {
-        //
-        //     this.CurrentStepReject("error : Invalid Dev_PublicKey")
-        //     return;
-        // }
 
         //Compute ECDH secret
         this.Ecc_1.ComputeSecret()
@@ -241,8 +215,6 @@ class Provisionner {
         }
 
         //Get PDU Parameters
-        // this.Dev_Confirmation = new ArrayBuffer(16);
-        // this.Dev_Confirmation.fill(PDU.subarray(PDU_Parameters_Offset));
         var Dev_Confirmation = PDU_view.slice(PDU_Parameters_Offset);
         this.Dev_Confirmation = utils.bytesToHex(Dev_Confirmation);
         console.log('this.DevConfirmation : ' + this.Dev_Confirmation);
@@ -303,8 +275,6 @@ class Provisionner {
         this.CurrentStepResolve();
     };
 
-
-
     OUT_COMPLETE(PDU) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
@@ -339,9 +309,6 @@ class Provisionner {
             this.CurrentStepProcess = this.OUT_Capabilities;
 
             var index = 0
-            //this.PDU_Invite = new ArrayBuffer(1 + 1 + 1);
-  //          this.PDU_Invite = new ArrayBuffer(1 + 1 + 1);
-//            var PDU = new Uint8Array(this.PDU_Invite);
             var PDU = new Uint8Array(1 + 1 + 1);
 
             //Fill PDU_Invite
@@ -349,7 +316,6 @@ class Provisionner {
             PDU[index++] = PROV_INVITE;
             //PDU_Invite Data
             PDU[index++] = PROV_Attention_Duration;
-
 
             console.log('Invite PDU ' + PDU);
             console.log('Invite PDU ' + PDU.length);
@@ -443,7 +409,6 @@ class Provisionner {
                 return;
             }
 
-
             console.log(Object.keys(this.Prov_Start));
             console.log(Object.values(this.Prov_Start));
 
@@ -459,8 +424,6 @@ class Provisionner {
             PDU[index++] = this.Prov_Start.auth_method;
             PDU[index++] = this.Prov_Start.auth_action;
             PDU[index++] = this.Prov_Start.auth_size;
-
-            //PDU_Start.set (Object.values(Prov_Start_1), 1+1);
 
             console.log('Start PDU ' + PDU);
             console.log('Start PDU ' + PDU.length);
@@ -503,18 +466,6 @@ class Provisionner {
 
             var ProvPublicKey = utils.hexToBytes(this.Ecc_1.ProvPublicKey);
             console.log('this.Ecc_1.ProvPublicKey : ' + this.Ecc_1.ProvPublicKey);
-
-            // const tmpKey = Buffer.from([0x3f, 0x76 , 0x78 , 0x89 , 0x14 , 0x7d , 0x27 , 0x90 , 0x83 , 0xd4 , 0xbf , 0xb7 , 0xd5 , 0xb0 , 0xbc , 0xac , 0x02 , 0x20 , 0x50 , 0xe6
-            //     , 0xc3 , 0xc4 , 0x91 , 0xba , 0x27 , 0x43 , 0xf0 , 0xba , 0x97 , 0xdf , 0xfd , 0x4b , 0x0e , 0xb1 , 0x49 , 0x57 , 0x99 , 0x40 , 0xe9 , 0x5f , 0x04 , 0x9e ,
-            //      0x81 , 0xc5 , 0x2e , 0x6c , 0x04 , 0x43 , 0x47 , 0xf5 , 0xaa , 0x0b , 0x70 , 0xd7 , 0xd4 , 0xe4 , 0x9e , 0x3a , 0x69 , 0x5b , 0xc3 , 0x63 , 0xbb , 0x96]);
-
-
-            //PubKey is already recorded in Big endian
-            //           //Swap the 256 bytes of the two half Public key parameters (X and Y) to mesh byte order
-            //           var tmpKey = new ArrayBuffer(64);
-            //           this.copy_and_swap_PublicKey(tmpKey, this.Prov_PublicKey.slice(1));//skip PubKeyTag
-            //           var copied = tmpKey.copy(PDU_Public_Key, index, 0); //Copy to PDU parameters
-          //  var copied = view.copy(PDU, index, 1); //Copy to PDU parameters
             PDU.set(ProvPublicKey.slice(1), index); //Skip key tag
 
             console.log('Public_Key PDU : ' + PDU);
@@ -526,7 +477,6 @@ class Provisionner {
                 .catch(error => {
                     reject(`writeValue error: ${error}`);
                 });
-
         });
     };
 
@@ -640,16 +590,10 @@ class Provisionner {
         });
     };
 
-
-
-
     CheckConfirmation() {
         return new Promise((resolve, reject) => {
-
             var Calc_ConfirmationDevice = this.Ecc_1.ConfirmationDevice();
-
             if (Calc_ConfirmationDevice != this.Dev_Confirmation) {
-//            if (Buffer.compare(Calc_ConfirmationDevice, this.Dev_Confirmation) != 0) {
                 console.log('Error : Calc_ConfirmationProvisioner is diff! ');
                 console.log('Calc_ConfirmationDevice: \n' + Calc_ConfirmationDevice);
                 console.log('this.Dev_Confirmation: \n' + this.Dev_Confirmation);
@@ -679,31 +623,6 @@ class Provisionner {
         this.OOB = parseInt(input);
         console.log('This is a number : ' + this.OOB);
         resolve();
-
-
-
-        // process.stdin.setEncoding('utf8');
-        // process.stdin.on('readable', () => {
-        //     //  console.log(`you entered : ${chunk}`);
-        //     const chunk = process.stdin.read();
-        //     if (chunk !== null) {
-        //         // process.stdout.write(`data: ${chunk}`);
-        //         console.log(`data: ${chunk}`);
-        //         //
-        //         if (isNaN(chunk)) {
-        //
-        //             console.log('This is not number');
-        //             return;
-        //         }
-        //         this.OOB = parseInt(chunk);
-        //         console.log('This is a number : ' + this.OOB);
-        //         resolve();
-        //     }
-        //
-        // });
-        // process.stdin.on('end', () => {
-        //     process.stdout.write('end');
-        // });
     }
 
     PROV_NO_OOB_Complete() {
@@ -738,7 +657,6 @@ class Provisionner {
         });
     };
 
-
     ProcessPDU(PDU) {
         console.log('Get a complete PDU ' + new Uint8Array(PDU));
 
@@ -749,7 +667,6 @@ class Provisionner {
         }
         return;
     };
-
 
     SetListening(characteristic) {
         console.log('SetListening : ' + characteristic.uuid);
@@ -767,18 +684,13 @@ class Provisionner {
         });
     };
 
-
-
     StartProvision(characteristicIn, characteristicOut) {
         this.In = characteristicIn;
         this.Out = characteristicOut;
 
         return new Promise((resolve, reject) => {
-            // this.ProvisionFinished = resolve;
-            // this.ProvisionFailed = reject;
-
             console.log('Start Provisionning');
-
+            //
             this.SetListening(this.Out)
                 .then(() => {
                     //Send Invite
@@ -828,27 +740,12 @@ class Provisionner {
                 })
                 .then(() => {
                     console.log('STEP : Provisioning DATA');
+                    //TODO : Dynamic genration of provision data's
                     return this.IN_DATA();
                 })
 
 
                 .then(() => {
-
-
-                  //Network key
-                  //Device key
-
-                    // const os = require('os');
-                    // console.log('OS endianness is : ' + os.endianness());
-                    // console.log('5.1 Endianness \n ' +
-                    //     'Unless stated otherwise, all multiple-octet numeric values in this layer shall be “big endian”, as described in Section 3.1.1.1. : ');
-
-                    //
-                    {
-                        //Obtain a net address
-
-                    }
-
                     console.log('End of procedure');
                     resolve();
                 })
@@ -858,8 +755,3 @@ class Provisionner {
         });
     };
 };
-
-
-
-
-//module.exports = Provisionner;
