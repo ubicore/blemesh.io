@@ -99,7 +99,8 @@ prov.start = function () {
 		console.log('End');
 		NodeServer.disconnect()
 		console.log('disconnected');
-		process.exit();
+		return;
+		//process.exit();
 	})
 	.catch(error => {
 		console.log('The error is: ' + error);

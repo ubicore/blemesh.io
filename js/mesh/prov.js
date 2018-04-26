@@ -305,7 +305,7 @@ class Provisionner {
 
 
 
-    OUT_Confirmation(PDU) {
+    OUT_COMPLETE(PDU) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
             return;
@@ -603,9 +603,9 @@ class Provisionner {
         return new Promise((resolve, reject) => {
             this.CurrentStepResolve = resolve;
             this.CurrentStepReject = reject;
-            this.CurrentStepProcess = this.OUT_Confirmation;
+            this.CurrentStepProcess = this.OUT_COMPLETE;
 
-            var PDU = new Uint8Array(1 + 1 + 16);
+            var PDU = new Uint8Array(1 + 1 + 25 + 8);
             var index = 0
             //Fill PDU_Random
             PDU[index++] = PROXY_PROVISIONING_PDU;
@@ -616,11 +616,11 @@ class Provisionner {
 
             // The provisioning data shall be encrypted and authenticated using:
             // Provisioning Data = Network Key || Key Index || Flags || IV Index || Unicast Address
-            var Network_Key;
-            var Key_Index ;
-            var Flags;
-            var IV_Index
-            var Unicast_Address;
+            var Network_Key = 'efb2255e6422d330088e09bb015ed707';
+            var Key_Index = '0000';
+            var Flags = '00'
+            var IV_Index = "01020304";
+            var Unicast_Address = "0b0c";
 
             var Provisioning_Data = Network_Key + Key_Index + Flags + IV_Index + Unicast_Address;
 
@@ -833,6 +833,11 @@ class Provisionner {
 
 
                 .then(() => {
+
+
+                  //Network key
+                  //Device key
+
                     // const os = require('os');
                     // console.log('OS endianness is : ' + os.endianness());
                     // console.log('5.1 Endianness \n ' +

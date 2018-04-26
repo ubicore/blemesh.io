@@ -50,6 +50,7 @@ class Ecc {
         //
         this.ProvisioningSalt;
         this.SessionKey;
+        this.SessionNonce;
     };
 
 
@@ -191,21 +192,22 @@ class Ecc {
       //nonce
       //The nonce shall be the 13 least significant octets of:
       //SessionNonce = k1(ECDHSecret, ProvisioningSalt, “prsn”)
-      this.SessionNonce = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt , 'prsn');
+      var hex = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt , 'prsn');
+      this.SessionNonce  = hex.substring((hex.length - 13*2), hex.length);
     };
 
     Encrypt_Provision_DATA(Provisioning_Data){
       // Encrypted Provisioning Data, Provisioning Data MIC = AES-CCM (SessionKey, SessionNonce,
       // Provisioning Data)
-      u8_key = utils.hexToU8A(this.SessionKey);
-      u8_nonce = utils.hexToU8A(this.SessionNonce);
-      u8_payload = utils.hexToU8A(Provisioning_Data);
+      var u8_key = utils.hexToU8A(this.SessionKey);
+      var u8_nonce = utils.hexToU8A(this.SessionNonce);
+      var u8_payload = utils.hexToU8A(Provisioning_Data);
       // var result = {
       //   EncProvisionDATA: 0,
       //   TransMIC: 0
       // };
-      auth_enc_DATA = asmCrypto.AES_CCM.encrypt(u8_payload, u8_key, u8_nonce, new Uint8Array([]), 4);
-      hex = utils.u8AToHexString(auth_enc_DATA);
+      var auth_enc_DATA = asmCrypto.AES_CCM.encrypt(u8_payload, u8_key, u8_nonce, new Uint8Array([]), 8);
+      var hex = utils.u8AToHexString(auth_enc_DATA);
       // result.EncProvisionDATA = hex.substring(0, hex.length - 8);
       // result.TransMIC = hex.substring(hex.length - 8, hex.length);
       // return result;
