@@ -35,6 +35,7 @@ test.start2 = function() {
 test.start = function() {
   //test.EDCH();
   test.Confirmation();
+  test.ProvisionDATA();
 
 };
 
@@ -257,9 +258,114 @@ test.Confirmation = function() {
         //var aaa = aesCCM()
 
 
+        console.log('END Success');
 
-
-
-        console.log('END test');
         return;
     };
+
+
+    test.ProvisionDATA = function() {
+
+        const ECDHSecret = 'ab85843a2f6d883f62e5684b38e307335fe6e1945ecd19604105c6f23221eb69';
+
+        /***************************************************/
+        //8.7.12 PB-ADV Provisioning Data
+        const ConfirmationSalt = '5faabe187337c71cc6c973369dcaa79a';
+        const Random_Provisioner = '8b19ac31d58b124c946209b5db1021b9';
+        const Random_Device = '55a2a2bca04cd32ff6f346bd0a0c1a3a';
+        const Provision_Input = '5faabe187337c71cc6c973369dcaa79a8b19ac31d58b124c946209b5db1021b955a2a2bca04cd32ff6f346bd0a0c1a3a';
+        const ProvisionningSalt = 'a21c7d45f201cf9489a2fb57145015b4';
+
+        const DeviceKey = '0520adad5e0142aa3e325087b4ec16d8';
+        const SessionKey = 'c80253af86b33dfa450bbdb2a191fea3';
+        const Nonce = 'da7ddbe78b5f62b81d6847487e';
+        const NetKey = 'efb2255e6422d330088e09bb015ed707';
+        const NetKeyIndex = '0567';
+        const Flags = '00';
+        const IVIndex = '01020304';
+        const UnicastAddress = '0b0c';
+        const ProvisioningData = 'efb2255e6422d330088e09bb015ed707056700010203040b0c';
+        const EncProvisioningData = 'd0bd7f4a89a2ff6222af59a90a60ad58acfe3123356f5cec29';
+        const ProvisioningDataMIC = '73e0ec50783b10c7';
+
+
+
+      //  Create_Session_Key
+          //Session key
+          //The Session key shall be derived using the formula:
+          //ProvisioningSalt = s1(ConfirmationSalt || RandomProvisioner || RandomDevice)
+          //SessionKey = k1(ECDHSecret, ProvisioningSalt, “prsk”)
+          var Calc_ProvisioningSalt = crypto.s1(ConfirmationSalt  + Random_Provisioner + Random_Device);
+          var Calc_SessionKey = crypto.k1(ECDHSecret, Calc_ProvisioningSalt, 'prsk')
+
+          if (Calc_SessionKey != SessionKey) {
+              console.log('Error : Calc_SessionKey is diff! ');
+              console.log('Calc_SessionKey: \n' + Calc_SessionKey);
+              console.log('SessionKey: \n' + SessionKey);
+              return;
+          } else {
+              console.log('Calc_SessionKey : OK');
+              console.log('Calc_SessionKey: \n' + Calc_SessionKey);
+          }
+
+
+          //Create_Nonce
+          //nonce
+          //The nonce shall be the 13 least significant octets of:
+          //SessionNonce = k1(ECDHSecret, ProvisioningSalt, “prsn”)
+          var hex = crypto.k1(ECDHSecret, Calc_ProvisioningSalt , 'prsn')
+          var Calc_SessionNonce = hex.substring((hex.length - 13*2), hex.length);
+
+          if (Calc_SessionNonce != Nonce) {
+              console.log('Error : Calc_SessionNonce is diff! ');
+              console.log('Calc_SessionNonce: \n' + Calc_SessionNonce);
+              console.log('Nonce: \n' + Nonce);
+              return;
+          } else {
+              console.log('Calc_SessionNonce : OK');
+              console.log('Calc_SessionNonce: \n' + Calc_SessionNonce);
+          }
+
+        //Encrypt_Provision_DATA(Provisioning_Data)
+          // Encrypted Provisioning Data, Provisioning Data MIC = AES-CCM (SessionKey, SessionNonce,
+          // Provisioning Data)
+          u8_key = utils.hexToU8A(Calc_SessionKey);
+          u8_nonce = utils.hexToU8A(Calc_SessionNonce);
+          u8_payload = utils.hexToU8A(ProvisioningData);
+          var result = {
+             EncProvisionDATA: 0,
+             TransMIC: 0
+           };
+          auth_enc_DATA = asmCrypto.AES_CCM.encrypt(u8_payload, u8_key, u8_nonce, new Uint8Array([]), 8);
+          hex = utils.u8AToHexString(auth_enc_DATA);
+          result.EncProvisionDATA = hex.substring(0, hex.length - 8*2);
+          result.TransMIC = hex.substring(hex.length - 8*2, hex.length);
+          // return result;
+        //  return hex;
+
+
+        if (EncProvisioningData != result.EncProvisionDATA) {
+              console.log('Error : EncProvisionDATA is diff! ');
+              console.log('EncProvisioningData: \n' + EncProvisioningData);
+              console.log('result.EncProvisionDATA: \n' + result.EncProvisionDATA);
+              return;
+          } else {
+              console.log('result.EncProvisionDATA : OK');
+              console.log('result.EncProvisionDATA: \n' + result.EncProvisionDATA);
+          }
+
+
+        if (ProvisioningDataMIC != result.TransMIC) {
+              console.log('Error : TransMIC is diff! ');
+              console.log('ProvisioningDataMIC: \n' + ProvisioningDataMIC);
+              console.log('result.TransMIC: \n' + result.TransMIC);
+              return;
+          } else {
+              console.log('result.TransMIC : OK');
+              console.log('result.TransMIC: \n' + result.TransMIC);
+          }
+
+          console.log('END Success');
+          return;
+
+    }

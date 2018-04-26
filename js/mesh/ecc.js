@@ -42,7 +42,14 @@ class Ecc {
 
         //Random
         this.Prov_Random;
-        this.Dev_RandomBuff;
+        this.Dev_Random;
+        //Salt
+        this.ConfirmationSalt;
+
+
+        //
+        this.ProvisioningSalt;
+        this.SessionKey;
     };
 
 
@@ -125,10 +132,10 @@ class Ecc {
     CreateConfirmationKey(ConfirmationInputs) {
         console.log('CreateConfirmationKey :');
         var M = ConfirmationInputs;
-        var SALT = crypto.s1(M);
+        this.ConfirmationSalt = crypto.s1(M);
         var N = this.ProvEDCHSecret;
 
-        this.ConfirmationKey = crypto.k1(N, SALT, 'prck');
+        this.ConfirmationKey = crypto.k1(N, this.ConfirmationSalt, 'prck');
         console.log('this.ConfirmationKey : ' + this.ConfirmationKey);
         return;
     };
@@ -163,7 +170,7 @@ class Ecc {
 
     ConfirmationDevice() {
         console.log('ConfirmationDevice');
-        var message = this.Dev_RandomBuff + this.OOBhexstring;
+        var message = this.Dev_Random + this.OOBhexstring;
         console.log('message: ' + message);
         var ConfirmationDevice = crypto.getAesCmac(this.ConfirmationKey, message);
         console.log('ConfirmationDevice: ' + ConfirmationDevice.toString());
@@ -171,41 +178,39 @@ class Ecc {
     };
 
 
-    // AES_CMAC_s1(M) {
-    //     console.log('AES_CMAC_s1');
-    //
-    //     var aesCmac = require('node-aes-cmac').aesCmac;
-    //     const bufferKey = Buffer.alloc(16, 0);
-    //
-    //     var options = { returnAsBuffer: true };
-    //     var cmac = aesCmac(bufferKey, M, options);
-    //
-    //     console.log(M);
-    //     console.log(cmac.toString('hex'));
-    //     return cmac;
-    // };
-    //
-    // AES_CMAC_k1(N, SALT, P) {
-    //     console.log('AES_CMAC_k1');
-    //
-    //     var aesCmac = require('node-aes-cmac').aesCmac;
-    //
-    //     console.log(N.toString('hex'));
-    //     console.log(SALT.toString('hex'));
-    //     console.log(P.toString('hex'));
-    //
-    //     var options = { returnAsBuffer: true };
-    //     var T = aesCmac(SALT, N, options);
-    //     var cmac = aesCmac(T, P, options);
-    //
-    //     console.log(T.toString('hex'));
-    //
-    //     console.log(cmac.toString('hex'));
-    //     return cmac;
-    // };
+    Create_Session_Key(){
+      //Session key
+      //The Session key shall be derived using the formula:
+      //ProvisioningSalt = s1(ConfirmationSalt || RandomProvisioner || RandomDevice)
+      //SessionKey = k1(ECDHSecret, ProvisioningSalt, “prsk”)
+      this.ProvisioningSalt = crypto.s1(this.ConfirmationSalt  + this.Prov_Random + this.Dev_Random);
+      this.SessionKey = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt, 'prsk');
+    };
 
+    Create_Nonce(){
+      //nonce
+      //The nonce shall be the 13 least significant octets of:
+      //SessionNonce = k1(ECDHSecret, ProvisioningSalt, “prsn”)
+      this.SessionNonce = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt , 'prsn');
+    };
 
-
+    Encrypt_Provision_DATA(Provisioning_Data){
+      // Encrypted Provisioning Data, Provisioning Data MIC = AES-CCM (SessionKey, SessionNonce,
+      // Provisioning Data)
+      u8_key = utils.hexToU8A(this.SessionKey);
+      u8_nonce = utils.hexToU8A(this.SessionNonce);
+      u8_payload = utils.hexToU8A(Provisioning_Data);
+      // var result = {
+      //   EncProvisionDATA: 0,
+      //   TransMIC: 0
+      // };
+      auth_enc_DATA = asmCrypto.AES_CCM.encrypt(u8_payload, u8_key, u8_nonce, new Uint8Array([]), 4);
+      hex = utils.u8AToHexString(auth_enc_DATA);
+      // result.EncProvisionDATA = hex.substring(0, hex.length - 8);
+      // result.TransMIC = hex.substring(hex.length - 8, hex.length);
+      // return result;
+      return hex;
+    };
 };
 
 CryptoJS.enc.u8array = {

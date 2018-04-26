@@ -115,11 +115,13 @@ class Provisionner {
         this.PDU_Start;
         this.ProvisioningCapabilitiesPDUValue;
 
-
         //Prov_PublicKey
         this.Ecc_1 = new Ecc;
 
         this.Dev_Confirmation;
+
+        //
+
     };
 
 
@@ -292,8 +294,8 @@ class Provisionner {
 
         //Get PDU Parameters
         var Dev_RandomBuff = PDU_view.slice(PDU_Parameters_Offset);
-        this.Ecc_1.Dev_RandomBuff = utils.bytesToHex(Dev_RandomBuff);
-        console.log('this.Ecc_1.Dev_RandomBuff : ' + this.Ecc_1.Dev_RandomBuff);
+        this.Ecc_1.Dev_Random = utils.bytesToHex(Dev_RandomBuff);
+        console.log('this.Ecc_1.Dev_RandomBuff : ' + this.Ecc_1.Dev_Random);
 
         console.log('Get a PROV_INP_CMPLT PDU');
 
@@ -301,6 +303,33 @@ class Provisionner {
         this.CurrentStepResolve();
     };
 
+
+
+    OUT_Confirmation(PDU) {
+        if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
+            console.log('error : no CurrentBehaviorResolve Callback');
+            return;
+        }
+        if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
+            console.log('error : no CurrentBehaviorReject Callback');
+            return;
+        }
+
+        var PDU_view = new Uint8Array(PDU);
+        //Check PDU Type
+        var PDU_Type = PDU_view[0];
+        if (PDU_Type != PROV_COMPLETE) {
+            this.CurrentStepReject("error : Invalid PDU : " + PDU)
+            return;
+        }
+
+        //Get PDU Parameters
+        //NO parameters for this PDU
+        console.log('Get a PROV_COMPLETE PDU');
+
+        //Step Finished
+        this.CurrentStepResolve();
+    };
 
 
     IN_Invite() {
@@ -569,6 +598,51 @@ class Provisionner {
                 });
         });
     };
+
+    IN_DATA() {
+        return new Promise((resolve, reject) => {
+            this.CurrentStepResolve = resolve;
+            this.CurrentStepReject = reject;
+            this.CurrentStepProcess = this.OUT_Confirmation;
+
+            var PDU = new Uint8Array(1 + 1 + 16);
+            var index = 0
+            //Fill PDU_Random
+            PDU[index++] = PROXY_PROVISIONING_PDU;
+            PDU[index++] = PROV_DATA;
+
+            this.Ecc_1.Create_Session_Key();
+            this.Ecc_1.Create_Nonce();
+
+            // The provisioning data shall be encrypted and authenticated using:
+            // Provisioning Data = Network Key || Key Index || Flags || IV Index || Unicast Address
+            var Network_Key;
+            var Key_Index ;
+            var Flags;
+            var IV_Index
+            var Unicast_Address;
+
+            var Provisioning_Data = Network_Key + Key_Index + Flags + IV_Index + Unicast_Address;
+
+            var ProvDATAPayloadHex = this.Ecc_1.Encrypt_Provision_DATA(Provisioning_Data);
+            console.log('ProvDATAPayloadHex : ' + ProvDATAPayloadHex);
+            var Payload = new Uint8Array(utils.hexToBytes(ProvDATAPayloadHex));
+            PDU.set(Payload, index);
+
+            console.log('PDU_Random : ' + PDU);
+            console.log('PDU_Random : ' + PDU.length);
+            this.In.writeValue(PDU)
+                .then(() => {
+                })
+                .catch(error => {
+                    reject(`writeValue error: ${error}`);
+                });
+        });
+    };
+
+
+
+
     CheckConfirmation() {
         return new Promise((resolve, reject) => {
 
@@ -752,6 +826,12 @@ class Provisionner {
                     console.log('STEP : Check Confirmation');
                     return this.CheckConfirmation();
                 })
+                .then(() => {
+                    console.log('STEP : Provisioning DATA');
+                    return this.IN_DATA();
+                })
+
+
                 .then(() => {
                     // const os = require('os');
                     // console.log('OS endianness is : ' + os.endianness());
