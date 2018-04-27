@@ -608,7 +608,7 @@ class Provisionner {
 
     Get_OOB_FromUser(resolve, reject) {
         console.log('Request OOB Number : ');
-        app.showMessage("Request OOB Number :");
+        prov_trace.showMessage("Request OOB Number :");
 
         var input = prompt("Please enter OOB Number", "");
         if (isNaN(input)) {
@@ -743,10 +743,8 @@ class Provisionner {
                     //TODO : Dynamic genration of provision data's
                     return this.IN_DATA();
                 })
-
-
                 .then(() => {
-                    console.log('End of procedure');
+                    console.log('End of provision procedure');
                     resolve();
                 })
                 .catch(error => {

@@ -13,30 +13,34 @@ function _arrayBufferToJwkBase64( buffer ) {
     var jwk_base64 = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
     return jwk_base64;
 };
-test.start2 = function() {
+
+test.start = function() {
+  //test.generatekey();
+  //test.EDCH();
+
+  test.Confirmation();
+  test.ProvisionDATA();
+
+};
+
+test.generatekey = function() {
   window.crypto.subtle.generateKey(
     {
-        name: "ECDH",
-        namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
+      name: "ECDH",
+      namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
     },
     false, //whether the key is extractable (i.e. can be used in exportKey)
     ["deriveKey", "deriveBits"] //can be any combination of "deriveKey" and "deriveBits"
-)
-.then(function(key){
+  )
+  .then(function(key){
     //returns a keypair object
     console.log(key);
     console.log(key.publicKey);
     console.log(key.privateKey);
-})
-.catch(function(err){
+  })
+  .catch(function(err){
     console.error(err);
-});
-};
-test.start = function() {
-  //test.EDCH();
-  test.Confirmation();
-  test.ProvisionDATA();
-
+  })
 };
 
 

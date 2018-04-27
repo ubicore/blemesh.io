@@ -7,14 +7,9 @@ var mesh_proxy_data_in;
 var mesh_proxy_data_out;
 var app = {};
 
-//app.MESH_PROXY_SERVICE = '00001828-0000-1000-8000-00805f9b34fb';
-//app.MESH_PROXY_DATA_IN = '00002add-0000-1000-8000-00805f9b34fb';
-//app.MESH_PROXY_DATA_OUT = '00002ade-0000-1000-8000-00805f9b34fb';
-
-
-app.MESH_PROXY_SERVICE = '00001827-0000-1000-8000-00805f9b34fb';
-app.MESH_PROXY_DATA_IN = '00002adb-0000-1000-8000-00805f9b34fb';
-app.MESH_PROXY_DATA_OUT = '00002adc-0000-1000-8000-00805f9b34fb';
+app.MESH_PROXY_SERVICE = '00001828-0000-1000-8000-00805f9b34fb';
+app.MESH_PROXY_DATA_IN = '00002add-0000-1000-8000-00805f9b34fb';
+app.MESH_PROXY_DATA_OUT = '00002ade-0000-1000-8000-00805f9b34fb';
 
 var has_mesh_proxy_service = false;
 var has_mesh_proxy_data_out = false;
@@ -35,7 +30,7 @@ var ivi = 0;
 var nid = "00";
 var ctl = 0;
 var ttl = "03";
-var seq = 460810; // 0x0x07080a 
+var seq = 460810; // 0x0x07080a
 var src = "1234";
 var dst = "8105";
 var seg = 0;
@@ -92,7 +87,7 @@ app.startScan = function () {
     console.log("startScan");
     connected = false;
     var options = {
-        //filters: [{ services: [0x1827] }],
+        filters: [{ services: [0x1827] }],
         acceptAllDevices: true,
     }
     navigator.bluetooth.requestDevice(options)
