@@ -1,9 +1,13 @@
 
 addEventListener('DOMContentLoaded', function() {
+    var btn_provision = document.getElementById('btn_provision');
+    btn_provision.addEventListener('click', function() {
+        prov.start();
+    });
+
     var btn_scan = document.getElementById('btn_scan');
     btn_scan.addEventListener('click', function() {
-        //app.findProxies();
-        prov.start();
+        app.findProxies();
     });
 
     var btn_connection = document.getElementById('btn_connection');

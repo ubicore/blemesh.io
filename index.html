@@ -22,14 +22,24 @@
 </head>
 
  <body onload="app.initialize()">
-<!--<body onload="prov.start()"-->
-<p id="InputOOB"></p>
 <button onclick="test.start()">Test</button>
 <button onclick="test.start2()">Test2</button>
 
     <!-- MAIN PAGE -->
     <div>
         <h1>Bluetooth SIG - Mesh Proxy Kit</h1>
+        <h3>Node Provision</h3>
+        <table>
+            <tr>
+                <td>
+                    <button id="btn_provision" class="std_button">Provision</button>
+                </td>
+            </tr>
+        </table>
+        <p id="InputOOB"></p>
+        <br>
+        <div class="status" id="provision_message">Ready</div>
+        <h3>Mesh Proxy connection</h3>
         <table>
             <tr>
                 <td>
