@@ -32,10 +32,12 @@ var ctl = 0;
 var ttl = "03";
 var seq = 460810; // 0x0x07080a
 var src = "1234";
-var dst = "8105";
+var dst = "0b0c";
 var seg = 0;
-var akf = 1;
-var aid = "00";
+//var akf = 1;
+var akf = 0;
+
+var aid = 0;
 var opcode;
 var opparams;
 var access_payload;
@@ -271,6 +273,7 @@ app.finaliseProxyPdu = function (finalised_network_pdu) {
 };
 
 app.deriveProxyPdu = function () {
+    aid = 0;
     console.log("deriveProxyPdu");
     valid_pdu = true;
     // access payload
@@ -340,6 +343,7 @@ app.submitPdu = function () {
     mesh_proxy_data_in.writeValue(proxy_pdu_data.buffer)
         .then(_ => {
             console.log('sent proxy pdu OK');
+            seq++;
         })
         .catch(error => {
             alert('Error: ' + error);
@@ -363,7 +367,8 @@ app.displayConnectionStatus = function () {
 }
 
 app.ProcessPDU = function (PDU) {
-    console.log('Get a complete PDU ' + new Uint8Array(PDU));
+    var PDU_view = new Uint8Array(PDU);
+    console.log('Get a complete PDU ' + PDU_view);
 
     if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
         this.CurrentStepProcess(PDU);
@@ -474,6 +479,14 @@ app.onNetKeyChanged = function () {
     document.getElementById("nid").innerHTML = "0x" + hex_nid;
     document.getElementById("encryption_key").innerHTML = "0x" + encryption_key;
     document.getElementById("privacy_key").innerHTML = "0x" + privacy_key;
+    app.deriveProxyPdu();
+};
+
+app.onAppKeyUpdate = function () {
+    A = utils.normaliseHex(appkey);
+    aid = crypto.k4(appkey);
+    document.getElementById("appkey").innerHTML = "0x" + appkey;
+    document.getElementById("aid").innerHTML = "0x" + aid;
     app.deriveProxyPdu();
 };
 

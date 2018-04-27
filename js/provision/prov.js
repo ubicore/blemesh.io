@@ -56,6 +56,11 @@ const PROVISIONING_CAPABILITIES_PARAM_SIZE = 11;
 const PDU_Parameters_Offset = 1;
 const PROV_Attention_Duration = 0x10;
 
+
+//Provision Node value
+var Unicast_Address = "0b0c";
+
+
 class Conf_Caps {
     constructor() {
         this.num_ele = 0;
@@ -119,11 +124,11 @@ class Provisionner {
         //Check PDU Type
         var PDU_Type = new Uint8Array(PDU_DATA)[0];
         if (PDU_Type != PROV_CAPS) {
-            this.CurrentStepReject("error : Invalid PDU : " + PDU)
+            this.CurrentStepReject("error : Invalid PDU_Type: " + PDU_Type)
             return;
         }
         //Get PDU Parameters
-        this.ProvisioningCapabilitiesPDUValue = PDU.slice(1);;
+        this.ProvisioningCapabilitiesPDUValue = PDU_DATA.slice(1);;
         console.log('ProvisioningCapabilitiesPDUValue : ' + new Uint8Array(this.ProvisioningCapabilitiesPDUValue).toString(16));
 
         var view = new DataView(this.ProvisioningCapabilitiesPDUValue);
@@ -168,7 +173,7 @@ class Provisionner {
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_PUB_KEY) {
-            this.CurrentStepReject("error : Invalid PDU : " + PDU)
+          this.CurrentStepReject("error : Invalid PDU_Type: " + PDU_Type)
             return;
         }
 
@@ -205,7 +210,7 @@ class Provisionner {
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_CONFIRM) {
-            this.CurrentStepReject("error : Invalid PDU : " + PDU)
+          this.CurrentStepReject("error : Invalid PDU_Type: " + PDU_Type)
             return;
         }
 
@@ -231,7 +236,7 @@ class Provisionner {
         //Check PDU Type
         var PDU_Type = PDU_DATA[0];
         if (PDU_Type != PROV_INP_CMPLT) {
-            this.CurrentStepReject("error : Invalid PDU : " + PDU)
+          this.CurrentStepReject("error : Invalid PDU_Type: " + PDU_Type)
             return;
         }
 
@@ -255,7 +260,7 @@ class Provisionner {
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_RANDOM) {
-            this.CurrentStepReject("error : Invalid PDU : " + PDU)
+          this.CurrentStepReject("error : Invalid PDU_Type: " + PDU_Type)
             return;
         }
 
@@ -284,7 +289,7 @@ class Provisionner {
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_COMPLETE) {
-            this.CurrentStepReject("error : Invalid PDU : " + PDU)
+          this.CurrentStepReject("error : Invalid PDU_Type: " + PDU_Type)
             return;
         }
 
@@ -563,8 +568,6 @@ class Provisionner {
             // Provisioning Data = Network Key || Key Index || Flags || IV Index || Unicast Address
             var Key_Index = '0000';
             var Flags = '00'
-            var Unicast_Address = "0b0c";
-
             var Provisioning_Data = netkey + Key_Index + Flags + iv_index + Unicast_Address;
 
             var ProvDATAPayloadHex = this.Ecc_1.Encrypt_Provision_DATA(Provisioning_Data);
@@ -650,10 +653,15 @@ class Provisionner {
     };
 
     ProcessPDU(PDU) {
-        if(PDU[0] != PROXY_PROVISIONING_PDU){
+      var PDU_view = new Uint8Array(PDU);
+      console.log('Get a complete PDU ' + PDU_view);
+
+        if(PDU_view[0] != PROXY_PROVISIONING_PDU){
           console.log('error : Provisionner should process only provisioning PDU');
           return;
         }
+
+        var PDU_DATA = PDU.slice(1);
 
         if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
             this.CurrentStepProcess(PDU_DATA);
@@ -738,6 +746,9 @@ class Provisionner {
                     return this.IN_DATA();
                 })
                 .then(() => {
+                    this.Ecc_1.Create_Device_Key();
+                    console.log('Create_Device_Key :\n' + this.Ecc_1.DeviceKey);
+
                     console.log('End of provision procedure');
                     prov_trace.appendMessage('End of provision procedure');
 

@@ -50,9 +50,8 @@ class ProxyPDU {
          switch (sarBits) {
             case GATT_SAR_FIRST:
                 console.log('GATT_SAR_FIRST');
-                var view = new Uint8Array(this.gatt_pkt);
                 this.gatt_pkt_Uint8view.fill(0);
-                this.gatt_pkt[0] = type;
+                this.gatt_pkt_Uint8view[0] = type;
                 this.size = 1;
             /* TODO: Start Proxy Timeout */
             /* fall through */
@@ -60,14 +59,14 @@ class ProxyPDU {
             case GATT_SAR_CONTINUE:
                 console.log('GATT_SAR_CONTINUE');
 
-                if (this.gatt_pkt[0] != type ||
+                if (this.gatt_pkt_Uint8view[0] != type ||
                     (this.gatt_pkt.length + value.length) > MAX_GATT_SIZE) {
                     mesh_gatt_sar_fail();
                     return;
                 }
                 this.gatt_pkt_Uint8view.set(SAR_data, this.size);
                 this.size += SAR_data.length;
-                console.log('this.gatt_pkt : ' + this.gatt_pkt);
+                console.log('this.gatt_pkt : ' + this.gatt_pkt_Uint8view);
                 console.log('size : ' + this.size);
                 /* We are good to this point, but incomplete */
                 return;
@@ -76,14 +75,14 @@ class ProxyPDU {
             case GATT_SAR_COMPLETE:
                 console.log('GATT_SAR_COMPLETE');
                 this.gatt_pkt_Uint8view.fill(0);
-                this.gatt_pkt[0] = type;
+                this.gatt_pkt_Uint8view[0] = type;
                 this.size = 1;
             /* fall through */
 
             case GATT_SAR_LAST:
                 console.log('GATT_SAR_LAST');
 
-                if (this.gatt_pkt[0] != type ||
+                if (this.gatt_pkt_Uint8view[0] != type ||
                     (this.gatt_pkt.length + value.length) > MAX_GATT_SIZE) {
                     mesh_gatt_sar_fail();
                     return;
@@ -95,7 +94,7 @@ class ProxyPDU {
                 console.log('size : ' + this.size);
 
                 if(this.PDU_IN_CallBack && typeof( this.PDU_IN_CallBack) === "function") {
-                    var PDU = this.gatt_pkt.slice(SAR_DataOffset, this.size);
+                    var PDU = this.gatt_pkt.slice(0, this.size);
                     var Proxy_PDU_Type = (new Uint8Array(PDU))[0];
                     //
                     if( Proxy_PDU_Type < Proxy_PDU_Type_List.length){
