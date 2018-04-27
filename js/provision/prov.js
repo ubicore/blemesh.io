@@ -54,12 +54,7 @@ const PROVISIONING_CAPABILITIES_PARAM_SIZE = 11;
 
 //
 const PDU_Parameters_Offset = 1;
-
 const PROV_Attention_Duration = 0x10;
-
-
-
-//const ProxyPDU = require("./ProxyPDU.js");
 
 class Conf_Caps {
     constructor() {
@@ -111,7 +106,7 @@ class Provisionner {
         this.Dev_Confirmation;
     };
 
-    OUT_Capabilities(PDU) {
+    OUT_Capabilities(PDU_DATA) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
             return;
@@ -122,7 +117,7 @@ class Provisionner {
         }
 
         //Check PDU Type
-        var PDU_Type = new Uint8Array(PDU)[0];
+        var PDU_Type = new Uint8Array(PDU_DATA)[0];
         if (PDU_Type != PROV_CAPS) {
             this.CurrentStepReject("error : Invalid PDU : " + PDU)
             return;
@@ -159,7 +154,7 @@ class Provisionner {
         this.CurrentStepResolve();
     };
 
-    OUT_Public_Key(PDU) {
+    OUT_Public_Key(PDU_DATA) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
             return;
@@ -169,7 +164,7 @@ class Provisionner {
             return;
         }
 
-        var PDU_view = new Uint8Array(PDU);
+        var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_PUB_KEY) {
@@ -196,7 +191,7 @@ class Provisionner {
         })
     };
 
-    OUT_Confirmation(PDU) {
+    OUT_Confirmation(PDU_DATA) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
             return;
@@ -206,7 +201,7 @@ class Provisionner {
             return;
         }
 
-        var PDU_view = new Uint8Array(PDU);
+        var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_CONFIRM) {
@@ -223,7 +218,7 @@ class Provisionner {
         this.CurrentStepResolve();
     };
 
-    OUT_PROV_INPUT_OOB(PDU) {
+    OUT_PROV_INPUT_OOB(PDU_DATA) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
             return;
@@ -234,7 +229,7 @@ class Provisionner {
         }
 
         //Check PDU Type
-        var PDU_Type = PDU[0];
+        var PDU_Type = PDU_DATA[0];
         if (PDU_Type != PROV_INP_CMPLT) {
             this.CurrentStepReject("error : Invalid PDU : " + PDU)
             return;
@@ -246,7 +241,7 @@ class Provisionner {
         this.CurrentStepResolve();
     };
 
-    OUT_PROV_RANDOM(PDU) {
+    OUT_PROV_RANDOM(PDU_DATA) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
             return;
@@ -256,7 +251,7 @@ class Provisionner {
             return;
         }
 
-        var PDU_view = new Uint8Array(PDU);
+        var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_RANDOM) {
@@ -275,7 +270,7 @@ class Provisionner {
         this.CurrentStepResolve();
     };
 
-    OUT_COMPLETE(PDU) {
+    OUT_COMPLETE(PDU_DATA) {
         if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
             console.log('error : no CurrentBehaviorResolve Callback');
             return;
@@ -285,7 +280,7 @@ class Provisionner {
             return;
         }
 
-        var PDU_view = new Uint8Array(PDU);
+        var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
         if (PDU_Type != PROV_COMPLETE) {
@@ -655,35 +650,24 @@ class Provisionner {
     };
 
     ProcessPDU(PDU) {
-        console.log('Get a complete PDU ' + new Uint8Array(PDU));
+        if(PDU[0] != PROXY_PROVISIONING_PDU){
+          console.log('error : Provisionner should process only provisioning PDU');
+          return;
+        }
 
         if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
-            this.CurrentStepProcess(PDU);
+            this.CurrentStepProcess(PDU_DATA);
         } else {
             console.log('error : no CurrentBehaviorProcess Callback');
         }
         return;
     };
 
-    SetListening(characteristic) {
-        console.log('SetListening : ' + characteristic.uuid);
-        this.ProxyPDU_1.SetPDU_Callback(PDU => this.ProcessPDU(PDU));
-        return new Promise((resolve, reject) => {
-            return characteristic.startNotifications()
-                .then(characteristic => {
-                    console.log('Notifications started');
-                    characteristic.addEventListener("characteristicvaluechanged", event => this.ProxyPDU_1.EventListener(event));
-                    resolve();
-                })
-                .catch(error => {
-                    reject(`Notifications error: ${error}`);
-                });
-        });
-    };
+
 
     StartProvision(characteristicIn, characteristicOut) {
         this.In = characteristicIn;
-        this.Out = characteristicOut;
+        //this.Out = characteristicOut;
 
         return new Promise((resolve, reject) => {
             console.log('Start Provisionning');
@@ -691,7 +675,7 @@ class Provisionner {
             prov_trace.appendMessage('STEP : Start Provisionning');
 
             //
-            this.SetListening(this.Out)
+            this.ProxyPDU_1.SetListening(characteristicOut, PDU => this.ProcessPDU(PDU))
                 .then(() => {
                     //Send Invite
                     return this.IN_Invite();

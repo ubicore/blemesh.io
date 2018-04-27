@@ -14,6 +14,13 @@ const GATT_TYPE_MASK = 0x3f;
 
 const SAR_DataOffset = 1;
 
+// 0x00 Network PDU The message is a Network PDU as defined in Section 3.4.4.
+// 0x01 Mesh Beacon The message is a mesh beacon as defined in Section 3.9.
+// 0x02 Proxy Configuration The message is a proxy configuration message as defined in Section 6.5.
+// 0x03 Provisioning PDU The message is a Provisioning PDU as defined in Section 5.4.1.
+// 0x04–0x3F RFU Reserved for Future Use.
+
+const Proxy_PDU_Type_List = ['Network PDU', 'Mesh Beacon', 'Proxy Configuration', 'Provisioning PDU'];
 
 
 class ProxyPDU {
@@ -23,10 +30,6 @@ class ProxyPDU {
         this.size = 0;
         this.PDU_IN_CallBack = function(){};
     };
-
-    SetPDU_Callback(CallBack){
-        this.PDU_IN_CallBack = CallBack;
-    }
 
     Failed() {
         this.size = 0;
@@ -92,9 +95,15 @@ class ProxyPDU {
                 console.log('size : ' + this.size);
 
                 if(this.PDU_IN_CallBack && typeof( this.PDU_IN_CallBack) === "function") {
-                    console.log('Call PDU_IN_CallBack ');
                     var PDU = this.gatt_pkt.slice(SAR_DataOffset, this.size);
-                    this.PDU_IN_CallBack(PDU);
+                    var Proxy_PDU_Type = (new Uint8Array(PDU))[0];
+                    //
+                    if( Proxy_PDU_Type < Proxy_PDU_Type_List.length){
+                      console.log('===> ' + Proxy_PDU_Type_List[Proxy_PDU_Type]);
+                      this.PDU_IN_CallBack(PDU);
+                    } else {
+                      console.log('Proxy get a unknow message type: ' + Proxy_PDU_Type);
+                    }
                 } else {
                     console.log('error : no PDU Callback');
                 }
@@ -112,4 +121,23 @@ class ProxyPDU {
             this.Failed();
         }
     }
+
+    SetListening(characteristic, callback) {
+        console.log('SetListening : ' + characteristic.uuid);
+        //this.SetPDU_Callback(PDU => callback(PDU));
+        this.PDU_IN_CallBack = callback;
+
+        return new Promise((resolve, reject) => {
+            return characteristic.startNotifications()
+                .then(characteristic => {
+                    console.log('Notifications started');
+                    characteristic.addEventListener("characteristicvaluechanged", event => this.EventListener(event));
+                    resolve();
+                })
+                .catch(error => {
+                    reject(`Notifications error: ${error}`);
+                });
+        });
+    };
+
 }

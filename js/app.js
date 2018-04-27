@@ -30,7 +30,7 @@ var ivi = 0;
 var nid = "00";
 var ctl = 0;
 var ttl = "03";
-var seq = 460810; // 0x0x07080a 
+var seq = 460810; // 0x0x07080a
 var src = "1234";
 var dst = "8105";
 var seg = 0;
@@ -49,6 +49,10 @@ var proxy_pdu;
 var msg;
 
 app.initialize = function () {
+
+    this.ProxyPDU_1 = new ProxyPDU;
+
+
     N = utils.normaliseHex(netkey);
     P = "00";
     A = utils.normaliseHex(appkey);
@@ -358,6 +362,18 @@ app.displayConnectionStatus = function () {
     }
 }
 
+app.ProcessPDU = function (PDU) {
+    console.log('Get a complete PDU ' + new Uint8Array(PDU));
+
+    if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
+        this.CurrentStepProcess(PDU);
+    } else {
+        console.log('error : no CurrentBehaviorProcess Callback');
+    }
+    return;
+};
+
+
 app.setBluetoothButtons = function () {
     console.log("setBluetoothButtons: connected=" + connected + ",selected_device=" + selected_device);
     btn_connection = document.getElementById('btn_connection');
@@ -381,6 +397,11 @@ app.setBluetoothButtons = function () {
     if (has_mesh_proxy_service && has_mesh_proxy_data_in) {
         app.enableButton('btn_submit');
     }
+
+    if (has_mesh_proxy_service && has_mesh_proxy_data_out) {
+        this.ProxyPDU_1.SetListening(mesh_proxy_data_out, PDU => this.ProcessPDU(PDU))
+    }
+
 };
 
 app.clearMessage = function () {
