@@ -30,7 +30,7 @@ var ivi = 0;
 var nid = "00";
 var ctl = 0;
 var ttl = "03";
-var seq = 460810; // 0x0x07080a
+var seq = 460810; // 0x0x07080a 
 var src = "1234";
 var dst = "8105";
 var seg = 0;
@@ -87,8 +87,7 @@ app.startScan = function () {
     console.log("startScan");
     connected = false;
     var options = {
-        filters: [{ services: [0x1827] }],
-        acceptAllDevices: true,
+        filters: [{ services: [0x1828] }]
     }
     navigator.bluetooth.requestDevice(options)
         .then(device => {

@@ -40,11 +40,13 @@ addEventListener('DOMContentLoaded', function() {
         app.onOnOffSelect(this);
     });
 
+    
     var access_payload_input = document.getElementById('access_payload_hex');
     access_payload_input.addEventListener('change', function() {
         app.onAccessPayloadChanged();
     });
 
+    
     var tid_hex = document.getElementById('tid_hex');
     tid_hex.addEventListener('change', function() {
         app.onTidChange(this);
@@ -55,6 +57,7 @@ addEventListener('DOMContentLoaded', function() {
         app.onTransTimeChange(this);
     });
 
+    
     var delay_hex = document.getElementById('delay_hex');
     delay_hex.addEventListener('change', function() {
         app.onDelayChange(this);
@@ -65,6 +68,7 @@ addEventListener('DOMContentLoaded', function() {
         app.onNetKeyChanged();
     });
 
+    
     var appkey_input = document.getElementById('appkey');
     appkey_input.addEventListener('change', function() {
         app.onAppKeyChanged();
@@ -75,6 +79,7 @@ addEventListener('DOMContentLoaded', function() {
         app.onIvIndexChanged();
     });
 
+    
     var ttl_input = document.getElementById('ttl');
     ttl_input.addEventListener('change', function() {
         app.onTtlChanged();
@@ -90,11 +95,13 @@ addEventListener('DOMContentLoaded', function() {
         app.onDstChanged();
     });
 
+    
     var select_sar = document.getElementById('sar_selection');
     select_sar.addEventListener('change', function() {
         app.onSarSelect(this);
     });
 
+    
     var mtu = document.getElementById('mtu');
     mtu.addEventListener('change', function() {
         app.onMtuChanged(this);

@@ -21,15 +21,13 @@ crypto.s1 = function (M) {
 
 
 crypto.k1 = function (N, SALT, P) {
-    console.log('AES_CMAC_k1');
-    console.log('N: ' + N);
-    console.log('SALT: ' + SALT);
-    console.log('P: ' + P);
-
+    //console.log('AES_CMAC_k1');
+    //console.log('N: ' + N);
+    //console.log('SALT: ' + SALT);
+    //console.log('P: ' + P);
     var T = crypto.getAesCmac(SALT, N );
-		console.log('T: ' + T.toString());
-  //  var cmac = crypto.getAesCmac(T.toString(), P);
-		var cmac = CryptoJS.CMAC(T, P);
+    //console.log('T: ' + T.toString());
+    var cmac = CryptoJS.CMAC(T, P);
     return cmac.toString();
 }
 

@@ -566,13 +566,11 @@ class Provisionner {
 
             // The provisioning data shall be encrypted and authenticated using:
             // Provisioning Data = Network Key || Key Index || Flags || IV Index || Unicast Address
-            var Network_Key = 'efb2255e6422d330088e09bb015ed707';
             var Key_Index = '0000';
             var Flags = '00'
-            var IV_Index = "01020304";
             var Unicast_Address = "0b0c";
 
-            var Provisioning_Data = Network_Key + Key_Index + Flags + IV_Index + Unicast_Address;
+            var Provisioning_Data = netkey + Key_Index + Flags + iv_index + Unicast_Address;
 
             var ProvDATAPayloadHex = this.Ecc_1.Encrypt_Provision_DATA(Provisioning_Data);
             console.log('ProvDATAPayloadHex : ' + ProvDATAPayloadHex);
@@ -608,7 +606,7 @@ class Provisionner {
 
     Get_OOB_FromUser(resolve, reject) {
         console.log('Request OOB Number : ');
-        prov_trace.showMessage("Request OOB Number :");
+        prov_trace.appendMessage("Request OOB Number :");
 
         var input = prompt("Please enter OOB Number", "");
         if (isNaN(input)) {
@@ -617,8 +615,7 @@ class Provisionner {
           return;
         }
 
-        document.getElementById("InputOOB").innerHTML =
-        "Input OOB is : " + input;
+        prov_trace.appendMessage("Input OOB is : " + input);
 
         this.OOB = parseInt(input);
         console.log('This is a number : ' + this.OOB);
@@ -690,6 +687,9 @@ class Provisionner {
 
         return new Promise((resolve, reject) => {
             console.log('Start Provisionning');
+            prov_trace.clearMessage();
+            prov_trace.appendMessage('STEP : Start Provisionning');
+
             //
             this.SetListening(this.Out)
                 .then(() => {
@@ -706,6 +706,8 @@ class Provisionner {
                 })
                 .then(() => {
                     //Authentication
+                    prov_trace.appendMessage('STEP : Authentication');
+
                     if (this.Prov_Start.auth_method == PROV_NO_OOB) {
                         console.log('Authentication use PROV_NO_OOB');
                         return this.PROV_NO_OOB_Complete();
@@ -726,25 +728,35 @@ class Provisionner {
                 })
                 .then(() => {
                     console.log('STEP : Provisioning Confirmation');
+                    prov_trace.appendMessage('STEP : Provisioning Confirmation');
+
                     //Provisioning Confirmation
                     return this.IN_Confirmation();
                 })
                 .then(() => {
                     console.log('STEP : Provisioning Random');
+                    prov_trace.appendMessage('STEP : Provisioning Random');
+
                     //Provisioning Random
                     return this.IN_Random();
                 })
                 .then(() => {
                     console.log('STEP : Check Confirmation');
+                    prov_trace.appendMessage('STEP : Check Confirmation');
+
                     return this.CheckConfirmation();
                 })
                 .then(() => {
                     console.log('STEP : Provisioning DATA');
+                    prov_trace.appendMessage('STEP : Provisioning DATA');
+
                     //TODO : Dynamic genration of provision data's
                     return this.IN_DATA();
                 })
                 .then(() => {
                     console.log('End of provision procedure');
+                    prov_trace.appendMessage('End of provision procedure');
+
                     resolve();
                 })
                 .catch(error => {
