@@ -14,10 +14,12 @@
     <script src="js/aes_cmac_adapter.js"></script>
     <script src="js/crypto.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/provision/index.js"></script>
+    <script src="js/mesh/ProxyPDU.js"></script>
+    <script src="js/mesh/Net.js"></script>
+    <script src="js/mesh/Transport.js"></script>
+    <script src="js/provision/prov_app.js"></script>
     <script src="js/provision/ecc.js"></script>
     <script src="js/provision/prov.js"></script>
-    <script src="js/provision/ProxyPDU.js"></script>
     <script src="js/provision/prov_trace.js"></script>
     <script src="js/provision/test.js"></script>
 </head>
@@ -100,6 +102,15 @@
                 </td>
             </tr>
             <tr>
+                <td class="col1">DevKey</td>
+                <td class="col2">
+                    <span class="fixed">0x</span>
+                    <input type="text" class="arg" id="devkey" maxlength="32" size="34" value="239c0cf1c07279e2a947f1a44bd17097">
+                </td>
+                <td class="col3">
+                </td>
+            </tr>
+            <tr>
                 <td class="col1">IV Index</td>
                 <td class="col2">
                     <span class="fixed">0x</span>
@@ -107,31 +118,6 @@
                 </td>
                 <td class="col3">
                     Used to derive IVI
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">Encryption Key</td>
-                <td class="col2">
-                    <div class="fixed" id="encryption_key"></div>
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">Privacy Key</td>
-                <td class="col2">
-                    <div class="fixed" id="privacy_key"></div>
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">Network ID</td>
-                <td class="col2">
-                    <div class="fixed" id="network_id"></div>
-                </td>
-                <td class="col3">
-                    The proxy we want to use will advertise this network ID
                 </td>
             </tr>
         </table>
@@ -173,33 +159,6 @@
         <h3>Network PDU</h3>
         <table id="network_pdu">
             <tr>
-                <td class="col">IVI (1 bit)</td>
-                <td class="col2">
-                    <div id="ivi"></div>
-                </td>
-                <td class="col3">
-                    <div class="fixed">Calculated: LSB of IV Index</div>
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">NID (7 bits)</td>
-                <td class="col2">
-                    <div id="nid"></div>
-                </td>
-                <td class="col3">
-                    <div class="fixed">Calculated using k2(NetKey)</div>
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">CTL (1 bit)</td>
-                <td class="col2">
-                    0
-                </td>
-                <td class="col3">
-                    <div class="fixed">Unsegmented Access Message</div>
-                </td>
-            </tr>
-            <tr>
                 <td class="col1">TTL (7 bits)</td>
                 <td class="col2">
                     <input type="text" class="arg" id="ttl" maxlength="2" size="2" value="03">
@@ -209,15 +168,6 @@
                     <div class="fixed">0x01 = may have been relayed, but will not be relayed</div>
                     <div class="fixed">0x02 to 0x7E = may have been relayed and can be relayed</div>
                     <div class="fixed">0x7F = has not been relayed and can be relayed</div>
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">SEQ (24 bits)</td>
-                <td class="col2">
-                    <div id="seq">07080a</div>
-                </td>
-                <td class="col3">
-                    <div class="fixed">Calculated: 0x07080a initially, incremented for each PDU</div>
                 </td>
             </tr>
             <tr>
@@ -249,33 +199,6 @@
 
         <h3>Lower Transport PDU</h3>
         <table id="lower_transport_pdu">
-            <tr>
-                <td class="col1">SEG (1 bit)</td>
-                <td class="col2">
-                    <div class="fixed" id="seg">0</div>
-                </td>
-                <td class="col3">
-                    Segmentation Indication Bit - Unsegmented Access Message
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">AKF (1 bit)</td>
-                <td class="col2">
-                    <div class="fixed" id="akf">1</div>
-                </td>
-                <td class="col3">
-                    Application Key Flag : 1 means AppKey in use
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">AID (6 bits)</td>
-                <td class="col2">
-                    <div class="fixed" id="aid"></div>
-                </td>
-                <td class="col3">
-                    Application Key ID
-                </td>
-            </tr>
         </table>
 
         <h3>Upper Transport PDU</h3>
@@ -303,7 +226,7 @@
             <tr id="access_payload_section" hidden="false">
                 <td class="col1">Access Payload (hex)</td>
                 <td class="col2">
-                    <input type="text" class="arg" id="access_payload_hex" maxlength="32" size="32" value="d50a0048656c6c6f">
+                    <input type="text" class="arg" id="access_payload_hex" maxlength="32" size="32" value="800800">
                 </td>
                 <td class="col3">
                 </td>

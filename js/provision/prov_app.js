@@ -13,9 +13,9 @@ var characteristicOut;
 var characteristicInt;
 var NodeServer = null;
 
-var prov = {};
+var prov_app = {};
 
-prov.start = function () {
+prov_app.start = function () {
 	provisionner_1 = new Provisionner;
 
 	console.log('Requesting Bluetooth Devices...');

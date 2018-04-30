@@ -568,11 +568,12 @@ class Provisionner {
             // Provisioning Data = Network Key || Key Index || Flags || IV Index || Unicast Address
             var Key_Index = '0000';
             var Flags = '00'
-            var Provisioning_Data = netkey + Key_Index + Flags + iv_index + Unicast_Address;
+            var ProvDATAHex = netkey + Key_Index + Flags + iv_index + Unicast_Address;
+            console.log('ProvDATAPayloadHex : ' + ProvDATAHex);
 
-            var ProvDATAPayloadHex = this.Ecc_1.Encrypt_Provision_DATA(Provisioning_Data);
-            console.log('ProvDATAPayloadHex : ' + ProvDATAPayloadHex);
-            var Payload = new Uint8Array(utils.hexToBytes(ProvDATAPayloadHex));
+            var EncProvDATAHex = this.Ecc_1.Encrypt_Provision_DATA(ProvDATAHex);
+            console.log('EncProvDATAHex : ' + EncProvDATAHex);
+            var Payload = new Uint8Array(utils.hexToBytes(EncProvDATAHex));
             PDU.set(Payload, index);
 
             console.log('PDU_Random : ' + PDU);
@@ -746,6 +747,7 @@ class Provisionner {
                     return this.IN_DATA();
                 })
                 .then(() => {
+                  console.log('Device_Key =>');
                     this.Ecc_1.Create_Device_Key();
                     console.log('Create_Device_Key :\n' + this.Ecc_1.DeviceKey);
 

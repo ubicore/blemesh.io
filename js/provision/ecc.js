@@ -167,6 +167,7 @@ class Ecc {
       //SessionKey = k1(ECDHSecret, ProvisioningSalt, “prsk”)
       this.ProvisioningSalt = crypto.s1(this.ConfirmationSalt  + this.Prov_Random + this.Dev_Random);
       this.SessionKey = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt, 'prsk');
+      console.log('ProvisioningSalt: ' + this.ProvisioningSalt );
     };
 
     Create_Nonce(){
@@ -175,6 +176,7 @@ class Ecc {
       //SessionNonce = k1(ECDHSecret, ProvisioningSalt, “prsn”)
       var hex = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt , 'prsn');
       this.SessionNonce  = hex.substring((hex.length - 13*2), hex.length);
+      console.log('SessionNonce: ' + this.SessionNonce );
     };
 
     Encrypt_Provision_DATA(Provisioning_Data){
@@ -200,6 +202,8 @@ class Ecc {
       //3.8.6.1 Device key
       //DevKey = k1(ECDHSecret, ProvisioningSalt, “prdk”)
       this.DeviceKey = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt, 'prdk');
+      console.log('DeviceKey: ' + this.DeviceKey );
+
       appkey = this.DeviceKey;
       app.onAppKeyUpdate();
     };
