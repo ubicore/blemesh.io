@@ -124,6 +124,25 @@ crypto.meshAuthEncNetwork = function (hex_encryption_key, hex_nonce, hex_dst, he
 	return result;
 }
 
+crypto.meshAuthEncNetwork_decode = function (hex_encryption_key, hex_nonce, auth_enc_network, ctl) {
+	var result = {
+		Encryption_Key: hex_encryption_key,
+		DST: 0,
+		TransportPDU: 0,
+		NetMIC: 0
+	};
+	u8_key = utils.hexToU8A(hex_encryption_key);
+	u8_nonce = utils.hexToU8A(hex_nonce);
+	u8_auth_enc_network = utils.hexToU8A(auth_enc_network);
+	var size = ctl?8:4;
+	u8_network_PDU = asmCrypto.AES_CCM.decrypt(u8_auth_enc_network, u8_key, u8_nonce, new Uint8Array([]), size);
+	hex = utils.u8AToHexString(u8_network_PDU);
+	result.DST = hex.substring(0, 4);
+	result.TransportPDU = hex.substring(4, hex.length - 8);
+	result.NetMIC = hex.substring(hex.length - 8, hex.length);
+	return result;
+}
+
 crypto.e = function (hex_plaintext, hex_key) {
 	var hex_padding = "";
 	var ecb_encrypted = asmCrypto.AES_ECB.encrypt(asmCrypto.hex_to_bytes(hex_plaintext), asmCrypto.hex_to_bytes(hex_key), asmCrypto.hex_to_bytes(hex_padding));
@@ -141,7 +160,7 @@ crypto.privacyRandom = function (enc_dst, enc_transport_pdu, netmic) {
 
 crypto.obfuscate = function (enc_dst, enc_transport_pdu, netmic, ctl, ttl, seq, src, iv_index, privacy_key) {
 	//1. Create Privacy Random
-	hex_privacy_random = crypto.privacyRandom(network_pdu.EncDST, network_pdu.EncTransportPDU, network_pdu.NetMIC);
+	hex_privacy_random = crypto.privacyRandom(enc_dst, enc_transport_pdu, netmic);
 	var result = {
 		privacy_key: '',
 		privacy_random: '',

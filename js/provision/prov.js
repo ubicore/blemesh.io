@@ -655,7 +655,7 @@ class Provisionner {
 
     ProcessPDU(PDU) {
       var PDU_view = new Uint8Array(PDU);
-      console.log('Get a complete PDU ' + PDU_view);
+      console.log('ProcessPDU: ' + PDU_view);
 
         if(PDU_view[0] != PROXY_PROVISIONING_PDU){
           console.log('error : Provisionner should process only provisioning PDU');

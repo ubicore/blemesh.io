@@ -19,14 +19,13 @@ var valid_pdu = false;
 var iv_index = "12345677";
 var netkey = "7dd7364cd842ad18c17c2b820c84c3d6";
 var appkey = "63964771734fbd76e3b40519d1d94a48";
-var devkey = "239c0cf1c07279e2a947f1a44bd17097";
+var devkey = "dc38d3b3bed35e346f3b13bec088424f";
 
 //var encryption_key = "";
 //var privacy_key = "";
 //var network_id = "";
 
 var sar = 0;
-var msg_type = 0;
 // network PDU fields
 var ivi = 0;
 var nid = "00";
@@ -221,6 +220,7 @@ app.ProcessPDU = function (PDU) {
     var PDU_view = new Uint8Array(PDU);
     console.log('Get a complete PDU ' + PDU_view);
 
+    ProxyPDU_OUT.ProcessPDU(PDU);
     // if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
     //     this.CurrentStepProcess(PDU);
     // } else {

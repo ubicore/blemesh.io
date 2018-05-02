@@ -57,7 +57,8 @@ LowerTransport.derive = function (upper_transport_pdu) {
 /***************************************************************************************************/
 
 var Network = {};
-
+/*********************************/
+//IN
 Network.deriveSecure = function (hex_dst, lower_transport_pdu) {
     network_pdu = "";
     ctl_int = parseInt(ctl, 16);
@@ -86,13 +87,103 @@ Network.finalise = function (ivi, nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_
     return netpdu;
 };
 
+/*********************************/
+//OUT
+// DataView.prototype.getUint24 = function(pos) {
+// 	return (this.getUint16(pos) << 8) + this.getUint8(pos+2);
+// }
+
+
+
+
+Network.receive = function (netpduhex, privacy_key) {
+
+  var result = {
+		ivi: 0,
+		nid: 0,
+    CTL: 0,
+    TTL: 0,
+    SEQ: 0,
+    SRC: '',
+    DST: '',
+    enc_transport_pdu: 0,
+    netmic: 0,
+	};
+
+  //octet 0
+  var M = netpduhex.substring(0, 1*2);
+  var M_int =  (utils.hexToBytes(M))[0];
+  //
+  result.ivi = (M_int & (1 << 7));
+  result.nid = (M_int & 0x7F);
+
+  //Obfuscated decode
+  var obfuscated_ctl_ttl_seq_src = netpduhex.substring(1*2, 7*2);
+  var privacy_random = netpduhex.substring(7*2, 13*2);
+
+  var pecb_input = "0000000000" + iv_index + hex_privacy_random;
+  var pecb_hex = crypto.e(pecb_input, privacy_key);
+  var pecb = pecb_hex.substring(0, 6*2);
+
+  //Reverse Obfuscate
+	var ctl_ttl_seq_src = utils.xorU8Array(utils.hexToU8A(obfuscated_ctl_ttl_seq_src), utils.hexToU8A(pecb));
+  var ctl_ttl_seq_src_hex = utils.u8AToHexString(ctl_ttl_seq_src);
+  //
+  var ctl_ttl_hex = ctl_ttl_seq_src_hex.substring(0, 1*2);
+  var ctl_ttl = parseInt(ctl_ttl_hex, 16);
+  result.CTL = (ctl_ttl & (1 << 7))?1:0;
+  result.TTL = ctl_ttl & 0x7F;
+  var seq_hex =  ctl_ttl_seq_src_hex.substring(1*2, 4*2);
+  result.SEQ = (ctl_ttl_seq_src[1] << 16) + (ctl_ttl_seq_src[2] << 8) + ctl_ttl_seq_src[2];
+
+  //result.SRC =  ctl_ttl_seq_src_hex.substring(5*2, 7*2);
+  var src_hex =  ctl_ttl_seq_src_hex.substring(4*2, 6*2);
+
+  var NetMIC_start_offset = 0;
+  console.log('CTL : ' + result.CTL);
+  //
+  if(result.CTL == 0){
+    //Access message NetMIC Size = 32 bits
+    NetMIC_start_offset = (netpduhex.lenght - 4*2);
+  }else{
+    //Control message NetMIC Size = 64 bits
+    NetMIC_start_offset = (netpduhex.lenght - 8*2);
+  }
+
+  var auth_enc_network = netpduhex.substring(7*2, netpduhex.lenght);
+//  result.enc_transport_pdu =  ctl_ttl_seq_src_hex.substring(7*2, NetMIC_start_offset);
+//  result.netmic =  ctl_ttl_seq_src_hex.substring(NetMIC_start_offset, netpduhex.lenght);
+console.log('ctl_ttl_hex : ' + ctl_ttl_hex);
+console.log('seq_hex : ' + seq_hex);
+console.log('src_hex : ' + src_hex);
+console.log('iv_index : ' + iv_index);
+  //3.8.5.1 Network nonce
+  var net_nonce = "00" + ctl_ttl_hex + seq_hex + src_hex + "0000" + iv_index;
+  console.log('ctl_ttl_hex : ' + ctl_ttl_hex);
+  console.log('seq_hex : ' + seq_hex);
+  console.log('src_hex : ' + src_hex);
+  console.log('iv_index : ' + iv_index);
+
+  console.log('net_nonce : ' + net_nonce.length);
+  console.log('net_nonce : ' + net_nonce);
+
+  N = utils.normaliseHex(hex_encryption_key);
+  dec_network_pdu = crypto.meshAuthEncNetwork_decode(N, net_nonce, auth_enc_network, result.CTL);
+
+//  result.DST =  ctl_ttl_seq_src_hex.substring(7*2, 9*2);
+
+
+  return result;
+};
+
 
 /***************************************************************************************************/
 
-var ProxyPDU_Out = {};
+var ProxyPDU_IN = {};
+var msg_type = 0;
 
 
-ProxyPDU_Out.finalise = function (finalised_network_pdu) {
+ProxyPDU_IN.finalise = function (finalised_network_pdu) {
     proxy_pdu = "";
     sm = (sar << 6) | msg_type;
     i = 0;
@@ -100,6 +191,38 @@ ProxyPDU_Out.finalise = function (finalised_network_pdu) {
     proxy_pdu = proxy_pdu + finalised_network_pdu;
     return proxy_pdu;
 };
+
+var ProxyPDU_OUT = {};
+
+ProxyPDU_OUT.ProcessPDU = function (PDU) {
+    console.log("ProcessPDU");
+
+    var proxy_pdu = new Uint8Array(PDU)
+
+    //PDU type
+    var Proxy_PDU_Type = proxy_pdu[0];
+    var Net_pdu_bytes = utils.bytesToHex(proxy_pdu.slice(1));//Skip PDU Type
+
+    //
+    switch (Proxy_PDU_Type) {
+      case 0x00 :
+        console.log("Network PDU");
+        Network.receive(Net_pdu_bytes, hex_privacy_key);
+        break;
+      case 0x01:
+        console.log("Mesh Beacon");
+        break;
+      case 0x02:
+        console.log("Proxy Configuration");
+        break;
+      case 0x03:
+        console.log("Provisioning PDU");
+        break;
+      default:
+        console.log("RFU");
+    }
+}
+
 
 /***************************************************************************************************/
 var UpperTransport = {};
@@ -169,7 +292,7 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
     console.log("finalised_network_pdu=" + finalised_network_pdu);
 
     // finalise proxy PDU
-    proxy_pdu = ProxyPDU_Out.finalise(finalised_network_pdu);
+    proxy_pdu = ProxyPDU_IN.finalise(finalised_network_pdu);
     console.log("proxy_pdu=" + proxy_pdu);
 
     if (proxy_pdu.length > (mtu * 2)) { // hex chars
@@ -191,5 +314,4 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
             console.log('Error: ' + error);
             return;
         });
-
 }
