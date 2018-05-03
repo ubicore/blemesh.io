@@ -65,9 +65,9 @@ Network.deriveSecure = function (hex_dst, lower_transport_pdu) {
     ttl_int = parseInt(ttl, 16);
     ctl_ttl = (ctl_int | ttl_int);
     npdu2 = utils.intToHex(ctl_ttl);
-    N = utils.normaliseHex(hex_encryption_key);
+    K = utils.normaliseHex(hex_encryption_key);
     net_nonce = "00" + npdu2 + utils.toHex(seq, 3) + src + "0000" + iv_index;
-    network_pdu = crypto.meshAuthEncNetwork(N, net_nonce, hex_dst, lower_transport_pdu);
+    network_pdu = crypto.meshAuthEncNetwork(K, net_nonce, hex_dst, lower_transport_pdu);
     return network_pdu;
 };
 
@@ -93,8 +93,14 @@ Network.finalise = function (ivi, nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_
 // 	return (this.getUint16(pos) << 8) + this.getUint8(pos+2);
 // }
 
-
-
+var OUT_Upper_Transport_Access_PDU = {
+  EncAccessPayload : '',
+  TransMIC : 0,
+  ASZMIC : 0,
+  SeqAuth : '',
+  SRC: '',
+  DST: '',
+}
 
 Network.receive = function (netpduhex, privacy_key) {
 
@@ -136,9 +142,7 @@ Network.receive = function (netpduhex, privacy_key) {
   result.TTL = ctl_ttl & 0x7F;
   var seq_hex =  ctl_ttl_seq_src_hex.substring(1*2, 4*2);
   result.SEQ = (ctl_ttl_seq_src[1] << 16) + (ctl_ttl_seq_src[2] << 8) + ctl_ttl_seq_src[2];
-
-  //result.SRC =  ctl_ttl_seq_src_hex.substring(5*2, 7*2);
-  var src_hex =  ctl_ttl_seq_src_hex.substring(4*2, 6*2);
+  result.SRC =  ctl_ttl_seq_src_hex.substring(4*2, 6*2);
 
   var NetMIC_start_offset = 0;
   console.log('CTL : ' + result.CTL);
@@ -152,15 +156,20 @@ Network.receive = function (netpduhex, privacy_key) {
   }
 
   var auth_enc_network = netpduhex.substring(7*2, netpduhex.lenght);
-  console.log('ctl_ttl_hex : ' + ctl_ttl_hex);
-  console.log('seq_hex : ' + seq_hex);
-  console.log('src_hex : ' + src_hex);
-  console.log('iv_index : ' + iv_index);
-  //3.8.5.1 Network nonce
-  var net_nonce = "00" + ctl_ttl_hex + seq_hex + src_hex + "0000" + iv_index;
 
-  N = utils.normaliseHex(hex_encryption_key);
-  dec_network_pdu = crypto.meshAuthEncNetwork_decode(N, net_nonce, auth_enc_network, result.CTL);
+  console.log("result : " + JSON.stringify(result));
+
+
+  //3.8.5.1 Network nonce
+  var net_nonce = "00" + ctl_ttl_hex + seq_hex + result.SRC + "0000" + iv_index;
+
+  K = utils.normaliseHex(hex_encryption_key);
+  dec_network_pdu = crypto.meshAuthEncNetwork_decode(K, net_nonce, auth_enc_network, result.CTL);
+
+  result.DST = dec_network_pdu.DST;
+  //dec_network_pdu
+  //result
+
 
   //3.5.2 Lower Transport PDU
   //3.5.2.2 Segmented Access message
@@ -175,6 +184,10 @@ Network.receive = function (netpduhex, privacy_key) {
         SEG : (octet0 & (1<<7))?1:0,
         AKF : (octet0 & (1<<6))?1:0,
         AID : octet0 & 0x3F,
+        SZMIC : 0,
+        SeqZero : 0,
+        SegO : 0,
+        SegN : 0,
       };
       // var SEG = (octet0 & (1<<7))?1:0;
       // var AKF = (octet0 & (1<<6))?1:0;
@@ -185,6 +198,9 @@ Network.receive = function (netpduhex, privacy_key) {
         console.log('Unsegmented Access Message : ' + JSON.stringify(Access_message));
         //TODO
 
+        OUT_Upper_Transport_Access_PDU.ASZMIC = '00';
+
+
 
       } else if(Access_message.SEG == 1){//Segmented Access Message
         Access_message.SZMIC = (octet1 & (1<<7))?1:0;
@@ -192,11 +208,59 @@ Network.receive = function (netpduhex, privacy_key) {
         Access_message.SegO = (((octet2 & 0x03) << 8) + octet3) >> 5;
         Access_message.SegN = octet3 & 0x1F;
 
+        //Init Output on the first Segment
+        if(Access_message.SegO == 0){
+          Segmented_Access_Message_value = Access_message;
+          OUT_Upper_Transport_Access_PDU.EncAccessPayload = '';
+          OUT_Upper_Transport_Access_PDU.TransMIC = 0;
+
+//
+//           The SeqAuth is composed of the IV Index and the sequence number (SEQ) of the first segment and is
+// therefore a 56-bit value, where the IV Index is the most significant octets and the sequence number is the
+// least significant octets. Only the least significant 13 bits of the value (known as SeqZero) is included in
+// the Segmented message and Segment Acknowledgment message. Upon reassembling a complete
+// Segmented Access message, the SeqAuth value can be derived from the IV Index, SeqZero, and SEQ in
+// Bluetooth SIG Proprietary
+// Page 56 of 331Mesh Profile / Specification
+// any of the segments, by determining the largest SeqAuth value for which SeqZero is between SEQ -
+// 8191 and SEQ inclusive and using the same IV Index. For example, if the received SEQ of a message
+// was 0x647262, the IV Index was 0x58437AF2, and the received SeqZero value was 0x1849, then the
+// SeqAuth value is 0x58437AF2645849. If the received SEQ of a message was 0x647262 and the received
+// SeqZero value was 0x1263, then the SeqAuth value is 0x58437AF2645263.
+          OUT_Upper_Transport_Access_PDU.SeqAuth = result.ivi + result.SEQ;
+        } else {
+          //Check every segment
+          if((Segmented_Access_Message_value.AKF != Access_message.AKF) ||
+          (Segmented_Access_Message_value.AID != Access_message.AID) ||
+          (Segmented_Access_Message_value.SZMIC != Access_message.SZMIC) ||
+          (Segmented_Access_Message_value.SeqZero != Access_message.SeqZero) ||
+          (Segmented_Access_Message_value.SegN != Access_message.SegN)){
+            alert('Error: Segmented Access Message Invalid segment');
+            return;
+          }
+
+        }
+
         var Segment_m = dec_network_pdu.TransportPDU.substring(4*2);
         console.log('Segmented Access Message : ' + JSON.stringify(Access_message));
         console.log('Segment_m : ' + Segment_m + 'len : ' + Segment_m.length);
 
-        //TODO
+        OUT_Upper_Transport_Access_PDU.EncAccessPayload += Segment_m;
+
+        if(Access_message.SegO == Access_message.SegN ){
+          OUT_Upper_Transport_Access_PDU.TransMIC = Segmented_Access_Message_value.SZMIC?8:4; //in bytes
+          OUT_Upper_Transport_Access_PDU.ASZMIC = '80';
+          OUT_Upper_Transport_Access_PDU.SeqAuth = iv_index + utils.toHex(result.SEQ, 3); //TODO
+          OUT_Upper_Transport_Access_PDU.SRC = result.SRC;
+          OUT_Upper_Transport_Access_PDU.DST = result.DST;
+
+          console.log('Get a complete  Upper_Transport_Access_PDU : ' + JSON.stringify(OUT_Upper_Transport_Access_PDU));
+          UpperTransport.OUT_ProcessAccessPDU(OUT_Upper_Transport_Access_PDU);
+
+
+          //TODO
+
+        }
       }
 
   }else{
@@ -375,4 +439,33 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
             console.log('Error: ' + error);
             return;
         });
+}
+
+// var OUT_Upper_Transport_Access_PDU = {
+//   EncAccessPayload : '',
+//   TransMIC : 0,
+//   ASZMIC : 0,
+//   SeqAuth : '',
+// }
+
+
+UpperTransport.OUT_ProcessAccessPDU  = function (OUT_Upper_Transport_Access_PDU) {
+  //3.6.4.2 Receiving an Upper Transport PDU
+
+  //3.8.5.1 Device nonce
+  ASZMIC_and_Pad = OUT_Upper_Transport_Access_PDU.ASZMIC;
+
+
+
+  SEQ = OUT_Upper_Transport_Access_PDU.SeqAuth.substring( 2*2 );
+
+
+  SRC = OUT_Upper_Transport_Access_PDU.SRC;
+  DST = OUT_Upper_Transport_Access_PDU.DST;
+  var device_nonce = "02" + ASZMIC_and_Pad + SEQ + SRC + DST + iv_index;
+  console.log('device_nonce len : ' + device_nonce.length + ' : ' + device_nonce);
+
+  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(D, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC);
+
+  return;
 }
