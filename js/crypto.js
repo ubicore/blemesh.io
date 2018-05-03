@@ -138,8 +138,8 @@ crypto.meshAuthEncNetwork_decode = function (hex_encryption_key, hex_nonce, auth
 	u8_network_PDU = asmCrypto.AES_CCM.decrypt(u8_auth_enc_network, u8_key, u8_nonce, new Uint8Array([]), size);
 	hex = utils.u8AToHexString(u8_network_PDU);
 	result.DST = hex.substring(0, 4);
-	result.TransportPDU = hex.substring(4, hex.length - 8);
-	result.NetMIC = hex.substring(hex.length - 8, hex.length);
+	result.TransportPDU = hex.substring(4, hex.length - size);
+	result.NetMIC = hex.substring(hex.length - size, hex.length);
 	return result;
 }
 

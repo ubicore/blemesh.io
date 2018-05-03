@@ -152,24 +152,77 @@ Network.receive = function (netpduhex, privacy_key) {
   }
 
   var auth_enc_network = netpduhex.substring(7*2, netpduhex.lenght);
-//  result.enc_transport_pdu =  ctl_ttl_seq_src_hex.substring(7*2, NetMIC_start_offset);
-//  result.netmic =  ctl_ttl_seq_src_hex.substring(NetMIC_start_offset, netpduhex.lenght);
-console.log('ctl_ttl_hex : ' + ctl_ttl_hex);
-console.log('seq_hex : ' + seq_hex);
-console.log('src_hex : ' + src_hex);
-console.log('iv_index : ' + iv_index);
-  //3.8.5.1 Network nonce
-  var net_nonce = "00" + ctl_ttl_hex + seq_hex + src_hex + "0000" + iv_index;
   console.log('ctl_ttl_hex : ' + ctl_ttl_hex);
   console.log('seq_hex : ' + seq_hex);
   console.log('src_hex : ' + src_hex);
   console.log('iv_index : ' + iv_index);
-
-  console.log('net_nonce : ' + net_nonce.length);
-  console.log('net_nonce : ' + net_nonce);
+  //3.8.5.1 Network nonce
+  var net_nonce = "00" + ctl_ttl_hex + seq_hex + src_hex + "0000" + iv_index;
 
   N = utils.normaliseHex(hex_encryption_key);
   dec_network_pdu = crypto.meshAuthEncNetwork_decode(N, net_nonce, auth_enc_network, result.CTL);
+
+  //3.5.2 Lower Transport PDU
+  //3.5.2.2 Segmented Access message
+  var octet0 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(0, 1*2));
+
+  if(result.CTL == 0){
+      //Access message
+      var Access_message = {
+        SEG : (octet0 & (1<<7))?1:0,
+        AKF : (octet0 & (1<<6))?1:0,
+        AID : octet0 & 0x3F,
+      };
+      // var SEG = (octet0 & (1<<7))?1:0;
+      // var AKF = (octet0 & (1<<6))?1:0;
+      // var AID = octet0 & 0x3F;
+      //
+      if(Access_message.SEG == 0) {///Unsegmented Access Message
+        //
+        console.log('Unsegmented Access Message : ' + JSON.stringify(Access_message));
+        //TODO
+
+
+      } else if(Access_message.SEG == 1){//Segmented Access Message
+        console.log('Segmented Access Message : ' + JSON.stringify(Access_message));
+        //TODO
+
+      }
+
+  }else{
+      //Control message
+      var Control_message = {
+        SEG : (octet0 & (1<<7))?1:0,
+        OPCODE : octet0 & 0x7F,
+      };
+
+
+      //
+      if(Control_message.SEG == 0) {///Unsegmented Control Message
+        if(OPCODE == 0){ //3.5.2.3.1 Segment Acknowledgment message
+          var octet1 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(1*2, 2*2));
+          var octet2 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(2*2, 3*2));
+
+          Control_message.OBO = (octet1 & (1<<7))?1:0;
+          Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 1;
+          Control_message.BlockAck = dec_network_pdu.TransportPDU.substring(3*2, 7*2);
+          console.log('Segment Acknowledgment message : ' + JSON.stringify(Control_message));
+
+
+        }else {
+          console.log('Segment Control message : ' + JSON.stringify(Control_message));
+
+        }
+
+
+      } else if(SEG == 1){//Segmented Control Message
+        console.log('Segmented Control message : ' + JSON.stringify(Control_message));
+
+      }
+  }
+
+
+
 
 //  result.DST =  ctl_ttl_seq_src_hex.substring(7*2, 9*2);
 

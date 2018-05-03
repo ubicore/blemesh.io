@@ -221,11 +221,6 @@ app.ProcessPDU = function (PDU) {
     console.log('Get a complete PDU ' + PDU_view);
 
     ProxyPDU_OUT.ProcessPDU(PDU);
-    // if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
-    //     this.CurrentStepProcess(PDU);
-    // } else {
-        console.log('error : no CurrentBehaviorProcess Callback');
-    // }
     return;
 };
 
