@@ -165,6 +165,9 @@ Network.receive = function (netpduhex, privacy_key) {
   //3.5.2 Lower Transport PDU
   //3.5.2.2 Segmented Access message
   var octet0 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(0, 1*2));
+  var octet1 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(1*2, 2*2));
+  var octet2 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(2*2, 3*2));
+  var octet3 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(3*2, 4*2));
 
   if(result.CTL == 0){
       //Access message
@@ -184,9 +187,16 @@ Network.receive = function (netpduhex, privacy_key) {
 
 
       } else if(Access_message.SEG == 1){//Segmented Access Message
-        console.log('Segmented Access Message : ' + JSON.stringify(Access_message));
-        //TODO
+        Access_message.SZMIC = (octet1 & (1<<7))?1:0;
+        Access_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
+        Access_message.SegO = (((octet2 & 0x03) << 8) + octet3) >> 5;
+        Access_message.SegN = octet3 & 0x1F;
 
+        var Segment_m = dec_network_pdu.TransportPDU.substring(4*2);
+        console.log('Segmented Access Message : ' + JSON.stringify(Access_message));
+        console.log('Segment_m : ' + Segment_m + 'len : ' + Segment_m.length);
+
+        //TODO
       }
 
   }else{
@@ -200,11 +210,8 @@ Network.receive = function (netpduhex, privacy_key) {
       //
       if(Control_message.SEG == 0) {///Unsegmented Control Message
         if(OPCODE == 0){ //3.5.2.3.1 Segment Acknowledgment message
-          var octet1 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(1*2, 2*2));
-          var octet2 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(2*2, 3*2));
-
           Control_message.OBO = (octet1 & (1<<7))?1:0;
-          Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 1;
+          Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
           Control_message.BlockAck = dec_network_pdu.TransportPDU.substring(3*2, 7*2);
           console.log('Segment Acknowledgment message : ' + JSON.stringify(Control_message));
 
