@@ -118,10 +118,11 @@ Network.receive = function (netpduhex, privacy_key) {
   result.nid = (M_int & 0x7F);
 
   //Obfuscated decode
+  //3.8.7.3 Network layer obfuscation
   var obfuscated_ctl_ttl_seq_src = netpduhex.substring(1*2, 7*2);
-  var privacy_random = netpduhex.substring(7*2, 13*2);
+  var privacy_random_hex = netpduhex.substring(7*2, 14*2);
 
-  var pecb_input = "0000000000" + iv_index + hex_privacy_random;
+  var pecb_input = "0000000000" + iv_index + privacy_random_hex;
   var pecb_hex = crypto.e(pecb_input, privacy_key);
   var pecb = pecb_hex.substring(0, 6*2);
 
