@@ -95,12 +95,14 @@ Network.finalise = function (ivi, nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_
 
 var OUT_Upper_Transport_Access_PDU = {
   EncAccessPayload : '',
-  TransMIC : 0,
+  TransMIC_size : 0,
   ASZMIC : 0,
-  SeqAuth : '',
+  SeqZero_hex : '',
   SRC: '',
   DST: '',
 }
+
+var Segmented_Access_Message_value;
 
 Network.receive = function (netpduhex, privacy_key) {
 
@@ -109,7 +111,7 @@ Network.receive = function (netpduhex, privacy_key) {
 		nid: 0,
     CTL: 0,
     TTL: 0,
-    SEQ: 0,
+    SEQ: '',
     SRC: '',
     DST: '',
     enc_transport_pdu: 0,
@@ -136,12 +138,14 @@ Network.receive = function (netpduhex, privacy_key) {
 	var ctl_ttl_seq_src = utils.xorU8Array(utils.hexToU8A(obfuscated_ctl_ttl_seq_src), utils.hexToU8A(pecb));
   var ctl_ttl_seq_src_hex = utils.u8AToHexString(ctl_ttl_seq_src);
   //
+  console.log('ctl_ttl_seq_src : ' + ctl_ttl_seq_src);
+  console.log('ctl_ttl_seq_src_hex : ' + ctl_ttl_seq_src_hex);
+
   var ctl_ttl_hex = ctl_ttl_seq_src_hex.substring(0, 1*2);
   var ctl_ttl = parseInt(ctl_ttl_hex, 16);
   result.CTL = (ctl_ttl & (1 << 7))?1:0;
   result.TTL = ctl_ttl & 0x7F;
-  var seq_hex =  ctl_ttl_seq_src_hex.substring(1*2, 4*2);
-  result.SEQ = (ctl_ttl_seq_src[1] << 16) + (ctl_ttl_seq_src[2] << 8) + ctl_ttl_seq_src[2];
+  result.SEQ =  ctl_ttl_seq_src_hex.substring(1*2, 4*2);; //(ctl_ttl_seq_src[1] << 16) + (ctl_ttl_seq_src[2] << 8) + ctl_ttl_seq_src[3];
   result.SRC =  ctl_ttl_seq_src_hex.substring(4*2, 6*2);
 
   var NetMIC_start_offset = 0;
@@ -161,22 +165,21 @@ Network.receive = function (netpduhex, privacy_key) {
 
 
   //3.8.5.1 Network nonce
-  var net_nonce = "00" + ctl_ttl_hex + seq_hex + result.SRC + "0000" + iv_index;
+  var net_nonce = "00" + ctl_ttl_hex + result.SEQ + result.SRC + "0000" + iv_index;
 
   K = utils.normaliseHex(hex_encryption_key);
-  dec_network_pdu = crypto.meshAuthEncNetwork_decode(K, net_nonce, auth_enc_network, result.CTL);
+  var MIC_size = result.CTL?8:4;
+  dec_network_pdu = crypto.meshAuthEncNetwork_decode(K, net_nonce, auth_enc_network, MIC_size);
 
   result.DST = dec_network_pdu.DST;
-  //dec_network_pdu
-  //result
-
+  console.log('dec_network_pdu : ' + JSON.stringify(dec_network_pdu));
 
   //3.5.2 Lower Transport PDU
   //3.5.2.2 Segmented Access message
-  var octet0 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(0, 1*2));
-  var octet1 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(1*2, 2*2));
-  var octet2 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(2*2, 3*2));
-  var octet3 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(3*2, 4*2));
+  var octet0 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(0, 1*2))[0];
+  var octet1 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(1*2, 2*2))[0];
+  var octet2 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(2*2, 3*2))[0];
+  var octet3 = utils.hexToU8A(dec_network_pdu.TransportPDU.substring(3*2, 4*2))[0];
 
   if(result.CTL == 0){
       //Access message
@@ -204,30 +207,21 @@ Network.receive = function (netpduhex, privacy_key) {
 
       } else if(Access_message.SEG == 1){//Segmented Access Message
         Access_message.SZMIC = (octet1 & (1<<7))?1:0;
-        Access_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
+        Access_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2; //TODO : ne correspod pas au traces de debug zephy ??
         Access_message.SegO = (((octet2 & 0x03) << 8) + octet3) >> 5;
         Access_message.SegN = octet3 & 0x1F;
+        console.log('Access_message : ' + JSON.stringify(Access_message));
 
         //Init Output on the first Segment
         if(Access_message.SegO == 0){
           Segmented_Access_Message_value = Access_message;
           OUT_Upper_Transport_Access_PDU.EncAccessPayload = '';
-          OUT_Upper_Transport_Access_PDU.TransMIC = 0;
+          OUT_Upper_Transport_Access_PDU.TransMIC_size = 0;
+//          OUT_Upper_Transport_Access_PDU.SeqZero = result.SEQ;
+          OUT_Upper_Transport_Access_PDU.SeqZero_hex = utils.toHex(Access_message.SeqZero, 3);
 
-//
-//           The SeqAuth is composed of the IV Index and the sequence number (SEQ) of the first segment and is
-// therefore a 56-bit value, where the IV Index is the most significant octets and the sequence number is the
-// least significant octets. Only the least significant 13 bits of the value (known as SeqZero) is included in
-// the Segmented message and Segment Acknowledgment message. Upon reassembling a complete
-// Segmented Access message, the SeqAuth value can be derived from the IV Index, SeqZero, and SEQ in
-// Bluetooth SIG Proprietary
-// Page 56 of 331Mesh Profile / Specification
-// any of the segments, by determining the largest SeqAuth value for which SeqZero is between SEQ -
-// 8191 and SEQ inclusive and using the same IV Index. For example, if the received SEQ of a message
-// was 0x647262, the IV Index was 0x58437AF2, and the received SeqZero value was 0x1849, then the
-// SeqAuth value is 0x58437AF2645849. If the received SEQ of a message was 0x647262 and the received
-// SeqZero value was 0x1263, then the SeqAuth value is 0x58437AF2645263.
-          OUT_Upper_Transport_Access_PDU.SeqAuth = result.ivi + result.SEQ;
+        //  OUT_Upper_Transport_Access_PDU.SeqAuth = iv_index + result.SEQ;
+
         } else {
           //Check every segment
           if((Segmented_Access_Message_value.AKF != Access_message.AKF) ||
@@ -242,15 +236,13 @@ Network.receive = function (netpduhex, privacy_key) {
         }
 
         var Segment_m = dec_network_pdu.TransportPDU.substring(4*2);
-        console.log('Segmented Access Message : ' + JSON.stringify(Access_message));
-        console.log('Segment_m : ' + Segment_m + 'len : ' + Segment_m.length);
+        console.log('Segment_m : ' + Segment_m + ' len : ' + Segment_m.length); //TODO : ne correspod pas au traces de debug zephy ??
 
         OUT_Upper_Transport_Access_PDU.EncAccessPayload += Segment_m;
 
         if(Access_message.SegO == Access_message.SegN ){
-          OUT_Upper_Transport_Access_PDU.TransMIC = Segmented_Access_Message_value.SZMIC?8:4; //in bytes
+          OUT_Upper_Transport_Access_PDU.TransMIC_size = Segmented_Access_Message_value.SZMIC?8:4; //in bytes
           OUT_Upper_Transport_Access_PDU.ASZMIC = '80';
-          OUT_Upper_Transport_Access_PDU.SeqAuth = iv_index + utils.toHex(result.SEQ, 3); //TODO
           OUT_Upper_Transport_Access_PDU.SRC = result.SRC;
           OUT_Upper_Transport_Access_PDU.DST = result.DST;
 
@@ -441,13 +433,6 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
         });
 }
 
-// var OUT_Upper_Transport_Access_PDU = {
-//   EncAccessPayload : '',
-//   TransMIC : 0,
-//   ASZMIC : 0,
-//   SeqAuth : '',
-// }
-
 
 UpperTransport.OUT_ProcessAccessPDU  = function (OUT_Upper_Transport_Access_PDU) {
   //3.6.4.2 Receiving an Upper Transport PDU
@@ -457,15 +442,20 @@ UpperTransport.OUT_ProcessAccessPDU  = function (OUT_Upper_Transport_Access_PDU)
 
 
 
-  SEQ = OUT_Upper_Transport_Access_PDU.SeqAuth.substring( 2*2 );
-
+  // SEQ = OUT_Upper_Transport_Access_PDU.SeqAuth.substring( (OUT_Upper_Transport_Access_PDU.SeqAuth.lenght - 3*2), OUT_Upper_Transport_Access_PDU.SeqAuth.lenght );
+  // console.log('SEQ : ' + SEQ);
 
   SRC = OUT_Upper_Transport_Access_PDU.SRC;
   DST = OUT_Upper_Transport_Access_PDU.DST;
-  var device_nonce = "02" + ASZMIC_and_Pad + SEQ + SRC + DST + iv_index;
+  SEQ = OUT_Upper_Transport_Access_PDU.SeqZero_hex;
+  var device_nonce = '02' + ASZMIC_and_Pad + SEQ + SRC + DST + iv_index;
   console.log('device_nonce len : ' + device_nonce.length + ' : ' + device_nonce);
+  console.log('D : ' + D);
 
-  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(D, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC);
+
+  var key = 'bc7ec7a04e8fe827c8c303f0b2ee5404';
+//  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(D, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC_size);
+  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(key, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC_size);
 
   return;
 }

@@ -20,7 +20,8 @@ test.start = function() {
 
   test.Confirmation();
   test.ProvisionDATA();
-
+  test.decode_Upper_PDU();
+  test.decode_Upper_PDU_myvalue();
 };
 
 test.generatekey = function() {
@@ -371,5 +372,32 @@ test.Confirmation = function() {
 
           console.log('END Success');
           return;
+
+    }
+
+    test.decode_Upper_PDU = function() {
+      //8.3.6   Message #6
+      var devkey = '9d6dd0e96eb25dc19a40ed9914f8f03f';
+      var nonce ='02003129ab0003120112345678';
+      var UpperTransportPDU = 'ee9dddfd2169326d23f3afdfcfdc18c52fdef772e0e17308';
+      var TransMIC_size = 4;
+      dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(devkey, nonce , UpperTransportPDU, TransMIC_size);
+
+      console.log('meshAuthEncAccessPayload_decode compplete');
+      console.log('dec_network_pdu : ' + JSON.stringify(dec_network_pdu));
+
+
+    }
+    test.decode_Upper_PDU_myvalue = function() {
+      //8.3.6   Message #6
+      var devkey = 'bc7ec7a04e8fe827c8c303f0b2ee5404';
+      var nonce ='02800002260b0c123412345677';
+      var UpperTransportPDU = '8de6348992f92077fdef98333f9a858642804b760b8dbad7cef2a65f15a3a491a664539c846c';
+      var TransMIC_size = 8;
+      dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(devkey, nonce , UpperTransportPDU, TransMIC_size);
+
+      console.log('meshAuthEncAccessPayload_decode compplete');
+      console.log('dec_network_pdu : ' + JSON.stringify(dec_network_pdu));
+
 
     }
