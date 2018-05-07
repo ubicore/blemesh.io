@@ -22,7 +22,9 @@ test.start = function() {
   // test.ProvisionDATA();
   // test.decode_Upper_PDU();
   // test.decode_Upper_PDU_myvalue();
-  test.opcode();
+  test.opcode(2);
+  test.opcode(3);
+
 };
 
 test.generatekey = function() {
@@ -402,13 +404,17 @@ test.Confirmation = function() {
 
 
     }
-    test.opcode = function() {
+    test.opcode = function(opcode) {
 
       var result = {
-        opcode: 0,
+        opcode: opcode,
         parameters: '',
       };
-      result.opcode = 2;
+      console.log('Opcode : ' + JSON.stringify(OPCODE[result.opcode]));
 
-      console.log('Opcode : ' + OPCODE[result.opcode]);
+      if(OPCODE[result.opcode].process){
+        //
+        OPCODE[result.opcode].process();
+      }
+
     }
