@@ -515,17 +515,13 @@ Access_Layer.receiver = function (dec_upper_transport_layer){
 var Fundation_models_layer = {};
 
 Fundation_models_layer.receiver = function (result){
-//example data page 0 parsing, See : p330
-//8.10 Composition Data sample data
-//4.2.1 Composition Data
-//4.2.1.1 Composition Data Page 0
 //4.3.4.1 Alphabetical summary of opcodes
 console.log('Opcode : ' + JSON.stringify(OPCODE[result.opcode]));
 
 
 if(OPCODE[result.opcode].process){
   //
-  OPCODE[result.opcode].process();
+  OPCODE[result.opcode].process(result.parameters);
 }
 
 
