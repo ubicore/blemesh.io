@@ -21,27 +21,83 @@ Config.Composition_Data_Status = function (parameters){
     return;
   }
 
+  var data = parameters.substring(1*2);
+  var data_bytes = utils.hexToBytes(data);
+  var view = new DataView(data_bytes);
+
   //Page0
   var result = {
-		CID: parameters.substring(0, 2*2),
-		PID: parameters.substring(2, 4*2),
-		VID: parameters.substring(4, 6*2),
-		CRPL: parameters.substring(6, 8*2),
+		CID: '',
+		PID: '',
+		VID: '',
+		CRPL: '',
 		Features:{
       Relay: false,
       Proxy: false,
       Friend: false,
       Low_Power: false,
     } ,
-		Elements: parameters.substring(4*2),
+		Elements:[],
 	}
 
-  var octet = utils.hexToU8A(parameters.substring(2, 4*2))[0];
-  result.Features.Relay = (octet & (1<<0))?true:false;
-  result.Features.Proxy = (octet & (1<<1))?true:false;
-  result.Features.Friend = (octet & (1<<2))?true:false;
-  result.Features.Low_Power = (octet & (1<<3))?true:false;
+  octet = utils.hexToBytes(data.substring(0, 2*2));
+  result.CID = (octet[1] << 8) + octet[0];
+  octet = utils.hexToBytes(data.substring(2*2, 4*2));
+  result.PID = (octet[1] << 8) + octet[0];
+  octet = utils.hexToBytes(data.substring(4*2, 6*2));
+  result.VID = (octet[1] << 8) + octet[0];
+  octet = utils.hexToBytes(data.substring(6*2, 8*2));
+  result.CRPL = (octet[1] << 8) + octet[0];
+  octet = utils.hexToBytes(data.substring(8*2, 10*2));
+  var Features = (octet[1] << 8) + octet[0];
 
-  console.log('Composition_Data_Status Page 0 : ' + JSON.stringify(result));
+  result.Features.Relay = (Features & (1<<0))?true:false;
+  result.Features.Proxy = (Features & (1<<1))?true:false;
+  result.Features.Friend = (Features & (1<<2))?true:false;
+  result.Features.Low_Power = (Features & (1<<3))?true:false;
 
+
+  // Loc 2 Contains a location descriptor
+  // NumS 1 Contains a count of SIG Model IDs in this element
+  // NumV 1 Contains a count of Vendor Model IDs in this element
+  // SIG Models variable Contains a sequence of NumS SIG Model IDs
+  // Vendor Models variable Contains a sequence of NumV Vendor Model IDs
+  //SIG Model ID (16-bit) or a Vendor Model ID (32-bit)
+  data = data.substring(10*2);
+
+  while (data.length) {
+    var Element = {
+      Loc: 0,
+      NumS: '',
+      NumV: '',
+      SIG_Models:[],
+      Vendor_Models:[],
+    }
+
+    //Element description header
+    octet = utils.hexToBytes(data.substring(0, 2*2));
+    Element.Loc = (octet[1] << 8) + octet[0];
+    Element.NumS = data.substring(2*2, 3*2);
+    Element.NumV = data.substring(3*2, 4*2);
+    // Element.NumS = utils.hexToBytes(data.substring(2*2, 3*2))[0];
+    // Element.NumV = utils.hexToBytes(data.substring(3*2, 4*2))[0];
+    data = data.substring(4*2);
+
+    //SIG_Models
+    for (var i = 0; i < Element.NumS; i++) {
+      Element.SIG_Models[i] = data.substring(0, 2*2);
+      data = data.substring(2*2);
+    }
+
+    //Vendor_Models
+    for (var i = 0; i < Element.NumV; i++) {
+      Element.Vendor_Models[i] = data.substring(0, 4*2);
+      data = data.substring(4*2);
+    }
+    //
+    result.Elements.push(
+      Element
+    );
+  }
+    console.log('Composition_Data_Status Page 0 : ' + JSON.stringify(result));
 }

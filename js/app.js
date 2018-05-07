@@ -19,7 +19,7 @@ var valid_pdu = false;
 var iv_index = "12345677";
 var netkey = "7dd7364cd842ad18c17c2b820c84c3d6";
 var appkey = "63964771734fbd76e3b40519d1d94a48";
-var devkey = "bf1952601564c3d288ffc3e549d7c7a7";
+var devkey = "437ff63e3b17b8e55eaae7cce17fae02";
 
 //var encryption_key = "";
 //var privacy_key = "";
