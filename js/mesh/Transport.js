@@ -452,9 +452,83 @@ UpperTransport.OUT_ProcessAccessPDU  = function (OUT_Upper_Transport_Access_PDU)
   console.log('device_nonce len : ' + device_nonce.length + ' : ' + device_nonce);
   console.log('D : ' + D);
 
-  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(D, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC_size);
+  dec_upper_transport_layer = crypto.meshAuthEncAccessPayload_decode(D, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC_size);
   console.log('meshAuthEncAccessPayload_decode compplete');
   console.log('dec_network_pdu : ' + JSON.stringify(dec_network_pdu));
 
+  Access_Layer.receiver(dec_upper_transport_layer);
+
+
   return;
+}
+
+
+/***************************************************************************************************/
+var Access_Layer = {};
+
+Access_Layer.receiver = function (dec_upper_transport_layer){
+  //example data page 0 parsing, See : p330
+  //8.10 Composition Data sample data
+  //4.2.1 Composition Data
+  //4.2.1.1 Composition Data Page 0
+
+  var result = {
+    opcode: 0,
+    parameters: '',
+  };
+  var octet0 = utils.hexToU8A(dec_upper_transport_layer.Payload.substring(0, 1*2))[0];
+  var octet1 = utils.hexToU8A(dec_upper_transport_layer.Payload.substring(1*2, 2*2))[0];
+  var octet2 = utils.hexToU8A(dec_upper_transport_layer.Payload.substring(2*2, 3*2))[0];
+  var BIT7  = (octet0 & (1<<7))?1:0;
+  var BIT6  = (octet0 & (1<<6))?1:0;
+
+  console.log('BIT7: ' + BIT7 + 'BIT6: ' + BIT6);
+
+
+  if(octet0 == 0x7F){
+    //RFU
+
+  } else if(!BIT7){
+    //Opcode size = 1
+    result.parameters = dec_upper_transport_layer.Payload.substring(1*2);
+    result.opcode = octet0;
+  } else if(BIT7 && !BIT6){
+    //Opcode size = 2
+    result.parameters = dec_upper_transport_layer.Payload.substring(2*2);
+    result.opcode = (octet0 << 8) + octet1;
+  } else if(BIT7 && BIT6){
+    //Opcode size = 3
+    result.parameters = dec_upper_transport_layer.Payload.substring(3*2);
+    result.opcode = (octet0 << 16) + (octet1 << 8) + octet2;
+  } else {
+    //
+    alert('Error: Access_Layer, invalid opcode');
+  }
+
+
+
+  console.log('Access_Layer : ' + JSON.stringify(result));
+  Fundation_models_layer.receiver(result);
+}
+
+/***************************************************************************************************/
+var Fundation_models_layer = {};
+
+Fundation_models_layer.receiver = function (result){
+//example data page 0 parsing, See : p330
+//8.10 Composition Data sample data
+//4.2.1 Composition Data
+//4.2.1.1 Composition Data Page 0
+//4.3.4.1 Alphabetical summary of opcodes
+
+console.log('Opcode : ' + OPCODE[result.opcode]);
+
+
+
+
+
+
+
+
+
 }

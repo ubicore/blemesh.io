@@ -18,10 +18,11 @@ test.start = function() {
   //test.generatekey();
   //test.EDCH();
 
-  test.Confirmation();
-  test.ProvisionDATA();
-  test.decode_Upper_PDU();
-  test.decode_Upper_PDU_myvalue();
+  // test.Confirmation();
+  // test.ProvisionDATA();
+  // test.decode_Upper_PDU();
+  // test.decode_Upper_PDU_myvalue();
+  test.opcode();
 };
 
 test.generatekey = function() {
@@ -400,4 +401,14 @@ test.Confirmation = function() {
       console.log('dec_network_pdu : ' + JSON.stringify(dec_network_pdu));
 
 
+    }
+    test.opcode = function() {
+
+      var result = {
+        opcode: 0,
+        parameters: '',
+      };
+      result.opcode = 2;
+
+      console.log('Opcode : ' + OPCODE[result.opcode]);
     }
