@@ -1,5 +1,14 @@
 var utils = {};
 
+
+utils.getUint16fromhex = function(str){
+  octet0 = parseInt(str.substring(0, 1*2), 16);
+  octet1 = parseInt(str.substring(1*2, 2*2), 16);
+  val = (octet1 << 8) + octet0;
+  return val;
+}
+
+
 utils.normaliseHex = function(raw) {
     value = raw.replace(/\s/g, '');
     value = value.toUpperCase();

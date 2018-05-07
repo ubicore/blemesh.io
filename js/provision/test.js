@@ -22,8 +22,9 @@ test.start = function() {
   // test.ProvisionDATA();
   // test.decode_Upper_PDU();
   // test.decode_Upper_PDU_myvalue();
-  test.opcode(2);
-  test.opcode(3);
+//  test.opcode(2);
+//  test.opcode(3);
+  test.number();
 
 };
 
@@ -416,5 +417,18 @@ test.Confirmation = function() {
         //
         OPCODE[result.opcode].process();
       }
+
+    }
+
+
+
+    test.number = function() {
+
+
+      var myuint16val = parseInt('f105', 16);
+      console.log('my16array : ' + myuint16val);
+      console.log('my16array : 0x' + myuint16val.toString(16));
+
+
 
     }

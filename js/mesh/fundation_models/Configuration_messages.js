@@ -20,10 +20,8 @@ Config.Composition_Data_Status = function (parameters){
     console.log('Only Page0 is supported');
     return;
   }
-
+  //skip page PageNumber
   var data = parameters.substring(1*2);
-  var data_bytes = utils.hexToBytes(data);
-  var view = new DataView(data_bytes);
 
   //Page0
   var result = {
@@ -39,18 +37,12 @@ Config.Composition_Data_Status = function (parameters){
     } ,
 		Elements:[],
 	}
+  result.CID = utils.getUint16fromhex(data.substring(0, 2*2)).toString(16);
+  result.PID = utils.getUint16fromhex(data.substring(2*2, 4*2)).toString(16);
+  result.VID = utils.getUint16fromhex(data.substring(4*2, 6*2)).toString(16);
+  result.CRPL = utils.getUint16fromhex(data.substring(6*2, 8*2)).toString(16);
 
-  octet = utils.hexToBytes(data.substring(0, 2*2));
-  result.CID = (octet[1] << 8) + octet[0];
-  octet = utils.hexToBytes(data.substring(2*2, 4*2));
-  result.PID = (octet[1] << 8) + octet[0];
-  octet = utils.hexToBytes(data.substring(4*2, 6*2));
-  result.VID = (octet[1] << 8) + octet[0];
-  octet = utils.hexToBytes(data.substring(6*2, 8*2));
-  result.CRPL = (octet[1] << 8) + octet[0];
-  octet = utils.hexToBytes(data.substring(8*2, 10*2));
-  var Features = (octet[1] << 8) + octet[0];
-
+  var Features = utils.getUint16fromhex(data.substring(8*2, 10*2));
   result.Features.Relay = (Features & (1<<0))?true:false;
   result.Features.Proxy = (Features & (1<<1))?true:false;
   result.Features.Friend = (Features & (1<<2))?true:false;
@@ -67,31 +59,29 @@ Config.Composition_Data_Status = function (parameters){
 
   while (data.length) {
     var Element = {
-      Loc: 0,
-      NumS: '',
-      NumV: '',
+      Loc: '',
+      NumS: 0,
+      NumV: 0,
       SIG_Models:[],
       Vendor_Models:[],
     }
 
     //Element description header
-    octet = utils.hexToBytes(data.substring(0, 2*2));
-    Element.Loc = (octet[1] << 8) + octet[0];
-    Element.NumS = data.substring(2*2, 3*2);
-    Element.NumV = data.substring(3*2, 4*2);
-    // Element.NumS = utils.hexToBytes(data.substring(2*2, 3*2))[0];
-    // Element.NumV = utils.hexToBytes(data.substring(3*2, 4*2))[0];
-    data = data.substring(4*2);
+    Element.Loc = utils.getUint16fromhex(data.substring(0, 2*2)).toString(16);
+    Element.NumS = utils.getUint16fromhex(data.substring(2*2, 3*2));
+    Element.NumV = utils.getUint16fromhex(data.substring(3*2, 4*2));
+
+     data = data.substring(4*2);
 
     //SIG_Models
     for (var i = 0; i < Element.NumS; i++) {
-      Element.SIG_Models[i] = data.substring(0, 2*2);
+      Element.SIG_Models[i] = utils.getUint16fromhex(data.substring(0, 2*2)).toString(16);
       data = data.substring(2*2);
     }
 
     //Vendor_Models
     for (var i = 0; i < Element.NumV; i++) {
-      Element.Vendor_Models[i] = data.substring(0, 4*2);
+      Element.Vendor_Models[i] = utils.getUint16fromhex(data.substring(0, 4*2)).toString(16);
       data = data.substring(4*2);
     }
     //
