@@ -452,10 +452,9 @@ UpperTransport.OUT_ProcessAccessPDU  = function (OUT_Upper_Transport_Access_PDU)
   console.log('device_nonce len : ' + device_nonce.length + ' : ' + device_nonce);
   console.log('D : ' + D);
 
-
-  var key = 'bc7ec7a04e8fe827c8c303f0b2ee5404';
-//  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(D, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC_size);
-  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(key, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC_size);
+  dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(D, device_nonce, OUT_Upper_Transport_Access_PDU.EncAccessPayload, OUT_Upper_Transport_Access_PDU.TransMIC_size);
+  console.log('meshAuthEncAccessPayload_decode compplete');
+  console.log('dec_network_pdu : ' + JSON.stringify(dec_network_pdu));
 
   return;
 }

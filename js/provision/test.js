@@ -390,9 +390,9 @@ test.Confirmation = function() {
     }
     test.decode_Upper_PDU_myvalue = function() {
       //8.3.6   Message #6
-      var devkey = 'bc7ec7a04e8fe827c8c303f0b2ee5404';
-      var nonce ='02800002260b0c123412345677';
-      var UpperTransportPDU = '8de6348992f92077fdef98333f9a858642804b760b8dbad7cef2a65f15a3a491a664539c846c';
+      var devkey = 'BF1952601564C3D288FFC3E549D7C7A7';
+      var nonce ='02800000320b0c123412345677';
+      var UpperTransportPDU = '1cb09f9f868a9cbb52119dd661c77d3be44c12808f7f73092c864e2c52899884992b772a4d8d57c41cc05293c128426b6c53c6920bb343c268c8';
       var TransMIC_size = 8;
       dec_network_pdu = crypto.meshAuthEncAccessPayload_decode(devkey, nonce , UpperTransportPDU, TransMIC_size);
 
