@@ -146,36 +146,28 @@ LowerTransport.receive = function (NetworkPDU) {
 
   //Control message
   if(NetworkPDU.CTL == 1){
-      // //Control message
-      // var Control_message = {
-      //   SEG : (octet0 & (1<<7))?1:0,
-      //   OPCODE : octet0 & 0x7F,
-      // };
-      //
-      //
-      // //
-      // if(Control_message.SEG == 0) {///Unsegmented Control Message
-      //   if(OPCODE == 0){ //3.5.2.3.1 Segment Acknowledgment message
-      //     Control_message.OBO = (octet1 & (1<<7))?1:0;
-      //     Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
-      //     Control_message.BlockAck = dec_network_pdu.TransportPDU.substring(3*2, 7*2);
-      //     console.log('Segment Acknowledgment message : ' + JSON.stringify(Control_message));
-      //
-      //
-      //   }else {
-      //     console.log('Segment Control message : ' + JSON.stringify(Control_message));
-      //
-      //   }
-      //
-      //
-      // } else if(SEG == 1){//Segmented Control Message
-      //   console.log('Segmented Control message : ' + JSON.stringify(Control_message));
-      //
-      // }
+      //Control message
+      var Control_message = {};
+      Control_message.SEG = (octet0 & (1<<7))?1:0;
+      Control_message.OPCODE = octet0 & 0x7F;
+
+
+      //Unsegmented Control Message
+      if(Control_message.SEG == 0) {
+        //3.5.2.3.1 Segment Acknowledgment message
+        if(OPCODE == 0){
+          Control_message.OBO = (octet1 & (1<<7))?1:0;
+          Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
+          Control_message.BlockAck = dec_network_pdu.TransportPDU.substring(3*2, 7*2);
+          console.log('Segment Acknowledgment message : ' + JSON.stringify(Control_message));
+        }
+      }
+
+      //Segmented Control Message
+      if(Control_message.SEG == 1) {
+        console.log('Segmented Control message : ' + JSON.stringify(Control_message));
+      }
   }
-
-
-
   return ;
 };
 
