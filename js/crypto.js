@@ -118,7 +118,7 @@ crypto.meshAuthEncAccessPayload_decode = function (hex_encryption_key, hex_nonce
 	return result;
 };
 
-crypto.meshAuthEncNetwork = function (hex_encryption_key, hex_nonce, hex_dst, hex_transport_pdu) {
+crypto.meshAuthEncNetwork = function (hex_encryption_key, hex_nonce, hex_dst, hex_transport_pdu, MIC_size) {
 	arg3 = hex_dst + hex_transport_pdu;
 	var result = {
 		Encryption_Key: hex_encryption_key,
@@ -129,11 +129,11 @@ crypto.meshAuthEncNetwork = function (hex_encryption_key, hex_nonce, hex_dst, he
 	u8_key = utils.hexToU8A(hex_encryption_key);
 	u8_nonce = utils.hexToU8A(hex_nonce);
 	u8_dst_plus_transport_pdu = utils.hexToU8A(arg3);
-	auth_enc_network = asmCrypto.AES_CCM.encrypt(u8_dst_plus_transport_pdu, u8_key, u8_nonce, new Uint8Array([]), 4);
+	auth_enc_network = asmCrypto.AES_CCM.encrypt(u8_dst_plus_transport_pdu, u8_key, u8_nonce, new Uint8Array([]), MIC_size);
 	hex = utils.u8AToHexString(auth_enc_network);
 	result.EncDST = hex.substring(0, 4);
-	result.EncTransportPDU = hex.substring(4, hex.length - 8);
-	result.NetMIC = hex.substring(hex.length - 8, hex.length);
+	result.EncTransportPDU = hex.substring(4, hex.length - MIC_size*2);
+	result.NetMIC = hex.substring(hex.length - MIC_size*2, hex.length);
 	return result;
 }
 
@@ -186,9 +186,7 @@ crypto.obfuscate = function (enc_dst, enc_transport_pdu, netmic, ctl, ttl, seq, 
 	pecb_hex = crypto.e(result.pecb_input, privacy_key);
 	pecb = pecb_hex.substring(0, 12);
 	result.pecb = pecb;
-	ctl_int = parseInt(ctl, 16);
-	ttl_int = parseInt(ttl, 16);
-	ctl_ttl = ctl_int | ttl_int;
+	ctl_ttl = ((ctl) << 7) + (ttl & 0x7F);
 	ctl_ttl_hex = utils.toHex(ctl_ttl, 1);
 	ctl_ttl_seq_src = ctl_ttl_hex + seq + src;
 	result.ctl_ttl_seq_src = ctl_ttl_seq_src;

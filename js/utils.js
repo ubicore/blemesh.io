@@ -66,7 +66,7 @@ utils.toHex = function(number, octets) {
             hex = "00" + hex;
         }
     } else if (octet_count > octets) {
-        hex = hex.substring((octet_count - octets) * 2, hex_chars.length);
+        hex = hex.substring((octet_count - octets) * 2, hex.length);
     }
     return hex;
 }

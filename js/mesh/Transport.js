@@ -56,12 +56,27 @@ LowerTransport.derive = function (upper_transport_pdu) {
     return lower_transport_pdu;
 };
 
-LowerTransport.Segment_Acknowledgment_message = function(SeqZero){
-//3.5.3.3 Segmentation behavior
-//3.5.2.3.1 Segment Acknowledgment message
+LowerTransport.Segment_Acknowledgment_message = function(Access_message){
+  //3.5.3.3 Segmentation behavior
+  //3.5.2.3.1 Segment Acknowledgment message
+  Access_message
 
+  var OBO = 0;
+  var BlockAck = 0;
+  //Format BlockAck
+  for (var i = 0; i <= Access_message.SegN; i++) {
+    BlockAck |= (1 << i);
+  }
+  var Segment_Acknowledgment_message = '';
+  Segment_Acknowledgment_message += '00'; //SEG = 0, Opcode = 0
+  Segment_Acknowledgment_message += utils.toHex((OBO << 15) + ((Access_message.SeqZero & 0x1FFF) << 2), 2); //OBO, SeqZero
+  Segment_Acknowledgment_message += utils.toHex(BlockAck, 4);
+
+  console.log('Segment_Acknowledgment_message : ' + Segment_Acknowledgment_message);
+  var lower_transport_pdu = Segment_Acknowledgment_message;
+  ctl = 1;
+  Network.Send(lower_transport_pdu);
 }
-
 
 
 var First_Access_Message;
@@ -133,11 +148,15 @@ LowerTransport.receive = function (NetworkPDU) {
         var Segment_m = TransportPDU.substring(4*2);
         console.log('Segment_m : ' + Segment_m + ' len : ' + Segment_m.length);
         LowerTransport.OUT.PayloadFromSegments += Segment_m;
-
+        //Last segment
         if(Access_message.SegO == Access_message.SegN ){
           var Reassembled_Access_message = Object.assign(LowerTransport.OUT.First_Access_Message);
           Reassembled_Access_message.UpperTransportAccessPDU =  LowerTransport.OUT.PayloadFromSegments;
           console.log('Get a complete Reassembled_Access_message : ' + JSON.stringify(Reassembled_Access_message));
+
+          //Send Acknowledgment Segmented Acces message
+          LowerTransport.Segment_Acknowledgment_message(Access_message);
+          //
           UpperTransport.OUT_ProcessAccessPDU(Reassembled_Access_message);
         }
       }
@@ -182,20 +201,29 @@ LowerTransport.receive = function (NetworkPDU) {
 /***************************************************************************************************/
 
 var Network = {};
+
+// network PDU fields
+var ctl = 0;
+var ivi = 0;
+var nid = "00";
+var ttl = 0x03;
+
 /*********************************/
 //IN
 Network.deriveSecure = function (hex_dst, lower_transport_pdu) {
     network_pdu = "";
-    ctl_int = parseInt(ctl, 16);
-    ttl_int = parseInt(ttl, 16);
-    ctl_ttl = (ctl_int | ttl_int);
+    ctl_ttl = (ctl << 7) + (ttl & 0x7F);
     npdu2 = utils.intToHex(ctl_ttl);
     K = utils.normaliseHex(hex_encryption_key);
     net_nonce = "00" + npdu2 + utils.toHex(seq, 3) + src + "0000" + iv_index;
-    network_pdu = crypto.meshAuthEncNetwork(K, net_nonce, hex_dst, lower_transport_pdu);
+    console.log("net_nonce: " + net_nonce);
+
+    var MIC_size = ctl?8:4;
+    console.log("MIC_size: " + MIC_size);
+
+    network_pdu = crypto.meshAuthEncNetwork(K, net_nonce, hex_dst, lower_transport_pdu, MIC_size);
     return network_pdu;
 };
-
 
 
 Network.obfuscate = function (network_pdu) {
@@ -212,6 +240,44 @@ Network.finalise = function (ivi, nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_
     return netpdu;
 };
 
+Network.Send = function(lower_transport_pdu){
+    // encrypt network PDU
+    secured_network_pdu = Network.deriveSecure(dst, lower_transport_pdu);
+    console.log("secured_network_pdu: " + JSON.stringify(secured_network_pdu));
+
+    // obfuscate
+    obfuscated = Network.obfuscate(secured_network_pdu);
+    console.log("obfuscated: " + JSON.stringify(obfuscated));
+
+    // finalise network PDU
+    finalised_network_pdu = Network.finalise(ivi, hex_nid, obfuscated.obfuscated_ctl_ttl_seq_src, secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, network_pdu.NetMIC);
+    console.log("finalised_network_pdu: " + finalised_network_pdu);
+
+    // finalise proxy PDU
+    proxy_pdu = ProxyPDU_IN.finalise(finalised_network_pdu);
+    console.log("proxy_pdu: " + proxy_pdu);
+
+    if (proxy_pdu.length > (mtu * 2)) { // hex chars
+        console.log("Segmentation required ( PDU length > MTU)");
+        alert("Segmentation required ( PDU length > MTU : NOT IMPLEMENTED YET !");
+        return;
+    }
+
+    proxy_pdu_bytes = utils.hexToBytes(proxy_pdu);
+    proxy_pdu_data = new Uint8Array(proxy_pdu_bytes)
+    mesh_proxy_data_in.writeValue(proxy_pdu_data.buffer)
+        .then(_ => {
+            console.log('sent proxy pdu OK');
+            seq++;
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+            app.showMessageRed('Error: ' + error);
+            console.log('Error: ' + error);
+            return;
+        });
+}
+
 /*********************************/
 
 Network.receive = function (netpduhex, privacy_key) {
@@ -221,7 +287,7 @@ Network.receive = function (netpduhex, privacy_key) {
 		// nid: 0,
     // CTL: 0,
     // TTL: 0,
-    // SEQ: '',
+    // SEQ: 0,
     // SRC: '',
     // DST: '',
     // TransportPDU: 0,
@@ -253,13 +319,22 @@ Network.receive = function (netpduhex, privacy_key) {
   var ctl_ttl = parseInt(ctl_ttl_hex, 16);
   NetworkPDU.CTL = (ctl_ttl & (1 << 7))?1:0;
   NetworkPDU.TTL = ctl_ttl & 0x7F;
-  NetworkPDU.SEQ =  ctl_ttl_seq_src_hex.substring(1*2, 4*2);
+
+  var octet0 = utils.hexToU8A(ctl_ttl_seq_src_hex.substring(1*2, 2*2))[0];
+  var octet1 = utils.hexToU8A(ctl_ttl_seq_src_hex.substring(2*2, 3*2))[0];
+  var octet2 = utils.hexToU8A(ctl_ttl_seq_src_hex.substring(3*2, 4*2))[0];
+  NetworkPDU.SEQ = (octet0 << 16) + (octet1 << 8) + octet2;
+//  NetworkPDU.SEQ =  ctl_ttl_seq_src_hex.substring(1*2, 4*2);
   NetworkPDU.SRC =  ctl_ttl_seq_src_hex.substring(4*2, 6*2);
+
+  if(NetworkPDU.SEQ > seq){
+    seq = NetworkPDU.SEQ;
+  }
 
   //Decode Network
   K = utils.normaliseHex(hex_encryption_key);
   //3.8.5.1 Network nonce
-  var net_nonce = "00" + ctl_ttl_hex + NetworkPDU.SEQ + NetworkPDU.SRC + "0000" + iv_index;
+  var net_nonce = "00" + ctl_ttl_hex + utils.toHex(NetworkPDU.SEQ, 3) + NetworkPDU.SRC + "0000" + iv_index;
   var EncNetData = netpduhex.substring(7*2);
   var NetMIC_size = NetworkPDU.CTL?8:4;
   DecNetData = crypto.meshAuthEncNetwork_decode(K, net_nonce, EncNetData, NetMIC_size);
@@ -368,42 +443,8 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
     // derive lower transport PDU
     lower_transport_pdu = LowerTransport.derive(upper_transport_pdu_obj);
     console.log("lower_transport_pdu=" + lower_transport_pdu);
-
-    // encrypt network PDU
-    secured_network_pdu = Network.deriveSecure(dst, lower_transport_pdu);
-    console.log("EncDST=" + JSON.stringify(secured_network_pdu.EncDST) + " EncTransportPDU=" + JSON.stringify(secured_network_pdu.EncTransportPDU));
-
-    // obfuscate
-    obfuscated = Network.obfuscate(secured_network_pdu);
-    console.log("obfuscated_ctl_ttl_seq_src=" + JSON.stringify(obfuscated.obfuscated_ctl_ttl_seq_src));
-
-    // finalise network PDU
-    finalised_network_pdu = Network.finalise(ivi, hex_nid, obfuscated.obfuscated_ctl_ttl_seq_src, secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, network_pdu.NetMIC);
-    console.log("finalised_network_pdu=" + finalised_network_pdu);
-
-    // finalise proxy PDU
-    proxy_pdu = ProxyPDU_IN.finalise(finalised_network_pdu);
-    console.log("proxy_pdu=" + proxy_pdu);
-
-    if (proxy_pdu.length > (mtu * 2)) { // hex chars
-        console.log("Segmentation required ( PDU length > MTU)");
-        alert("Segmentation required ( PDU length > MTU : NOT IMPLEMENTED YET !");
-        return;
-    }
-
-    proxy_pdu_bytes = utils.hexToBytes(proxy_pdu);
-    proxy_pdu_data = new Uint8Array(proxy_pdu_bytes)
-    mesh_proxy_data_in.writeValue(proxy_pdu_data.buffer)
-        .then(_ => {
-            console.log('sent proxy pdu OK');
-            seq++;
-        })
-        .catch(error => {
-            alert('Error: ' + error);
-            app.showMessageRed('Error: ' + error);
-            console.log('Error: ' + error);
-            return;
-        });
+    ctl = 0;
+    Network.Send(lower_transport_pdu);
 }
 
 

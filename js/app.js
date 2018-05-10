@@ -19,19 +19,13 @@ var valid_pdu = false;
 var iv_index = "12345677";
 var netkey = "7dd7364cd842ad18c17c2b820c84c3d6";
 var appkey = "63964771734fbd76e3b40519d1d94a48";
-var devkey = "8ff4dbcc97540357745c7c9d461bec20";
+var devkey = "3353e20aa88c65377bbf792ea2bd54c5";
 
 //var encryption_key = "";
 //var privacy_key = "";
 //var network_id = "";
 
 var sar = 0;
-// network PDU fields
-var ivi = 0;
-var nid = "00";
-var ctl = 0;
-var ttl = "03";
-//var seq = 460810; // 0x0x07080a
 var src = "1234";
 var dst = "0b0c";
 
