@@ -8,13 +8,45 @@ Config.IN = {};
 Config.OUT = {};
 
 /***************************************************************************************************/
+Config.std_callback = function(callback, status){
+  if(callback){
+    if(status == 0){
+      if(callback.Success){
+        callback.Success();
+      }
+    } else {
+      if(callback.Fail){
+        callback.Fail();
+      }
+    }
+  }
+}
 
-Config.OUT.Composition_Data_Status = function (parameters){
+
+
+//4.3.2.40 Config AppKey Status
+Config.OUT.AppKey_Status = function (obj, parameters){
+  var result = {
+  }
+  var status = utils.hexToU8A(parameters.substring(0, 1*2));
+  var NetKeyIndexAndAppKeyIndex = parameters.substring(1*2, 4*2);
+  result.NetKeyIndex = (NetKeyIndexAndAppKeyIndex >> 12) & 0xFFF;
+  result.AppKeyIndex = (NetKeyIndexAndAppKeyIndex & 0xFFF);
+
+  //
+  var Status_Code_obj = STATUS_CODE.FindByID(status);
+  console.log('AppKey_Status status : ' + JSON.stringify(Status_Code_obj));
+
+  Config.std_callback(obj.callback, status);
+}
+
+
+//4.3.2.5 Config Composition Data Status
+Config.OUT.Composition_Data_Status = function (obj, parameters){
   //example data page 0 parsing, See : p330
   //8.10 Composition Data sample data
-  //4.2.1 Composition Data
   //4.2.1.1 Composition Data Page 0
-  console.log('Config.Composition_Data_Status processing');
+  //console.log('Config.Composition_Data_Status processing');
   var PageNumber = parameters.substring(0, 1*2);
 
   if(PageNumber != 0){
@@ -91,23 +123,47 @@ Config.OUT.Composition_Data_Status = function (parameters){
     );
   }
     console.log('Composition_Data_Status Page 0 : ' + JSON.stringify(result));
+
+    var status = 0;//Success
+    Config.std_callback(obj.callback, status);
 }
 
 /***************************************************************************************************/
+//4.3.2.4 Config Composition Data Get
 Config.IN.Composition_Data_Get = function (page){
-  //4.3.2.4 Config Composition Data Get
-  var opcode = OPCODE.FindByName('Config_Composition_Data_Get');
-  var access_payload = utils.toHex(opcode.id, opcode.size) + utils.toHex(page, 1);
+  //Set callback on "Config AppKey Status"
+  return new Promise((resolve, reject) => {
 
-  UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_Composition_Data_Status');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_Composition_Data_Get');
+    var access_payload = utils.toHex(opcode_obj.id, opcode_obj.size) + utils.toHex(page, 1);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
 }
 
+//4.3.2.37 Config AppKey Add
 Config.IN.AppKeyAdd = function (NetKeyIndex, AppKeyIndex, AppKey){
-  //4.3.2.37 Config AppKey Add
   //3.8.6.4 Global key indexes
-  var opcode = OPCODE.FindByName('Config_AppKey_Add');
-  var NetKeyIndexAndAppKeyIndex = ((NetKeyIndex & 0xFFF) << 12) + (AppKeyIndex & 0xFFF);
-  var access_payload = utils.toHex(opcode.id, opcode.size) + utils.toHex(NetKeyIndexAndAppKeyIndex, 3) + AppKey;
+  return new Promise((resolve, reject) => {
 
-  UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_AppKey_Status');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_AppKey_Add');
+    var NetKeyIndexAndAppKeyIndex = ((NetKeyIndex & 0xFFF) << 12) + (AppKeyIndex & 0xFFF);
+    var access_payload = utils.toHex(opcode_obj.id, opcode_obj.size) + utils.toHex(NetKeyIndexAndAppKeyIndex, 3) + AppKey;
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
 }

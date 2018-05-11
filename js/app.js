@@ -217,7 +217,16 @@ app.submitPdu = function () {
          return;
      }
      //Get Page0
-     Config.IN.Composition_Data_Get(0);
+     Config.IN.Composition_Data_Get(0)
+     .then(() =>{
+       console.log("GetPage0 FINISH WITH SUCCESS !");
+
+
+     })
+     .catch(error => {
+         app.showMessageRed(error);
+         console.log('ERROR: ' + error);
+     });
   }
 
 app.SendAppKey = function () {
@@ -231,7 +240,16 @@ app.SendAppKey = function () {
       }
       //
       //Add AppKeyAdd
-      Config.IN.AppKeyAdd(NetKeyIndex, AppKeyIndex, appkey);
+      Config.IN.AppKeyAdd(NetKeyIndex, AppKeyIndex, appkey)
+      .then(() =>{
+        console.log("SendAppKey FINISH WITH SUCCESS !");
+
+
+      })
+      .catch(error => {
+          app.showMessageRed(error);
+          console.log('ERROR: ' + error);
+      });
   }
 
 app.displayConnectionStatus = function () {
