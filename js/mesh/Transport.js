@@ -107,11 +107,17 @@ LowerTransport.receive = function (NetworkPDU) {
 
       //Unsegmented Access Message
       if(Access_message.SEG == 0) {
+        Access_message.SZMIC = 0;
+        // /
+        Access_message.SeqZero = Access_message.NetworkPDU.SEQ;
         //
         Access_message.UpperTransportAccessPDU = TransportPDU.substring(1*2);
         console.log('Unsegmented Access Message : ' + JSON.stringify(Access_message));
         //TODO
-        alert('TODO: Unsegmented Access Message');
+//        alert('TODO: Unsegmented Access Message');
+
+        UpperTransport.OUT_ProcessAccessPDU(Access_message);
+        return;
       }
 
       //Segmented Access Message
@@ -157,6 +163,7 @@ LowerTransport.receive = function (NetworkPDU) {
           LowerTransport.Segment_Acknowledgment_message(Access_message);
           //
           UpperTransport.OUT_ProcessAccessPDU(Reassembled_Access_message);
+          return;
         }
       }
 
