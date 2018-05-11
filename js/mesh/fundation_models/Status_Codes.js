@@ -24,14 +24,14 @@ const STATUS_CODE = [
 {id: 0x12, size: 1, name: 'RFU', process: null},
 ];
 
-STATUS_CODE.FindByName = function (opcode_name) {
-  var obj = OPCODE.find(function (obj) {
-    return obj.name == opcode_name;
+STATUS_CODE.FindByName = function (status_name) {
+  var obj = STATUS_CODE.find(function (obj) {
+    return obj.name == status_name;
   });
   return obj;
 };
 STATUS_CODE.FindByID = function (id) {
-  var obj = OPCODE.find(function (obj) {
+  var obj = STATUS_CODE.find(function (obj) {
     return obj.id == id;
   });
   return obj;

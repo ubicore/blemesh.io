@@ -12,10 +12,12 @@ Config.std_callback = function(callback, status){
   if(callback){
     if(status == 0){
       if(callback.Success){
+        console.log('callback.Success()');
         callback.Success();
       }
     } else {
       if(callback.Fail){
+        console.log('callback.Fail()');
         callback.Fail();
       }
     }
