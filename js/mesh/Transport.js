@@ -426,7 +426,7 @@ UpperTransport.deriveSecure_AppKey = function (access_payload) {
 }
 
 UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payload) {
-    console.log("UpperTransport.send");
+    console.log("UpperTransport.Send_With_DeviceKey");
 
     MeshAll.update();
 
@@ -435,13 +435,11 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
 
     // upper transport PDU
     upper_transport_pdu_obj = UpperTransport.deriveSecure_DeviceKey(access_payload);
-    upper_transport_pdu = upper_transport_pdu_obj.EncAccessPayload + upper_transport_pdu_obj.TransMIC;
-    console.log("upper_transport_pdu=" + upper_transport_pdu);
-    transmic = upper_transport_pdu_obj.TransMIC;
+    console.log('upper_transport_pdu_obj : ' + JSON.stringify(upper_transport_pdu_obj));
 
     // derive lower transport PDU
     lower_transport_pdu = LowerTransport.derive(upper_transport_pdu_obj);
-    console.log("lower_transport_pdu=" + lower_transport_pdu);
+    console.log('lower_transport_pdu : ' + JSON.stringify(lower_transport_pdu));
     ctl = 0;
     Network.Send(lower_transport_pdu);
 }
