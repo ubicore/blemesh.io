@@ -24,7 +24,8 @@ test.start = function() {
   // test.decode_Upper_PDU_myvalue();
 //  test.opcode(2);
 //  test.opcode(3);
-  test.number();
+  //test.number();
+  test.get_opcode_by_name();
 
 };
 
@@ -428,6 +429,18 @@ test.Confirmation = function() {
       var myuint16val = parseInt('f105', 16);
       console.log('my16array : ' + myuint16val);
       console.log('my16array : 0x' + myuint16val.toString(16));
+
+
+
+    }
+
+    test.get_opcode_by_name = function() {
+
+      var opcode = OPCODE.FindByName('Config_Composition_Data_Get');
+      console.log('opcode is : ' + JSON.stringify(opcode));
+
+      var access_payload = utils.toHex(opcode.id, opcode.size);
+      console.log('opcode is : ' + access_payload);
 
 
 

@@ -17,9 +17,15 @@ var has_mesh_proxy_data_in = false;
 var valid_pdu = false;
 
 var iv_index = "12345677";
+
+var NetKeyIndex =0;
 var netkey = "7dd7364cd842ad18c17c2b820c84c3d6";
+
+var AppKeyIndex = 0;
 var appkey = "63964771734fbd76e3b40519d1d94a48";
-var devkey = "3353e20aa88c65377bbf792ea2bd54c5";
+
+
+var devkey = "224a0049582f22a672c2be94b3194b34";
 
 //var encryption_key = "";
 //var privacy_key = "";
@@ -29,7 +35,7 @@ var sar = 0;
 var src = "1234";
 var dst = "0b0c";
 
-var opcode;
+//var opcode;
 var opparams;
 var access_payload;
 var transmic;
@@ -113,7 +119,11 @@ app.connect = function () {
                             app.showMessageRed("ERROR: connected device does not have the required GATT service and characteristic");
                         }
                         app.setBluetoothButtons();
-                        app.clearMessage();
+
+                        //
+                        if (!has_mesh_proxy_service || !has_mesh_proxy_data_in) {
+                          return;
+                        }
                     });
             },
             function (error) {
@@ -192,10 +202,37 @@ app.submitPdu = function () {
         console.log("Error: mesh_proxy_data_in characteristic not discovered");
         return;
     }
-
+    //
     access_payload = document.getElementById("access_payload_hex").value
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
  }
+
+ app.GetPage0 = function () {
+     if (!connected) {
+         return;
+     }
+     if (!has_mesh_proxy_data_in) {
+         app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+         console.log("Error: mesh_proxy_data_in characteristic not discovered");
+         return;
+     }
+     //Get Page0
+     Config.IN.Composition_Data_Get(0);
+  }
+
+app.SendAppKey = function () {
+      if (!connected) {
+          return;
+      }
+      if (!has_mesh_proxy_data_in) {
+          app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+          console.log("Error: mesh_proxy_data_in characteristic not discovered");
+          return;
+      }
+      //
+      //Add AppKeyAdd
+      Config.IN.AppKeyAdd(NetKeyIndex, AppKeyIndex, appkey);
+  }
 
 app.displayConnectionStatus = function () {
     if (connected) {

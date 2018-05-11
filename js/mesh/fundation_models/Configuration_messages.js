@@ -3,12 +3,13 @@
 
 
 
-
+var Config = {};
+Config.IN = {};
+Config.OUT = {};
 
 /***************************************************************************************************/
-var Config = {};
 
-Config.Composition_Data_Status = function (parameters){
+Config.OUT.Composition_Data_Status = function (parameters){
   //example data page 0 parsing, See : p330
   //8.10 Composition Data sample data
   //4.2.1 Composition Data
@@ -90,4 +91,23 @@ Config.Composition_Data_Status = function (parameters){
     );
   }
     console.log('Composition_Data_Status Page 0 : ' + JSON.stringify(result));
+}
+
+/***************************************************************************************************/
+Config.IN.Composition_Data_Get = function (page){
+  //4.3.2.4 Config Composition Data Get
+  var opcode = OPCODE.FindByName('Config_Composition_Data_Get');
+  var access_payload = utils.toHex(opcode.id, opcode.size) + utils.toHex(page, 1);
+
+  UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+}
+
+Config.IN.AppKeyAdd = function (NetKeyIndex, AppKeyIndex, AppKey){
+  //4.3.2.37 Config AppKey Add
+  //3.8.6.4 Global key indexes
+  var opcode = OPCODE.FindByName('Config_AppKey_Add');
+  var NetKeyIndexAndAppKeyIndex = ((NetKeyIndex & 0xFFF) << 12) + (AppKeyIndex & 0xFFF);
+  var access_payload = utils.toHex(opcode.id, opcode.size) + utils.toHex(NetKeyIndexAndAppKeyIndex, 3) + AppKey;
+
+  UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
 }

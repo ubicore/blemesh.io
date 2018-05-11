@@ -20,6 +20,21 @@ addEventListener('DOMContentLoaded', function() {
         app.submitPdu();
     });
 
+    var btn_page0 = document.getElementById('btn_page0');
+    btn_page0.addEventListener('click', function() {
+        app.GetPage0();
+    });
+
+    var btn_AppKey = document.getElementById('btn_AppKey');
+    btn_AppKey.addEventListener('click', function() {
+        app.SendAppKey();
+    });
+
+    var btn_Next = document.getElementById('btn_Next');
+    btn_Next.addEventListener('click', function() {
+        app.btn_Next();
+    });
+
     var select_sar = document.getElementById('sar_selection');
     select_sar.addEventListener('change', function() {
         app.onSarSelect(this);

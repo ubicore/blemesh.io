@@ -8,7 +8,6 @@
 //var netkey;
 //var appkey;
 //var devkey;
-
 var seq = 0x07080b; //
 var MeshAll = {};
 
@@ -68,7 +67,7 @@ LowerTransport.Segment_Acknowledgment_message = function(Access_message){
     BlockAck |= (1 << i);
   }
   var Segment_Acknowledgment_message = '';
-  Segment_Acknowledgment_message += '00'; //SEG = 0, Opcode = 0
+  Segment_Acknowledgment_message += '00'; //SEG = 0, OP = 0
   Segment_Acknowledgment_message += utils.toHex((OBO << 15) + ((Access_message.SeqZero & 0x1FFF) << 2), 2); //OBO, SeqZero
   Segment_Acknowledgment_message += utils.toHex(BlockAck, 4);
 
@@ -168,13 +167,13 @@ LowerTransport.receive = function (NetworkPDU) {
       //Control message
       var Control_message = {};
       Control_message.SEG = (octet0 & (1<<7))?1:0;
-      Control_message.OPCODE = octet0 & 0x7F;
+      Control_message.OP = octet0 & 0x7F;
 
 
       //Unsegmented Control Message
       if(Control_message.SEG == 0) {
         //3.5.2.3.1 Segment Acknowledgment message
-        if(OPCODE == 0){
+        if( Control_message.OP == 0){
           Control_message.OBO = (octet1 & (1<<7))?1:0;
           Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
           Control_message.BlockAck = dec_network_pdu.TransportPDU.substring(3*2, 7*2);
@@ -479,7 +478,7 @@ Access_Layer.receiver = function (dec_upper_transport_layer){
   //4.2.1.1 Composition Data Page 0
 
   var result = {
-    opcode: 0,
+    OP: 0,
     parameters: '',
   };
   var octet0 = utils.hexToU8A(dec_upper_transport_layer.Payload.substring(0, 1*2))[0];
@@ -497,15 +496,15 @@ Access_Layer.receiver = function (dec_upper_transport_layer){
   } else if(!BIT7){
     //Opcode size = 1
     result.parameters = dec_upper_transport_layer.Payload.substring(1*2);
-    result.opcode = octet0;
+    result.OP = octet0;
   } else if(BIT7 && !BIT6){
     //Opcode size = 2
     result.parameters = dec_upper_transport_layer.Payload.substring(2*2);
-    result.opcode = (octet0 << 8) + octet1;
+    result.OP = (octet0 << 8) + octet1;
   } else if(BIT7 && BIT6){
     //Opcode size = 3
     result.parameters = dec_upper_transport_layer.Payload.substring(3*2);
-    result.opcode = (octet0 << 16) + (octet1 << 8) + octet2;
+    result.OP = (octet0 << 16) + (octet1 << 8) + octet2;
   } else {
     //
     alert('Error: Access_Layer, invalid opcode');
@@ -522,12 +521,13 @@ var Fundation_models_layer = {};
 
 Fundation_models_layer.receiver = function (result){
 //4.3.4.1 Alphabetical summary of opcodes
-console.log('Opcode : ' + JSON.stringify(OPCODE[result.opcode]));
+var opcode = OPCODE.FindByID(result.OP);
+console.log('Opcode : ' + JSON.stringify(opcode));
 
 
-if(OPCODE[result.opcode].process){
+if(opcode.process){
   //
-  OPCODE[result.opcode].process(result.parameters);
+  opcode.process(result.parameters);
 }
 
 
