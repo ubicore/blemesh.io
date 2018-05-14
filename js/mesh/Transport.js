@@ -161,7 +161,7 @@ LowerTransport.receive = function (NetworkPDU) {
           console.log('Get a complete Reassembled_Access_message : ' + JSON.stringify(Reassembled_Access_message));
 
           //Send Acknowledgment Segmented Acces message
-          LowerTransport.Segment_Acknowledgment_message(Access_message);
+          LowerTransport.Segment_Acknowledgment_message(Access_message, LowerTransport.OUT.BlockAck );
           //
           UpperTransport.OUT_ProcessAccessPDU(Reassembled_Access_message);
           return;

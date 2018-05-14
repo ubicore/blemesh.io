@@ -3,7 +3,7 @@ const OPCODE = [
 {id: 0x00, size: 1, name: 'Config_AppKey_Add' , process: null, callback: null},
 {id: 0x01, size: 1, name: 'Config_AppKey_Update', process: null, callback: null},
 {id: 0x02, size: 1, name: 'Config_Composition_Data_Status', process: Config.OUT.Composition_Data_Status, callback: null},
-{id: 0x03, size: 1, name: 'Config_Config_Model_Publication_Set', process: null, callback: null},
+{id: 0x03, size: 1, name: 'Config_Model_Publication_Set', process: null, callback: null},
 {id: 0x04, size: 1, name: 'Health_Current_Status', process: null, callback: null},
 {id: 0x05, size: 1, name: 'Health_Fault_Status', process: null, callback: null},
 {id: 0x06, size: 1, name: 'Config_Heartbeat_Publication_Status', process: null, callback: null},
@@ -32,7 +32,7 @@ const OPCODE = [
 {id: 0x8016, size: 2, name: 'Config_Key_Refresh_Phase_Set', process: null, callback: null},
 {id: 0x8017, size: 2, name: 'Config_Key_Refresh_Phase_Status', process: null, callback: null},
 {id: 0x8018, size: 2, name: 'Config_Model_Publication_Get', process: null, callback: null},
-{id: 0x8019, size: 2, name: 'Config_Model_Publication_Status', process: null, callback: null},
+{id: 0x8019, size: 2, name: 'Config_Model_Publication_Status', process: Config.OUT.Model_Publication_Status, callback: null},
 {id: 0x801A, size: 2, name: 'Config_Model_Publication_Virtual_Address_Set', process: null, callback: null},
 {id: 0x801B, size: 2, name: 'Config_Model_Subscription_Add', process: null, callback: null},
 {id: 0x801C, size: 2, name: 'Config_Model_Subscription_Delete', process: null, callback: null},
@@ -99,4 +99,8 @@ OPCODE.FindByID = function (id) {
     return obj.id == id;
   });
   return obj;
+};
+
+OPCODE.ToHexID = function (obj) {
+  return utils.toHex(obj.id, obj.size);
 };

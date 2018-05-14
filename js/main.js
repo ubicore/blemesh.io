@@ -32,7 +32,7 @@ addEventListener('DOMContentLoaded', function() {
 
     var btn_Next = document.getElementById('btn_Next');
     btn_Next.addEventListener('click', function() {
-        app.btn_Next();
+        app.PublicationSet();
     });
 
     var select_sar = document.getElementById('sar_selection');

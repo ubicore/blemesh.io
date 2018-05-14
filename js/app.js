@@ -21,11 +21,11 @@ var iv_index = "12345677";
 var NetKeyIndex =0;
 var netkey = "7dd7364cd842ad18c17c2b820c84c3d6";
 
-var AppKeyIndex = 0;
+var AppKeyIndex = 1;
 var appkey = "63964771734fbd76e3b40519d1d94a48";
 
 
-var devkey = "224a0049582f22a672c2be94b3194b34";
+var devkey = "fb47af985c34a10e902e05f85ac6a42f";
 
 //var encryption_key = "";
 //var privacy_key = "";
@@ -41,7 +41,7 @@ var access_payload;
 var transmic;
 var netmic;
 
-var mtu = 33;
+var mtu = 60;
 
 var proxy_pdu;
 
@@ -220,8 +220,6 @@ app.submitPdu = function () {
      Config.IN.Composition_Data_Get(0)
      .then(() =>{
        console.log("GetPage0 FINISH WITH SUCCESS !");
-
-
      })
      .catch(error => {
          app.showMessageRed(error);
@@ -243,14 +241,50 @@ app.SendAppKey = function () {
       Config.IN.AppKeyAdd(NetKeyIndex, AppKeyIndex, appkey)
       .then(() =>{
         console.log("SendAppKey FINISH WITH SUCCESS !");
-
-
       })
       .catch(error => {
           app.showMessageRed(error);
           console.log('ERROR: ' + error);
       });
   }
+
+
+  app.PublicationSet = function () {
+        if (!connected) {
+            return;
+        }
+        if (!has_mesh_proxy_data_in) {
+            app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+            console.log("Error: mesh_proxy_data_in characteristic not discovered");
+            return;
+        }
+
+        var parameters = {
+          ElementAddress: '0b0c',
+//          PublishAddress: 'ABCDEF0000000001ABCDEF0000000001',
+          PublishAddress: 'c000',
+          AppKeyIndex: AppKeyIndex,
+          // CredentialFlag: 0,
+          // PublishTTL: 0,
+          // PublishPeriod : 0,
+          // PublishRetransmitCount : 0x7,
+          // PublishRetransmitIntervalSteps : 0x10,
+          ModelIdentifier: '1001',
+        }
+
+        //Add AppKeyAdd
+        //Config.IN.Model_Publication_Virtual_Address_Set(parameters)
+        Config.IN.Model_Publication_Set(parameters)
+        .then(() =>{
+          console.log("PublicationSet FINISH WITH SUCCESS !");
+        })
+        .catch(error => {
+            app.showMessageRed(error);
+            console.log('ERROR: ' + error);
+        });
+    }
+
+
 
 app.displayConnectionStatus = function () {
     if (connected) {
@@ -368,7 +402,7 @@ app.onAppKeyChanged = function () {
 };
 
 app.onDevKeyChanged = function () {
-    devkey = document.getElementById("devkey").value;
+  //  devkey = document.getElementById("devkey").value;
 };
 
 app.onIvIndexChanged = function () {
