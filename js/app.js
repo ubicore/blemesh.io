@@ -53,6 +53,14 @@ app.initialize = function () {
     devkey = sessionStorage.getItem('devkey');
     console.log('devkey: ' + devkey);
 
+    seq = sessionStorage.getItem('seq');
+    console.log('seq: ' + seq);
+    if(!seq){
+      seq = 0;
+    }
+    console.log('seq: ' + seq);
+
+
 
     //this.ProxyPDU_1 = new ProxyPDU;
     //this.MeshTransport = new UpperTransport;

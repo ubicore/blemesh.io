@@ -8,7 +8,7 @@
 //var netkey;
 //var appkey;
 //var devkey;
-var seq = 0x07080b; //
+var seq = 0; //
 var MeshAll = {};
 
 MeshAll.update = function () {
@@ -276,6 +276,7 @@ Network.Send = function(lower_transport_pdu){
         .then(_ => {
             console.log('sent proxy pdu OK');
             seq++;
+            sessionStorage.setItem('seq', seq);
         })
         .catch(error => {
             alert('Error: ' + error);
@@ -336,6 +337,7 @@ Network.receive = function (netpduhex, privacy_key) {
 
   if(NetworkPDU.SEQ > seq){
     seq = NetworkPDU.SEQ;
+    sessionStorage.setItem('seq', seq);
   }
 
   //Decode Network
