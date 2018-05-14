@@ -682,7 +682,9 @@ class Provisionner {
             console.log('Start Provisionning');
             prov_trace.clearMessage();
             prov_trace.appendMessage('STEP : Start Provisionning');
-
+            // Remove all saved data from sessionStorage
+          	sessionStorage.clear();
+          	console.log('sessionStorage cleared...');
             //
             this.ProxyPDU_1.SetListening(characteristicOut, PDU => this.ProcessPDU(PDU))
                 .then(() => {
@@ -750,7 +752,8 @@ class Provisionner {
                   console.log('Device_Key =>');
                     this.Ecc_1.Create_Device_Key();
                     console.log('Create_Device_Key :\n' + this.Ecc_1.DeviceKey);
-
+                    // Save data to sessionStorage
+                		sessionStorage.setItem('devkey', this.Ecc_1.DeviceKey);
                     console.log('End of provision procedure');
                     prov_trace.appendMessage('End of provision procedure');
 

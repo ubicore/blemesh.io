@@ -203,11 +203,7 @@ class Ecc {
       //DevKey = k1(ECDHSecret, ProvisioningSalt, “prdk”)
       this.DeviceKey = crypto.k1(this.ProvEDCHSecret, this.ProvisioningSalt, 'prdk');
       console.log('DeviceKey: ' + this.DeviceKey );
-
-      appkey = this.DeviceKey;
-      app.onAppKeyUpdate();
     };
-
 };
 
 

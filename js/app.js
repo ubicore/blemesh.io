@@ -25,7 +25,7 @@ var AppKeyIndex = 1;
 var appkey = "63964771734fbd76e3b40519d1d94a48";
 
 
-var devkey = "fb47af985c34a10e902e05f85ac6a42f";
+var devkey = ''
 
 //var encryption_key = "";
 //var privacy_key = "";
@@ -48,6 +48,11 @@ var proxy_pdu;
 var msg;
 
 app.initialize = function () {
+
+    // Get saved data from sessionStorage
+    devkey = sessionStorage.getItem('devkey');
+    console.log('devkey: ' + devkey);
+
 
     //this.ProxyPDU_1 = new ProxyPDU;
     //this.MeshTransport = new UpperTransport;
@@ -398,7 +403,7 @@ app.onNetKeyChanged = function () {
 };
 
 app.onAppKeyChanged = function () {
-    appkey = document.getElementById("appkey").value;
+  //  appkey = document.getElementById("appkey").value;
 };
 
 app.onDevKeyChanged = function () {
