@@ -280,8 +280,13 @@ Config.IN.Model_Publication_Set = function (parameters){
     access_payload += utils.toHex(((Message.AppKeyIndex & 0xFFF) << 4) + (Message.CredentialFlag << 3) + 0, 2);
     access_payload += utils.toHex(Message.PublishTTL, 1);
     access_payload += utils.toHex(Message.PublishPeriod, 1);
-    access_payload += utils.toHex(((Message.PublishRetransmitCount & 0x7) << 5) + (Message.PublishRetransmitIntervalSteps & 0x1F));
+    console.log('access_payload : ' + access_payload);
+
+    access_payload += utils.toHex(((Message.AppKeyIndex & 0xFFF) << 4) + (Message.CredentialFlag << 3) + 0, 2);
+    console.log('access_payload : ' + access_payload);
+
     access_payload += Message.ModelIdentifier;
+    console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });
@@ -353,7 +358,7 @@ Config.IN.Model_Publication_Virtual_Address_Set = function (parameters){
     access_payload += utils.toHex(((Message.AppKeyIndex & 0xFFF) << 4) + (Message.CredentialFlag << 3) + 0, 2);
     access_payload += utils.toHex(Message.PublishTTL, 1);
     access_payload += utils.toHex(Message.PublishPeriod, 1);
-    access_payload += utils.toHex(((Message.PublishRetransmitCount & 0x7) << 5) + (Message.PublishRetransmitIntervalSteps & 0x1F));
+    access_payload += utils.toHex(((Message.PublishRetransmitCount & 0x7) << 5) + (Message.PublishRetransmitIntervalSteps & 0x1F), 1);
     access_payload += Message.ModelIdentifier;
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);

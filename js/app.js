@@ -282,7 +282,8 @@ app.SendAppKey = function () {
           // PublishPeriod : 0,
           // PublishRetransmitCount : 0x7,
           // PublishRetransmitIntervalSteps : 0x10,
-          ModelIdentifier: '1001',
+    //      ModelIdentifier: '1001',//Client
+          ModelIdentifier: '1000',//Server
         }
 
         //Add AppKeyAdd
