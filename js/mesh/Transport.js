@@ -55,17 +55,16 @@ LowerTransport.derive = function (upper_transport_pdu) {
     return lower_transport_pdu;
 };
 
-LowerTransport.Segment_Acknowledgment_message = function(Access_message){
+LowerTransport.Segment_Acknowledgment_message = function(Access_message, BlockAck){
   //3.5.3.3 Segmentation behavior
   //3.5.2.3.1 Segment Acknowledgment message
-  Access_message
 
   var OBO = 0;
-  var BlockAck = 0;
-  //Format BlockAck
-  for (var i = 0; i <= Access_message.SegN; i++) {
-    BlockAck |= (1 << i);
-  }
+  // var BlockAck = 0;
+  // //Format BlockAck
+  // for (var i = 0; i <= Access_message.SegN; i++) {
+  //   BlockAck |= (1 << i);
+  // }
   var Segment_Acknowledgment_message = '';
   Segment_Acknowledgment_message += '00'; //SEG = 0, OP = 0
   Segment_Acknowledgment_message += utils.toHex((OBO << 15) + ((Access_message.SeqZero & 0x1FFF) << 2), 2); //OBO, SeqZero
@@ -77,8 +76,6 @@ LowerTransport.Segment_Acknowledgment_message = function(Access_message){
   Network.Send(lower_transport_pdu);
 }
 
-
-var First_Access_Message;
 
 LowerTransport.receive = function (NetworkPDU) {
   // var NetworkPDU = {
@@ -137,6 +134,7 @@ LowerTransport.receive = function (NetworkPDU) {
         if(Access_message.SegO == 0){
           LowerTransport.OUT.First_Access_Message = Access_message;
           LowerTransport.OUT.PayloadFromSegments = '';
+          LowerTransport.OUT.BlockAck = 0;
         } else {
           //Check every segment
           if((LowerTransport.OUT.First_Access_Message.AKF != Access_message.AKF) ||
@@ -147,12 +145,15 @@ LowerTransport.receive = function (NetworkPDU) {
             alert('Error: Segmented Access Message Invalid segment');
             return;
           }
-
         }
 
         var Segment_m = TransportPDU.substring(4*2);
         console.log('Segment_m : ' + Segment_m + ' len : ' + Segment_m.length);
         LowerTransport.OUT.PayloadFromSegments += Segment_m;
+
+        //Format BlockAck
+        LowerTransport.OUT.BlockAck |= (1 << Access_message.SegO);
+
         //Last segment
         if(Access_message.SegO == Access_message.SegN ){
           var Reassembled_Access_message = Object.assign(LowerTransport.OUT.First_Access_Message);
