@@ -21,7 +21,7 @@ var iv_index = "12345677";
 var NetKeyIndex =0;
 var netkey = "7dd7364cd842ad18c17c2b820c84c3d6";
 
-var AppKeyIndex = 1;
+var AppKeyIndex = 0;
 var appkey = "63964771734fbd76e3b40519d1d94a48";
 
 
@@ -282,8 +282,8 @@ app.SendAppKey = function () {
           // PublishPeriod : 0,
           // PublishRetransmitCount : 0x7,
           // PublishRetransmitIntervalSteps : 0x10,
-    //      ModelIdentifier: '1001',//Client
-          ModelIdentifier: '1000',//Server
+          ModelIdentifier: '1001',//Client
+    //      ModelIdentifier: '1000',//Server
         }
 
         //Add AppKeyAdd

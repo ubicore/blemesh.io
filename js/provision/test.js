@@ -25,7 +25,8 @@ test.start = function() {
 //  test.opcode(2);
 //  test.opcode(3);
   //test.number();
-  test.get_opcode_by_name();
+//  test.get_opcode_by_name();
+  test.swpaphex();
 
 };
 
@@ -443,5 +444,14 @@ test.Confirmation = function() {
       console.log('opcode is : ' + access_payload);
 
 
+
+    }
+    test.swpaphex = function() {
+      var hexstring = 'ABCD012345'
+
+      swaped = utils.SWAPhex(hexstring);
+
+      console.log('hexstring : ' + hexstring);
+      console.log('swaped : ' + swaped);
 
     }

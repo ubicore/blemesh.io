@@ -1,7 +1,7 @@
 var utils = {};
 
 
-utils.getUint16fromhex = function(str){
+utils.getUint16LEfromhex = function(str){
   octet0 = parseInt(str.substring(0, 1*2), 16);
   octet1 = parseInt(str.substring(1*2, 2*2), 16);
   val = (octet1 << 8) + octet0;
@@ -117,4 +117,14 @@ utils.xorU8Array = function(bytes1, bytes2) {
 
 utils.leastSignificantBit = function(number) {
     return number & 1;
+}
+
+utils.SWAPhex = function (hex){
+  swaped_hex='';
+  for (var i = 0; i < hex.length; i = i + 2) {
+    offset = hex.length - i - 2;
+    swaped_hex += hex.substring(offset, offset + 2);
+  }
+
+  return swaped_hex;
 }

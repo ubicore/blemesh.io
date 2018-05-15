@@ -1,6 +1,10 @@
 
 
-
+// 3.1.1 Endianness and field ordering
+// For the network layer, lower transport layer, upper transport layer, mesh beacons, and Provisioning, all
+// multiple-octet numeric values shall be sent in big endian, as described in Section 3.1.1.1.
+// For the access layer and Foundation Models, all multiple-octet numeric values shall be little endian as
+// described in Section 3.1.1.2.
 
 
 var Config = {};
@@ -72,12 +76,12 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
     } ,
 		Elements:[],
 	}
-  result.CID = utils.getUint16fromhex(data.substring(0, 2*2)).toString(16);
-  result.PID = utils.getUint16fromhex(data.substring(2*2, 4*2)).toString(16);
-  result.VID = utils.getUint16fromhex(data.substring(4*2, 6*2)).toString(16);
-  result.CRPL = utils.getUint16fromhex(data.substring(6*2, 8*2)).toString(16);
+  result.CID = utils.getUint16LEfromhex(data.substring(0, 2*2)).toString(16);
+  result.PID = utils.getUint16LEfromhex(data.substring(2*2, 4*2)).toString(16);
+  result.VID = utils.getUint16LEfromhex(data.substring(4*2, 6*2)).toString(16);
+  result.CRPL = utils.getUint16LEfromhex(data.substring(6*2, 8*2)).toString(16);
 
-  var Features = utils.getUint16fromhex(data.substring(8*2, 10*2));
+  var Features = utils.getUint16LEfromhex(data.substring(8*2, 10*2));
   result.Features.Relay = (Features & (1<<0))?true:false;
   result.Features.Proxy = (Features & (1<<1))?true:false;
   result.Features.Friend = (Features & (1<<2))?true:false;
@@ -102,21 +106,21 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
     }
 
     //Element description header
-    Element.Loc = utils.getUint16fromhex(data.substring(0, 2*2)).toString(16);
-    Element.NumS = utils.getUint16fromhex(data.substring(2*2, 3*2));
-    Element.NumV = utils.getUint16fromhex(data.substring(3*2, 4*2));
+    Element.Loc = utils.getUint16LEfromhex(data.substring(0, 2*2)).toString(16);
+    Element.NumS = utils.getUint16LEfromhex(data.substring(2*2, 3*2));
+    Element.NumV = utils.getUint16LEfromhex(data.substring(3*2, 4*2));
 
      data = data.substring(4*2);
 
     //SIG_Models
     for (var i = 0; i < Element.NumS; i++) {
-      Element.SIG_Models[i] = utils.getUint16fromhex(data.substring(0, 2*2)).toString(16);
+      Element.SIG_Models[i] = utils.getUint16LEfromhex(data.substring(0, 2*2)).toString(16);
       data = data.substring(2*2);
     }
 
     //Vendor_Models
     for (var i = 0; i < Element.NumV; i++) {
-      Element.Vendor_Models[i] = utils.getUint16fromhex(data.substring(0, 4*2)).toString(16);
+      Element.Vendor_Models[i] = utils.getUint16LEfromhex(data.substring(0, 4*2)).toString(16);
       data = data.substring(4*2);
     }
     //
@@ -275,17 +279,13 @@ Config.IN.Model_Publication_Set = function (parameters){
 
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
-    access_payload += Message.ElementAddress;
-    access_payload += Message.PublishAddress;
-    access_payload += utils.toHex(((Message.AppKeyIndex & 0xFFF) << 4) + (Message.CredentialFlag << 3) + 0, 2);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.PublishAddress);
+    access_payload += utils.SWAPhex(utils.toHex((Message.AppKeyIndex & 0xFFF) + (Message.CredentialFlag << 12), 2));
     access_payload += utils.toHex(Message.PublishTTL, 1);
     access_payload += utils.toHex(Message.PublishPeriod, 1);
-    console.log('access_payload : ' + access_payload);
-
-    access_payload += utils.toHex(((Message.AppKeyIndex & 0xFFF) << 4) + (Message.CredentialFlag << 3) + 0, 2);
-    console.log('access_payload : ' + access_payload);
-
-    access_payload += Message.ModelIdentifier;
+    access_payload += utils.toHex((Message.PublishRetransmitCount & 0x7) + ((Message.PublishRetransmitIntervalSteps & 0x1F) << 3), 1);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
@@ -353,13 +353,13 @@ Config.IN.Model_Publication_Virtual_Address_Set = function (parameters){
 
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
-    access_payload += Message.ElementAddress;
-    access_payload += Message.PublishAddress;
-    access_payload += utils.toHex(((Message.AppKeyIndex & 0xFFF) << 4) + (Message.CredentialFlag << 3) + 0, 2);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.PublishAddress);
+    access_payload += utils.SWAPhex(utils.toHex((Message.AppKeyIndex & 0xFFF) + (Message.CredentialFlag << 12), 2));
     access_payload += utils.toHex(Message.PublishTTL, 1);
     access_payload += utils.toHex(Message.PublishPeriod, 1);
-    access_payload += utils.toHex(((Message.PublishRetransmitCount & 0x7) << 5) + (Message.PublishRetransmitIntervalSteps & 0x1F), 1);
-    access_payload += Message.ModelIdentifier;
+    access_payload += utils.toHex((Message.PublishRetransmitCount & 0x7) + ((Message.PublishRetransmitIntervalSteps & 0x1F) << 3), 1);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });
