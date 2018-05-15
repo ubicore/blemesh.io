@@ -40,6 +40,11 @@ addEventListener('DOMContentLoaded', function() {
         app.SubscriptionAdd();
     });
 
+    var btn_AppBind = document.getElementById('btn_AppBind');
+    btn_AppBind.addEventListener('click', function() {
+        app.AppBind();
+    });
+    
     var select_sar = document.getElementById('sar_selection');
     select_sar.addEventListener('change', function() {
         app.onSarSelect(this);

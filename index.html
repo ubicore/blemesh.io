@@ -76,6 +76,9 @@
                 <td>
                     <button id="btn_SubscriptionAdd" class="std_button">btn_SubscriptionAdd</button>
                 </td>
+                    <td>
+                    <button id="btn_AppBind" class="std_button">btn_AppBind</button>
+                </td>
             </tr>
         </table>
         <br>
@@ -126,12 +129,18 @@
             <tr>
                 <td class="col1">DevKey</td>
                 <td class="col2">
-                    <span class="fixed">0x</span>
-                    <input type="text" class="arg" id="devkey" maxlength="32" size="34" value="224a0049582f22a672c2be94b3194b34">
+                    <div id="devkey" class="arg">No defined</div>
                 </td>
                 <td class="col3">
                 </td>
             </tr>
+
+            <td class="col1">NetMIC (32 or 64 bits)</td>
+            <td id="net_mic" class="col2">
+            </td>
+            <td class="col3">
+            </td>
+
             <tr>
                 <td class="col1">IV Index</td>
                 <td class="col2">

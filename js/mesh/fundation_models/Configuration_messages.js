@@ -177,7 +177,7 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
 //4.3.2.26 Config Model Subscription Status
 Config.OUT.Model_Subscription_Status = function (obj, parameters){
 
-//Config_Model_Publication_Status
+//Model_Subscription_Status
   var CMPS = {
     Status: 0,//8 Status Code for the requesting message
     ElementAddress: 0,//16 Address of the element
@@ -194,6 +194,32 @@ Config.OUT.Model_Subscription_Status = function (obj, parameters){
   //
   var Status_Code_obj = STATUS_CODE.FindByID(CMPS.Status);
   console.log('Model_Subscription_Status status : ' + JSON.stringify(Status_Code_obj));
+
+  Config.std_callback(obj.callback, CMPS.Status);
+}
+
+
+//4.3.2.48 Config Model App Status
+Config.OUT.Model_App_Status = function (obj, parameters){
+
+//Config_Model_App_Status
+  var CMPS = {
+    Status: 0,//8 Status Code for the requesting message
+    ElementAddress: 0,//16 Address of the element
+    AppKeyIndex: 0,//12 Index of the application key
+    ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
+  }
+
+  CMPS.Status = utils.hexToU8A(parameters.substring(0, 1*2));
+  CMPS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  var number = utils.getUint16LEfromhex(parameters.substring(3*2, 5*2));
+  CMPS.AppKeyIndex = number & 0xFFF;
+  CMPS.ModelIdentifier = parameters.substring(5*2);
+
+  console.log('Model_App_Status : ' + JSON.stringify(CMPS));
+  //
+  var Status_Code_obj = STATUS_CODE.FindByID(CMPS.Status);
+  console.log('Model_App_Status status : ' + JSON.stringify(Status_Code_obj));
 
   Config.std_callback(obj.callback, CMPS.Status);
 }
@@ -433,6 +459,53 @@ Config.IN.Model_Subscription_Add = function (parameters){
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
     access_payload += utils.SWAPhex(Message.Address);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
+//4.3.2.46 Config Model App Bind
+Config.IN.Model_App_Bind = function (parameters){
+  return new Promise((resolve, reject) => {
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_Model_App_Status');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_Model_App_Bind');
+
+    var Message = {
+      //ElementAddress: '',
+      //AppKeyIndex: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if(parameters.AppKeyIndex == null){
+      reject('bad parameters.AppKeyIndex');
+      return;
+    }
+    if((parameters.ModelIdentifier.length != 2*2) && (parameters.ModelIdentifier.length != 4*2)){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    //Message = Object.assign(parameters);
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log('Config_Model_App_Bind : ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(utils.toHex((Message.AppKeyIndex & 0xFFF), 2));
     access_payload += utils.SWAPhex(Message.ModelIdentifier);
     console.log('access_payload : ' + access_payload);
 

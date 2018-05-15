@@ -69,7 +69,7 @@ const OPCODE = [
 {id: 0x803B, size: 2, name: 'Config_Heartbeat_Subscription_Set', process: null, callback: null},
 {id: 0x803C, size: 2, name: 'Config_Heartbeat_Subscription_Status', process: null, callback: null},
 {id: 0x803D, size: 2, name: 'Config_Model_App_Bind', process: null, callback: null},
-{id: 0x803E, size: 2, name: 'Config_Model_App_Status', process: null, callback: null},
+{id: 0x803E, size: 2, name: 'Config_Model_App_Status', process: Config.OUT.Model_App_Status, callback: null},
 {id: 0x803F, size: 2, name: 'Config_Model_App_Unbind', process: null, callback: null},
 {id: 0x8040, size: 2, name: 'Config_NetKey_Add', process: null, callback: null},
 {id: 0x8041, size: 2, name: 'Config_NetKey_Delete', process: null, callback: null},

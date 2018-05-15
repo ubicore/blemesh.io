@@ -52,6 +52,7 @@ app.initialize = function () {
     // Get saved data from sessionStorage
     devkey = sessionStorage.getItem('devkey');
     console.log('devkey: ' + devkey);
+    document.getElementById('devkey').innerHTML = '0x' + devkey;
 
     seq = sessionStorage.getItem('seq');
     console.log('seq: ' + seq);
@@ -240,93 +241,120 @@ app.submitPdu = function () {
      });
   }
 
-app.SendAppKey = function () {
-      if (!connected) {
-          return;
-      }
-      if (!has_mesh_proxy_data_in) {
-          app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
-          console.log("Error: mesh_proxy_data_in characteristic not discovered");
-          return;
-      }
-      //
-      //Add AppKeyAdd
-      Config.IN.AppKeyAdd(NetKeyIndex, AppKeyIndex, appkey)
-      .then(() =>{
-        console.log("SendAppKey FINISH WITH SUCCESS !");
-      })
-      .catch(error => {
-          app.showMessageRed(error);
-          console.log('ERROR: ' + error);
-      });
+  app.SendAppKey = function () {
+    if (!connected) {
+      return;
+    }
+    if (!has_mesh_proxy_data_in) {
+      app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      console.log("Error: mesh_proxy_data_in characteristic not discovered");
+      return;
+    }
+    //
+    //Add AppKeyAdd
+    Config.IN.AppKeyAdd(NetKeyIndex, AppKeyIndex, appkey)
+    .then(() =>{
+      console.log("SendAppKey FINISH WITH SUCCESS !");
+    })
+    .catch(error => {
+      app.showMessageRed(error);
+      console.log('ERROR: ' + error);
+    });
   }
 
 
   app.PublicationSet = function () {
-        if (!connected) {
-            return;
-        }
-        if (!has_mesh_proxy_data_in) {
-            app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
-            console.log("Error: mesh_proxy_data_in characteristic not discovered");
-            return;
-        }
-
-        var parameters = {
-          ElementAddress: '0b0c',
-//          PublishAddress: 'ABCDEF0000000001ABCDEF0000000001',
-          PublishAddress: 'c000',
-          AppKeyIndex: AppKeyIndex,
-          // CredentialFlag: 0,
-          // PublishTTL: 0,
-          // PublishPeriod : 0,
-          // PublishRetransmitCount : 0x7,
-          // PublishRetransmitIntervalSteps : 0x10,
-          ModelIdentifier: '1001',//Client : switch
-    //      ModelIdentifier: '1000',//Server : lanp
-        }
-
-        //Add AppKeyAdd
-        //Config.IN.Model_Publication_Virtual_Address_Set(parameters)
-        Config.IN.Model_Publication_Set(parameters)
-        .then(() =>{
-          console.log("PublicationSet FINISH WITH SUCCESS !");
-        })
-        .catch(error => {
-            app.showMessageRed(error);
-            console.log('ERROR: ' + error);
-        });
+    if (!connected) {
+      return;
     }
+    if (!has_mesh_proxy_data_in) {
+      app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      console.log("Error: mesh_proxy_data_in characteristic not discovered");
+      return;
+    }
+
+    var parameters = {
+      ElementAddress: '0b0c',
+      //          PublishAddress: 'ABCDEF0000000001ABCDEF0000000001',
+      PublishAddress: 'c000',
+      AppKeyIndex: AppKeyIndex,
+      // CredentialFlag: 0,
+      // PublishTTL: 0,
+      // PublishPeriod : 0,
+      // PublishRetransmitCount : 0x7,
+      // PublishRetransmitIntervalSteps : 0x10,
+      ModelIdentifier: '1001',//Client : switch
+      //      ModelIdentifier: '1000',//Server : lanp
+    }
+
+    Config.IN.Model_Publication_Set(parameters)
+    .then(() =>{
+      console.log("PublicationSet FINISH WITH SUCCESS !");
+    })
+    .catch(error => {
+      app.showMessageRed(error);
+      console.log('ERROR: ' + error);
+    });
+  }
 
   app.SubscriptionAdd = function () {
-        if (!connected) {
-            return;
-        }
-        if (!has_mesh_proxy_data_in) {
-            app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
-            console.log("Error: mesh_proxy_data_in characteristic not discovered");
-            return;
-        }
-
-        var parameters = {
-          ElementAddress: '0b0c',
-          Address: 'c000',
-          ModelIdentifier: '1000',//Server : lanp
-        }
-
-        //Add AppKeyAdd
-        //Config.IN.Model_Publication_Virtual_Address_Set(parameters)
-        Config.IN.Model_Subscription_Add(parameters)
-        .then(() =>{
-          console.log("PublicationSet FINISH WITH SUCCESS !");
-        })
-        .catch(error => {
-            app.showMessageRed(error);
-            console.log('ERROR: ' + error);
-        });
+    if (!connected) {
+      return;
+    }
+    if (!has_mesh_proxy_data_in) {
+      app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      console.log("Error: mesh_proxy_data_in characteristic not discovered");
+      return;
     }
 
+    var parameters = {
+      ElementAddress: '0b0c',
+      Address: 'c000',
+      ModelIdentifier: '1000',//Server : lanp
+    }
 
+    Config.IN.Model_Subscription_Add(parameters)
+    .then(() =>{
+      console.log("PublicationSet FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+      parameters.ElementAddress = '0b0d';
+      return Config.IN.Model_Subscription_Add(parameters)
+    })
+    .then(() =>{
+      console.log("PublicationSet FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+    })
+    .catch(error => {
+      app.showMessageRed(error);
+      console.log('ERROR: ' + error);
+    });
+
+  }
+
+  app.AppBind = function () {
+    if (!connected) {
+      return;
+    }
+    if (!has_mesh_proxy_data_in) {
+      app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      console.log("Error: mesh_proxy_data_in characteristic not discovered");
+      return;
+    }
+
+    var parameters = {
+      ElementAddress: '0b0c',
+      AppKeyIndex: AppKeyIndex,
+      ModelIdentifier: '1000',//Server : lanp
+    }
+
+    Config.IN.Model_App_Bind(parameters)
+    .then(() =>{
+      console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+    })
+    .catch(error => {
+      app.showMessageRed(error);
+      console.log('ERROR: ' + error);
+    });
+
+  }
 app.displayConnectionStatus = function () {
     if (connected) {
         document.getElementById('bluetooth_status').innerHTML = "CONNECTED";
