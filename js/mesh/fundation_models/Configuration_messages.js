@@ -302,8 +302,8 @@ Config.IN.Model_Publication_Set = function (parameters){
       CredentialFlag: 0,
       PublishTTL: 0,
       PublishPeriod : 0,
-      PublishRetransmitCount : 0x7,
-      PublishRetransmitIntervalSteps : 0x10,
+      PublishRetransmitCount : 0x0,
+      PublishRetransmitIntervalSteps : 0x0,
       //ModelIdentifier: '',
     }
 
