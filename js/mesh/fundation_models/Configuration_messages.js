@@ -153,17 +153,16 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
   }
 
   CMPS.Status = utils.hexToU8A(parameters.substring(0, 1*2));
-  CMPS.ElementAddress = parameters.substring(1*2, 3*2);
-  CMPS.PublishAddress = parameters.substring(3*2, 5*2);
-  var octet5 = utils.hexToU8A(parameters.substring(5*2, 6*2));
-  var octet6 = utils.hexToU8A(parameters.substring(6*2, 7*2));
-  CMPS.AppKeyIndex = (octet5 << 4) + (octet6 >> 4);
-  CMPS.CredentialFlag = (octet6 >> 3) & 0x01;
+  CMPS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  CMPS.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
+  var number = utils.getUint16LEfromhex(parameters.substring(5*2, 7*2));
+  CMPS.AppKeyIndex = number & 0xFFF;
+  CMPS.CredentialFlag = (number >> 12) & 0x01;
   CMPS.PublishTTL = utils.hexToU8A(parameters.substring(7*2, 8*2));
   CMPS.PublishPeriod = utils.hexToU8A(parameters.substring(8*2, 9*2));
   var octet9 = utils.hexToU8A(parameters.substring(9*2, 10*2));
-  CMPS.PublishRetransmitCount = (octet9 >> 5);
-  CMPS.PublishRetransmitIntervalSteps = octet9 & 0x1F;
+  CMPS.PublishRetransmitCount = octet9 & 0x1F;
+  CMPS.PublishRetransmitIntervalSteps = octet9 >> 3;
   CMPS.ModelIdentifier = parameters.substring(10*2);
 
   console.log('Model_Publication_Status : ' + JSON.stringify(CMPS));
@@ -173,6 +172,33 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
 
   Config.std_callback(obj.callback, CMPS.Status);
 }
+
+
+//4.3.2.26 Config Model Subscription Status
+Config.OUT.Model_Subscription_Status = function (obj, parameters){
+
+//Config_Model_Publication_Status
+  var CMPS = {
+    Status: 0,//8 Status Code for the requesting message
+    ElementAddress: 0,//16 Address of the element
+    Address: 0,//16 Value of the address
+    ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
+  }
+
+  CMPS.Status = utils.hexToU8A(parameters.substring(0, 1*2));
+  CMPS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  CMPS.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
+  CMPS.ModelIdentifier = parameters.substring(5*2);
+
+  console.log('Model_Subscription_Status : ' + JSON.stringify(CMPS));
+  //
+  var Status_Code_obj = STATUS_CODE.FindByID(CMPS.Status);
+  console.log('Model_Subscription_Status status : ' + JSON.stringify(Status_Code_obj));
+
+  Config.std_callback(obj.callback, CMPS.Status);
+}
+
+
 /***************************************************************************************************/
 //4.3.2.4 Config Composition Data Get
 Config.IN.Composition_Data_Get = function (page){
@@ -275,7 +301,7 @@ Config.IN.Model_Publication_Set = function (parameters){
     //Message = Object.assign(parameters);
     for(var k in parameters) Message[k]=parameters[k];
 
-    console.log('Model_Publication_Virtual_Address_Set : ' + JSON.stringify(Message));
+    console.log('Config_Model_Publication_Set : ' + JSON.stringify(Message));
 
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
@@ -364,4 +390,52 @@ Config.IN.Model_Publication_Virtual_Address_Set = function (parameters){
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });
 
+}
+
+
+//4.3.2.19 Config Model Subscription Add
+Config.IN.Model_Subscription_Add = function (parameters){
+  return new Promise((resolve, reject) => {
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_Model_Subscription_Status');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_Model_Subscription_Add');
+
+    var Message = {
+      //ElementAddress: '',
+      //Address: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if(parameters.Address.length != (2*2)){
+      reject('bad parameters.PublishAddress');
+      return;
+    }
+    if((parameters.ModelIdentifier.length != 2*2) && (parameters.ModelIdentifier.length != 4*2)){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    //Message = Object.assign(parameters);
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log('Config_Model_Subscription_Add : ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.Address);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
 }

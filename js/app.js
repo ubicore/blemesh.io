@@ -282,8 +282,8 @@ app.SendAppKey = function () {
           // PublishPeriod : 0,
           // PublishRetransmitCount : 0x7,
           // PublishRetransmitIntervalSteps : 0x10,
-          ModelIdentifier: '1001',//Client
-    //      ModelIdentifier: '1000',//Server
+          ModelIdentifier: '1001',//Client : switch
+    //      ModelIdentifier: '1000',//Server : lanp
         }
 
         //Add AppKeyAdd
@@ -298,6 +298,33 @@ app.SendAppKey = function () {
         });
     }
 
+  app.SubscriptionAdd = function () {
+        if (!connected) {
+            return;
+        }
+        if (!has_mesh_proxy_data_in) {
+            app.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+            console.log("Error: mesh_proxy_data_in characteristic not discovered");
+            return;
+        }
+
+        var parameters = {
+          ElementAddress: '0b0c',
+          Address: 'c000',
+          ModelIdentifier: '1000',//Server : lanp
+        }
+
+        //Add AppKeyAdd
+        //Config.IN.Model_Publication_Virtual_Address_Set(parameters)
+        Config.IN.Model_Subscription_Add(parameters)
+        .then(() =>{
+          console.log("PublicationSet FINISH WITH SUCCESS !");
+        })
+        .catch(error => {
+            app.showMessageRed(error);
+            console.log('ERROR: ' + error);
+        });
+    }
 
 
 app.displayConnectionStatus = function () {

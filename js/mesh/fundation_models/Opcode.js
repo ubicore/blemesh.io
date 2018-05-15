@@ -38,7 +38,7 @@ const OPCODE = [
 {id: 0x801C, size: 2, name: 'Config_Model_Subscription_Delete', process: null, callback: null},
 {id: 0x801D, size: 2, name: 'Config_Model_Subscription_Delete_All', process: null, callback: null},
 {id: 0x801E, size: 2, name: 'Config_Model_Subscription_Overwrite', process: null, callback: null},
-{id: 0x801F, size: 2, name: 'Config_Model_Subscription_Status', process: null, callback: null},
+{id: 0x801F, size: 2, name: 'Config_Model_Subscription_Status', process: Config.OUT.Model_Subscription_Status, callback: null},
 {id: 0x8020, size: 2, name: 'Config_Model_Subscription_Virtual_Address_Add', process: null, callback: null},
 {id: 0x8021, size: 2, name: 'Config_Model_Subscription_Virtual_Address_Delete', process: null, callback: null},
 {id: 0x8022, size: 2, name: 'Config_Model_Subscription_Virtual_Address_Overwrite', process: null, callback: null},

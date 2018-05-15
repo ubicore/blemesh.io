@@ -120,6 +120,10 @@ utils.leastSignificantBit = function(number) {
 }
 
 utils.SWAPhex = function (hex){
+  if (hex.length % 2 != 0) {
+      console.log("ERROR: hex string must be even number in length and contain nothing but hex chars");
+      return;
+  }
   swaped_hex='';
   for (var i = 0; i < hex.length; i = i + 2) {
     offset = hex.length - i - 2;

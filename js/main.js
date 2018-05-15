@@ -30,9 +30,14 @@ addEventListener('DOMContentLoaded', function() {
         app.SendAppKey();
     });
 
-    var btn_Next = document.getElementById('btn_Next');
-    btn_Next.addEventListener('click', function() {
+    var btn_PublicationSet = document.getElementById('btn_PublicationSet');
+    btn_PublicationSet.addEventListener('click', function() {
         app.PublicationSet();
+    });
+
+    var btn_SubscriptionAdd = document.getElementById('btn_SubscriptionAdd');
+    btn_SubscriptionAdd.addEventListener('click', function() {
+        app.SubscriptionAdd();
     });
 
     var select_sar = document.getElementById('sar_selection');
