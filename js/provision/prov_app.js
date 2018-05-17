@@ -16,6 +16,11 @@ var NodeServer = null;
 var prov_app = {};
 
 prov_app.start = function () {
+
+	Notification.requestPermission().then(function(result) {
+	  console.log(result);
+	});
+
 	provisionner_1 = new Provisionner;
 
 	console.log('Requesting Bluetooth Devices...');

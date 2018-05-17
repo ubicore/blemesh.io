@@ -87,9 +87,9 @@ class Prov_Start {
 class Provisionner {
     constructor() {
         // this.PDU = [];
-        this.ProxyPDU_1 = new ProxyPDU;
-        this.in;
-        this.Out;
+        this.ProxyPDU_OUT = null;
+        this.ProxyPDU_IN = null;
+
         this.ProvisionFinished = function () { };
         this.ProvisionFailed = function () { };
         this.CurrentStepProcess = function () { };
@@ -321,12 +321,7 @@ class Provisionner {
             console.log('Invite PDU ' + PDU.length);
             this.PDU_Invite = PDU;
 
-            this.In.writeValue(PDU)
-                .then(() => {
-                })
-                .catch(error => {
-                    reject(`writeValue error: ${error}`);
-                });
+            this.ProxyPDU_IN.Send(PDU, null, reject)
         });
     };
 
@@ -380,8 +375,8 @@ class Provisionner {
     //And 5.4.2.3 Exchanging public keys
     IN_Start() {
         return new Promise((resolve, reject) => {
-            this.CurrentStepResolve = resolve;
-            this.CurrentStepReject = reject;
+            this.CurrentStepResolve = null;
+            this.CurrentStepReject = null;
             this.CurrentStepProcess = null;
 
             this.Prov_Start.algorithm = 0; //FIPS P-256 Elliptic Curve
@@ -428,14 +423,8 @@ class Provisionner {
             console.log('Start PDU ' + PDU);
             console.log('Start PDU ' + PDU.length);
             this.PDU_Start = PDU;
-            this.In.writeValue(PDU)
-                .then(() => {
-                    resolve();
-                })
-                .catch(error => {
-                    reject(`writeValue error: ${error}`);
-                });
 
+            this.ProxyPDU_IN.Send(PDU, resolve, reject)
         });
     };
 
@@ -471,12 +460,7 @@ class Provisionner {
             console.log('Public_Key PDU : ' + PDU);
             console.log('Public_Key PDU : ' + PDU.length);
 
-            this.In.writeValue(PDU)
-                .then(() => {
-                })
-                .catch(error => {
-                    reject(`writeValue error: ${error}`);
-                });
+            this.ProxyPDU_IN.Send(PDU, null, reject)
         });
     };
 
@@ -516,12 +500,7 @@ class Provisionner {
 
             console.log('Confirmation PDU : ' + PDU);
             console.log('Confirmation PDU : ' + PDU.length);
-            this.In.writeValue(PDU)
-                .then(() => {
-                })
-                .catch(error => {
-                    reject(`writeValue error: ${error}`);
-                });
+            this.ProxyPDU_IN.Send(PDU, null, reject)
         });
     };
 
@@ -540,12 +519,7 @@ class Provisionner {
 
             console.log('PDU_Random : ' + PDU);
             console.log('PDU_Random : ' + PDU.length);
-            this.In.writeValue(PDU)
-                .then(() => {
-                })
-                .catch(error => {
-                    reject(`writeValue error: ${error}`);
-                });
+            this.ProxyPDU_IN.Send(PDU, null, reject)
         });
     };
 
@@ -578,12 +552,7 @@ class Provisionner {
 
             console.log('PDU_Random : ' + PDU);
             console.log('PDU_Random : ' + PDU.length);
-            this.In.writeValue(PDU)
-                .then(() => {
-                })
-                .catch(error => {
-                    reject(`writeValue error: ${error}`);
-                });
+            this.ProxyPDU_IN.Send(PDU, null, reject)
         });
     };
 
@@ -606,6 +575,11 @@ class Provisionner {
     Get_OOB_FromUser(resolve, reject) {
         console.log('Request OOB Number : ');
         prov_trace.appendMessage("Request OOB Number :");
+
+//        var img = '/to-do-notifications/img/icon-128.png';
+        var text = 'Please enter OOB Number Output from device';
+//        var notification = new Notification('To do list', { body: text, icon: img });
+        var notification = new Notification('To do list', { body: text});
 
         var input = prompt("Please enter OOB Number", "");
         if (isNaN(input)) {
@@ -675,8 +649,6 @@ class Provisionner {
 
 
     StartProvision(characteristicIn, characteristicOut) {
-        this.In = characteristicIn;
-        //this.Out = characteristicOut;
 
         return new Promise((resolve, reject) => {
             console.log('Start Provisionning');
@@ -685,8 +657,13 @@ class Provisionner {
             // Remove all saved data from sessionStorage
           	sessionStorage.clear();
           	console.log('sessionStorage cleared...');
+
+            this.ProxyPDU_IN = new ProxyPDU_IN(characteristicIn);
+
             //
-            this.ProxyPDU_1.SetListening(characteristicOut, PDU => this.ProcessPDU(PDU))
+            this.ProxyPDU_OUT = new ProxyPDU_OUT();
+            this.ProxyPDU_OUT.SetProvisionnerCb(PDU => this.ProcessPDU(PDU))
+            this.ProxyPDU_OUT.SetListening(characteristicOut)
                 .then(() => {
                     //Send Invite
                     return this.IN_Invite();

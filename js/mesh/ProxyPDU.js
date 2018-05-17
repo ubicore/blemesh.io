@@ -23,12 +23,13 @@ const SAR_DataOffset = 1;
 const Proxy_PDU_Type_List = ['Network PDU', 'Mesh Beacon', 'Proxy Configuration', 'Provisioning PDU'];
 
 
-class ProxyPDU {
+class ProxyPDU_OUT {
     constructor() {
         this.gatt_pkt = new ArrayBuffer(MAX_GATT_SIZE);
         this.gatt_pkt_Uint8view = new Uint8Array(this.gatt_pkt);
         this.size = 0;
-        this.PDU_IN_CallBack = function(){};
+
+        this.ProvisionnerINCb = function(){};
     };
 
     Failed() {
@@ -38,7 +39,7 @@ class ProxyPDU {
         console.log('Prov abord');
     };
 
-    sar(value) {
+    Reassembly(value) {
         var sarBits = value.getUint8(0) & GATT_SAR_MASK;
         var type = value.getUint8(0) & GATT_TYPE_MASK;
         var SAR_data = new Uint8Array(value.buffer, SAR_DataOffset);
@@ -93,19 +94,16 @@ class ProxyPDU {
                 this.size += SAR_data.length;
                 console.log('size : ' + this.size);
 
-                if(this.PDU_IN_CallBack && typeof( this.PDU_IN_CallBack) === "function") {
-                    var PDU = this.gatt_pkt.slice(0, this.size);
-                    var Proxy_PDU_Type = (new Uint8Array(PDU))[0];
-                    //
-                    if( Proxy_PDU_Type < Proxy_PDU_Type_List.length){
-                      console.log('===> ' + Proxy_PDU_Type_List[Proxy_PDU_Type]);
-                      this.PDU_IN_CallBack(PDU);
-                    } else {
-                      console.log('Proxy get a unknow message type: ' + Proxy_PDU_Type);
-                    }
+                var PDU = this.gatt_pkt.slice(0, this.size);
+                var Proxy_PDU_Type = (new Uint8Array(PDU))[0];
+                //
+                if( Proxy_PDU_Type < Proxy_PDU_Type_List.length){
+                  console.log('===> ' + Proxy_PDU_Type_List[Proxy_PDU_Type]);
+                  this.ProcessPDU(PDU);
                 } else {
-                    console.log('error : no PDU Callback');
+                  console.log('Proxy get a unknow message type: ' + Proxy_PDU_Type);
                 }
+
                 this.size = 0;
                 return;
         }
@@ -115,16 +113,14 @@ class ProxyPDU {
         console.log('Event');
 
         if (event.target.value.buffer.byteLength) {
-            this.sar(event.target.value);
+            this.Reassembly(event.target.value);
         } else {
             this.Failed();
         }
     }
 
-    SetListening(characteristic, callback) {
-        console.log('SetListening : ' + characteristic.uuid);
-        //this.SetPDU_Callback(PDU => callback(PDU));
-        this.PDU_IN_CallBack = callback;
+    SetListening(characteristic) {
+        console.log('SetListening');
 
         return new Promise((resolve, reject) => {
             return characteristic.startNotifications()
@@ -139,4 +135,80 @@ class ProxyPDU {
         });
     };
 
+    SetProvisionnerCb(Callback){
+      this.ProvisionnerINCb = Callback;
+    }
+
+    ProcessPDU (PDU) {
+        console.log("ProcessPDU");
+
+        var proxy_pdu = new Uint8Array(PDU)
+
+        //PDU type
+        var Proxy_PDU_Type = proxy_pdu[0];
+        var Net_pdu_bytes = utils.bytesToHex(proxy_pdu.slice(1));//Skip PDU Type
+
+        //
+        switch (Proxy_PDU_Type) {
+          case 0x00 :
+            console.log("Network PDU");
+            Network.receive(Net_pdu_bytes, hex_privacy_key);
+            break;
+          case 0x01:
+            console.log("Mesh Beacon");
+            break;
+          case 0x02:
+            console.log("Proxy Configuration");
+            break;
+          case 0x03:
+            console.log("Provisioning PDU");
+            if(this.ProvisionnerINCb  && typeof(this.ProvisionnerINCb) === "function"){
+              this.ProvisionnerINCb(PDU);
+            }
+            break;
+          default:
+            console.log("RFU");
+        }
+    }
+
+}
+
+
+
+class ProxyPDU_IN {
+    constructor(characteristicIn) {
+      this.IN = characteristicIn;
+    };
+
+    Send(PDU, CbOnSuccess, CbOnFail) {
+
+      this.IN.writeValue(PDU)
+      .then(() => {
+          if(CbOnSuccess  && typeof(CbOnSuccess) === "function"){
+            CbOnSuccess();
+          }
+      })
+      .catch(error => {
+        if(CbOnFail  && typeof(CbOnFail) === "function"){
+          CbOnFail(`writeValue error: ${error}`);
+        }
+      });
+
+
+    };
+    Segmentation(value) {
+
+
+    };
+
+
+    finalise (finalised_network_pdu) {
+        var msg_type = 0;
+        proxy_pdu = "";
+        var sm = (sar << 6) | msg_type;
+        var i = 0;
+        proxy_pdu = proxy_pdu + utils.intToHex(sm);
+        proxy_pdu = proxy_pdu + finalised_network_pdu;
+        return proxy_pdu;
+    };
 }

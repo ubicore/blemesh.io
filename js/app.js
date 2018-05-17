@@ -41,7 +41,7 @@ var access_payload;
 var transmic;
 var netmic;
 
-var mtu = 60;
+var mtu = 70;
 
 var proxy_pdu;
 
@@ -61,10 +61,6 @@ app.initialize = function () {
     }
     console.log('seq: ' + seq);
 
-
-
-    //this.ProxyPDU_1 = new ProxyPDU;
-    //this.MeshTransport = new UpperTransport;
     UpperTransport.initialize();
 
     msg = document.getElementById('message');
@@ -125,9 +121,11 @@ app.connect = function () {
                     .then(function (result) {
                         console.log("service discovery has completed");
                         if (has_mesh_proxy_service && has_mesh_proxy_data_out) {
-                            this.UpperTransport.ProxyPDU_1.SetListening(mesh_proxy_data_out, PDU => app.ProcessPDU(PDU))
+                          this.ProxyPDU_OUT = new ProxyPDU_OUT;
+                          this.ProxyPDU_OUT.SetListening(mesh_proxy_data_out);
                         }
                         if (has_mesh_proxy_service && has_mesh_proxy_data_in) {
+                            app.ProxyPDU_IN = new ProxyPDU_IN(mesh_proxy_data_in);
                             app.clearMessage();
                         } else {
                             app.showMessageRed("ERROR: connected device does not have the required GATT service and characteristic");

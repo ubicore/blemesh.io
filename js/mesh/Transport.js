@@ -261,7 +261,7 @@ Network.Send = function(lower_transport_pdu){
     console.log("finalised_network_pdu: " + finalised_network_pdu);
 
     // finalise proxy PDU
-    proxy_pdu = ProxyPDU_IN.finalise(finalised_network_pdu);
+    proxy_pdu = app.ProxyPDU_IN.finalise(finalised_network_pdu);
     console.log("proxy_pdu: " + proxy_pdu);
 
     if (proxy_pdu.length > (mtu * 2)) { // hex chars
@@ -358,56 +358,24 @@ Network.receive = function (netpduhex, privacy_key) {
 
 /***************************************************************************************************/
 
-var ProxyPDU_IN = {};
-var msg_type = 0;
-
-
-ProxyPDU_IN.finalise = function (finalised_network_pdu) {
-    proxy_pdu = "";
-    sm = (sar << 6) | msg_type;
-    i = 0;
-    proxy_pdu = proxy_pdu + utils.intToHex(sm);
-    proxy_pdu = proxy_pdu + finalised_network_pdu;
-    return proxy_pdu;
-};
-
-var ProxyPDU_OUT = {};
-
-ProxyPDU_OUT.ProcessPDU = function (PDU) {
-    console.log("ProcessPDU");
-
-    var proxy_pdu = new Uint8Array(PDU)
-
-    //PDU type
-    var Proxy_PDU_Type = proxy_pdu[0];
-    var Net_pdu_bytes = utils.bytesToHex(proxy_pdu.slice(1));//Skip PDU Type
-
-    //
-    switch (Proxy_PDU_Type) {
-      case 0x00 :
-        console.log("Network PDU");
-        Network.receive(Net_pdu_bytes, hex_privacy_key);
-        break;
-      case 0x01:
-        console.log("Mesh Beacon");
-        break;
-      case 0x02:
-        console.log("Proxy Configuration");
-        break;
-      case 0x03:
-        console.log("Provisioning PDU");
-        break;
-      default:
-        console.log("RFU");
-    }
-}
+// var ProxyPDU_IN = {};
+// var msg_type = 0;
+//
+//
+// ProxyPDU_IN.finalise = function (finalised_network_pdu) {
+//     proxy_pdu = "";
+//     sm = (sar << 6) | msg_type;
+//     i = 0;
+//     proxy_pdu = proxy_pdu + utils.intToHex(sm);
+//     proxy_pdu = proxy_pdu + finalised_network_pdu;
+//     return proxy_pdu;
+// };
 
 
 /***************************************************************************************************/
 var UpperTransport = {};
 
 UpperTransport.initialize = function () {
-    this.ProxyPDU_1 = new ProxyPDU;
 }
 
 UpperTransport.deriveSecure_DeviceKey = function (access_payload) {
