@@ -173,42 +173,73 @@ class ProxyPDU_OUT {
 
 }
 
-
+const MTU = 18;
 
 class ProxyPDU_IN {
     constructor(characteristicIn) {
       this.IN = characteristicIn;
+
+
+
+
+
     };
 
     Send(PDU, CbOnSuccess, CbOnFail) {
+      this.CbOnSuccess = CbOnSuccess;
+      this.CbOnFail = CbOnFail;
 
-      this.IN.writeValue(PDU)
+      this.PDU_Type = PDU[0] & 0x3F;
+      this.RemainingDATA = PDU.slice(1);
+      var Remaining = this.RemainingDATA.length;
+
+      this.ToSend = (Remaining > (MTU-1))? (MTU-1) : Remaining;
+      var SAR = (Remaining > this.ToSend) ? 0b01 : 0;
+
+      var proxy_pdu = new Uint8Array(1+this.ToSend)
+      proxy_pdu[0] = (SAR << 6) +  this.PDU_Type;
+      proxy_pdu.set(this.RemainingDATA.slice(0, this.ToSend), 1);
+
+      console.log('Write Fisrt segment:' + proxy_pdu);
+      this.Write(proxy_pdu);
+    }
+
+    Write(ProxyPDU) {
+      this.IN.writeValue(ProxyPDU)
       .then(() => {
-          if(CbOnSuccess  && typeof(CbOnSuccess) === "function"){
-            CbOnSuccess();
+        console.log('Write OK');
+        this.RemainingDATA = this.RemainingDATA.slice(this.ToSend);
+        var Remaining = this.RemainingDATA.length;
+
+        if(Remaining > 0){
+          this.ToSend = (Remaining > (MTU-1))? (MTU-1) : Remaining;
+          var SAR = (Remaining > this.ToSend) ? 0b10 : 0b11;
+
+          var proxy_pdu = new Uint8Array(1+this.ToSend)
+          proxy_pdu[0] = (SAR << 6) +  this.PDU_Type;
+          proxy_pdu.set(this.RemainingDATA.slice(0, this.ToSend), 1);
+
+          console.log('Write n segment : ' + proxy_pdu);
+          this.Write(proxy_pdu);
+        }else {
+          console.log('Send is finish');
+
+          if(this.CbOnSuccess  && typeof(this.CbOnSuccess) === "function"){
+            console.log('typeof is function ');
+            this.CbOnSuccess();
           }
+        }
       })
       .catch(error => {
-        if(CbOnFail  && typeof(CbOnFail) === "function"){
-          CbOnFail(`writeValue error: ${error}`);
+        console.log('Write Fail');
+
+        if(this.CbOnFail  && typeof(this.CbOnFail) === "function"){
+          this.CbOnFail(`writeValue error: ${error}`);
         }
       });
 
-
-    };
-    Segmentation(value) {
-
-
     };
 
 
-    finalise (finalised_network_pdu) {
-        var msg_type = 0;
-        proxy_pdu = "";
-        var sm = (sar << 6) | msg_type;
-        var i = 0;
-        proxy_pdu = proxy_pdu + utils.intToHex(sm);
-        proxy_pdu = proxy_pdu + finalised_network_pdu;
-        return proxy_pdu;
-    };
+
 }

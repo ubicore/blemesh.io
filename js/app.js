@@ -43,7 +43,6 @@ var netmic;
 
 var mtu = 70;
 
-var proxy_pdu;
 
 var msg;
 

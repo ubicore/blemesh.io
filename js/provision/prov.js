@@ -579,7 +579,8 @@ class Provisionner {
 //        var img = '/to-do-notifications/img/icon-128.png';
         var text = 'Please enter OOB Number Output from device';
 //        var notification = new Notification('To do list', { body: text, icon: img });
-        var notification = new Notification('To do list', { body: text});
+        //var notification = new Notification('To do list', { body: text});
+        //ServiceWorkerRegistration.showNotification('To do list', { body: text});
 
         var input = prompt("Please enter OOB Number", "");
         if (isNaN(input)) {

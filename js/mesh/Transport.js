@@ -260,30 +260,22 @@ Network.Send = function(lower_transport_pdu){
     finalised_network_pdu = Network.finalise(ivi, hex_nid, obfuscated.obfuscated_ctl_ttl_seq_src, secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, network_pdu.NetMIC);
     console.log("finalised_network_pdu: " + finalised_network_pdu);
 
-    // finalise proxy PDU
-    proxy_pdu = app.ProxyPDU_IN.finalise(finalised_network_pdu);
-    console.log("proxy_pdu: " + proxy_pdu);
-
-    if (proxy_pdu.length > (mtu * 2)) { // hex chars
-        console.log("Segmentation required ( PDU length > MTU)");
-        alert("Segmentation required ( PDU length > MTU : NOT IMPLEMENTED YET !");
-        return;
-    }
-
-    proxy_pdu_bytes = utils.hexToBytes(proxy_pdu);
+    proxy_pdu_bytes = utils.hexToBytes('00' + finalised_network_pdu);
     proxy_pdu_data = new Uint8Array(proxy_pdu_bytes)
-    mesh_proxy_data_in.writeValue(proxy_pdu_data.buffer)
-        .then(_ => {
-            console.log('sent proxy pdu OK');
-            seq++;
-            sessionStorage.setItem('seq', seq);
-        })
-        .catch(error => {
-            alert('Error: ' + error);
-            app.showMessageRed('Error: ' + error);
-            console.log('Error: ' + error);
-            return;
-        });
+
+    app.ProxyPDU_IN.Send(proxy_pdu_data,
+      function(){
+        console.log('sent proxy pdu OK');
+        seq++;
+        sessionStorage.setItem('seq', seq);
+      },
+      function(){
+        alert('Error: ' + error);
+        app.showMessageRed('Error: ' + error);
+        console.log('Error: ' + error);
+        return;
+      }
+    );
 }
 
 /*********************************/
@@ -355,21 +347,6 @@ Network.receive = function (netpduhex, privacy_key) {
   LowerTransport.receive(NetworkPDU);
 }
 
-
-/***************************************************************************************************/
-
-// var ProxyPDU_IN = {};
-// var msg_type = 0;
-//
-//
-// ProxyPDU_IN.finalise = function (finalised_network_pdu) {
-//     proxy_pdu = "";
-//     sm = (sar << 6) | msg_type;
-//     i = 0;
-//     proxy_pdu = proxy_pdu + utils.intToHex(sm);
-//     proxy_pdu = proxy_pdu + finalised_network_pdu;
-//     return proxy_pdu;
-// };
 
 
 /***************************************************************************************************/
