@@ -57,10 +57,6 @@ const PDU_Parameters_Offset = 1;
 const PROV_Attention_Duration = 0x10;
 
 
-//Provision Node value
-var Unicast_Address = "0b0c";
-
-
 class Conf_Caps {
     constructor() {
         this.num_ele = 0;
@@ -540,18 +536,16 @@ class Provisionner {
 
             // The provisioning data shall be encrypted and authenticated using:
             // Provisioning Data = Network Key || Key Index || Flags || IV Index || Unicast Address
-            var Key_Index = '0000';
+            //var Key_Index = '0000';
             var Flags = '00'
-            var ProvDATAHex = netkey + Key_Index + Flags + iv_index + Unicast_Address;
-            console.log('ProvDATAPayloadHex : ' + ProvDATAHex);
+            var ProvDATAHex = N.key + N.index + Flags + I + Prov.unicastAddress;
+            console.log('ProvDATAHex : ' + ProvDATAHex);
 
             var EncProvDATAHex = this.Ecc_1.Encrypt_Provision_DATA(ProvDATAHex);
-            console.log('EncProvDATAHex : ' + EncProvDATAHex);
             var Payload = new Uint8Array(utils.hexToBytes(EncProvDATAHex));
             PDU.set(Payload, index);
 
-            console.log('PDU_Random : ' + PDU);
-            console.log('PDU_Random : ' + PDU.length);
+            console.log('PDU_Random len ' + PDU.length + '\n' + PDU);
             this.ProxyPDU_IN.Send(PDU, null, reject)
         });
     };
@@ -729,9 +723,12 @@ class Provisionner {
                 .then(() => {
                   console.log('Device_Key =>');
                     this.Ecc_1.Create_Device_Key();
-                    console.log('Create_Device_Key :\n' + this.Ecc_1.DeviceKey);
-                    // Save data to sessionStorage
-                		sessionStorage.setItem('devkey', this.Ecc_1.DeviceKey);
+
+                    //Create empty node struct in db
+                    var NodeIndex = db.Add_Node();
+                    db.data.nodes[NodeIndex].deviceKey = this.Ecc_1.DeviceKey;
+                    console.log('Add new Node index ' + NodeIndex + ' with devicekey ' + db.data.nodes[NodeIndex].deviceKey);
+
                     console.log('End of provision procedure');
                     prov_trace.appendMessage('End of provision procedure');
 

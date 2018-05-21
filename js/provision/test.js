@@ -26,7 +26,8 @@ test.start = function() {
 //  test.opcode(3);
   //test.number();
 //  test.get_opcode_by_name();
-  test.swpaphex();
+  //test.swpaphex();
+  test.db();
 
 };
 
@@ -453,5 +454,9 @@ test.Confirmation = function() {
 
       console.log('hexstring : ' + hexstring);
       console.log('swaped : ' + swaped);
+
+    }
+    test.db = function() {
+      db.initialize();
 
     }

@@ -21,7 +21,14 @@ var dst = "0b0c";
 
 var msg;
 
+var Prov;
+
 app.initialize = function () {
+    db.initialize();
+
+
+    Prov = db.data.provisioners[0];
+
     Security.initialize();
 
 

@@ -24,6 +24,7 @@
     <script src="js/mesh/ProxyPDU.js"></script>
     <script src="js/mesh/Upper_Transport.js"></script>
     <script src="js/mesh/Security.js"></script>
+    <script src="js/mesh/db.js"></script>
     <script src="js/provision/ecc.js"></script>
     <script src="js/provision/prov_app.js"></script>
     <script src="js/provision/prov_trace.js"></script>
@@ -35,6 +36,12 @@
  <body onload="app.initialize();prov_trace.initialize()">
 
 <button onclick="test.start()">Test</button>
+<button onclick="db.Load()">DB_Load</button>
+<button onclick="db.Save()">DB_Save</button>
+<button onclick="db.Reset()">DB_Reset</button>
+<button onclick="db.Export()">DB_Export</button>
+
+
     <!-- MAIN PAGE -->
     <div>
         <h1>Bluetooth SIG - Mesh Proxy Kit</h1>
