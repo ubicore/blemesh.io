@@ -12,6 +12,7 @@ var charOut;
 var characteristicOut;
 var characteristicInt;
 var NodeServer = null;
+var selected_device = null;
 
 var prov_app = {};
 
@@ -28,6 +29,7 @@ prov_app.start = function () {
 		filters: [{ services: [0x1827] }]
 	})
 	.then(device => {
+		selected_device = device;
 		console.log('Found device: ' + device.name);
 		return device.gatt.connect();
 	})
@@ -57,12 +59,16 @@ prov_app.start = function () {
 	})
 	.then(() => {
 		console.log('Provision completed');
-		NodeServer.disconnect()
+		NodeServer.disconnect();
+		selected_device.gatt.disconnect();
 		console.log('disconnected');
 		return;
 	})
 	.catch(error => {
 		console.log('The error is: ' + error);
+		if (NodeServer != null) {
+			selected_device.gatt.disconnect();
+		}
 
 		if (NodeServer != null) {
 			NodeServer.disconnect()

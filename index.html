@@ -5,25 +5,29 @@
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>Bluetooth mesh proxy protocol</title>
     <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <script src="js/app.js"></script>
     <script src="js/main.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/BigInteger.min.js"></script>
-    <script src="js/crypto-js-ext/cryptojs-aes.min.js"></script>
-    <script src="js/crypto-js-ext/all.min.js"></script>
-    <script src="js/asmcrypto.all.js"></script>
-    <script src="js/aes_cmac_adapter.js"></script>
-    <script src="js/crypto.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/mesh/ProxyPDU.js"></script>
-    <script src="js/mesh/Net.js"></script>
-    <script src="js/mesh/Transport.js"></script>
+    <script src="js/mesh/crypto/crypto-js-ext/cryptojs-aes.min.js"></script>
+    <script src="js/mesh/crypto/crypto-js-ext/all.min.js"></script>
+    <script src="js/mesh/crypto/aes_cmac_adapter.js"></script>
+    <script src="js/mesh/crypto/asmcrypto.all.js"></script>
+    <script src="js/mesh/crypto/BigInteger.min.js"></script>
+    <script src="js/mesh/crypto/crypto.js"></script>
     <script src="js/mesh/fundation_models/Configuration_messages.js"></script>
     <script src="js/mesh/fundation_models/Opcode.js"></script>
     <script src="js/mesh/fundation_models/Status_Codes.js"></script>
-    <script src="js/provision/prov_app.js"></script>
+    <script src="js/mesh/Access.js"></script>
+    <script src="js/mesh/Foundation_Model.js"></script>
+    <script src="js/mesh/Lower_Transport.js"></script>
+    <script src="js/mesh/Network.js"></script>
+    <script src="js/mesh/ProxyPDU.js"></script>
+    <script src="js/mesh/Upper_Transport.js"></script>
+    <script src="js/mesh/Security.js"></script>
     <script src="js/provision/ecc.js"></script>
-    <script src="js/provision/prov.js"></script>
+    <script src="js/provision/prov_app.js"></script>
     <script src="js/provision/prov_trace.js"></script>
+    <script src="js/provision/prov.js"></script>
     <script src="js/provision/test.js"></script>
     <!--   <link rel="stylesheet" href="https://taniarascia.github.io/primitive/css/main.min.css"> -->
 </head>
@@ -94,260 +98,6 @@
             </tr>
         </table>
 
-        <h3>Maximum Transmission Unit</h3>
-        <table>
-            <tr>
-                <td class="col1">MTU</td>
-                <td class="col2">
-                    <input type="number" class="arg" id="mtu" maxlength="3" size="3" value="70">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-        </table>
-
-        <h3>Provisioning Data</h3>
-        <table id="provisioning_data">
-            <tr>
-                <td class="col1">NetKey</td>
-                <td class="col2">
-                    <span class="fixed">0x</span>
-                    <input type="text" class="arg" id="netkey" maxlength="32" size="34" value="7dd7364cd842ad18c17c2b820c84c3d6">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">AppKey</td>
-                <td class="col2">
-                    <span class="fixed">0x</span>
-                    <input type="text" class="arg" id="appkey" maxlength="32" size="34" value="63964771734fbd76e3b40519d1d94a48">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">DevKey</td>
-                <td class="col2">
-                    <div id="devkey" class="arg">No defined</div>
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-
-            <td class="col1">NetMIC (32 or 64 bits)</td>
-            <td id="net_mic" class="col2">
-            </td>
-            <td class="col3">
-            </td>
-
-            <tr>
-                <td class="col1">IV Index</td>
-                <td class="col2">
-                    <span class="fixed">0x</span>
-                    <input type="text" class="arg" id="iv_index" maxlength="8" size="8" value="12345677">
-                </td>
-                <td class="col3">
-                    Used to derive IVI
-                </td>
-            </tr>
-        </table>
-
-        <h3>Proxy PDU</h3>
-        <table>
-            <tr>
-                <td class="col1">SAR</td>
-                <td class="col2">
-                    <select id="sar_selection" class="field">
-                        <option class="field" value="0" selected>Complete Message</option>
-                        <option class="field" value="1" >First Segment</option>
-                        <option class="field" value="2" >Continuation Segment</option>
-                        <option class="field" value="3" >Last Segment</option>
-                    </select>
-                </td>
-                <td class="col3">
-                    <div class="fixed">Segmentation and Reassembly indicator</div>
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">Message Type</td>
-                <td class="col2">
-                    <select id="msg_type" class="field">
-                        <option class="field" value="0" selected>Network PDU</option>
-                        <!--
-                <option class="field" value="1" >Mesh Beacon</option>
-                <option class="field" value="2" >Proxy Configuration</option>
-                <option class="field" value="3" >Provisioning PDU</option>
--->
-                    </select>
-                </td>
-                <td class="col3">
-                    <div class="fixed">Only Network PDUs supported for now</div>
-                </td>
-            </tr>
-        </table>
-
-        <h3>Network PDU</h3>
-        <table id="network_pdu">
-            <tr>
-                <td class="col1">TTL (7 bits)</td>
-                <td class="col2">
-                    <input type="text" class="arg" id="ttl" maxlength="2" size="2" value="03">
-                </td>
-                <td class="col3">
-                    <div class="fixed">0x00 = has not been relayed and will not be relayed</div>
-                    <div class="fixed">0x01 = may have been relayed, but will not be relayed</div>
-                    <div class="fixed">0x02 to 0x7E = may have been relayed and can be relayed</div>
-                    <div class="fixed">0x7F = has not been relayed and can be relayed</div>
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">SRC (16 bits)</td>
-                <td class="col2">
-                    <span class="fixed">0x</span>
-                    <input type="text" class="arg" id="src" maxlength="4" size="4" value="1234">
-                </td>
-                <td class="col3">
-                    <div class="fixed">input: range 0x0001 to 0xEFFF</div>
-                </td>
-            </tr>
-            <tr>
-                <td class="col1">DST (16 bits)</td>
-                <td class="col2">
-                    <span class="fixed">0x</span>
-                    <input type="text" class="arg" id="dst" maxlength="4" size="4" value="0b0c">
-                </td>
-                <td class="col3">
-                    <div class="fixed"></div>
-                </td>
-            </tr>
-        </table>
-
-        <h3>Transport PDU</h3>
-        <p>When the CTL bit is 0, the TransportPDU field shall be a maximum of 128 bits. When the CTL bit is 1, the TransportPDU
-            field shall be a maximum of 96 bits.</p>
-        <p>Only unsegmented access messages are supported (CTL=0, SEG=0).</p>
-
-        <h3>Lower Transport PDU</h3>
-        <table id="lower_transport_pdu">
-        </table>
-
-        <h3>Upper Transport PDU</h3>
-        <p>When the CTL field in the Network PDU is 0, the Upper Transport Access PDU contains an access payload and is known
-            as the Upper Transport Access PDU.</p>
-
-        <h4>Access Payload</h4>
-        <p>The access payload is encrypted using an application key or device key and the encrypted access payload and associated
-            message integrity check value are combined into an Upper Transport Access PDU.</p>
-        <p>Select from the list or enter the opcode|params in hex in the field below.</p>
-        <table id="access_opcode">
-            <tr>
-                <td class="col1">OpCode</td>
-                <td class="col2">
-                    <select id="opcode_selection" class="field">
-                        <option class="field" value="0000" selected>Payload provided in hex below:</option>
-                        <option class="field" value="8201">Generic OnOff Get</option>
-                        <option class="field" value="8202">Generic OnOff Set</option>
-                        <option class="field" value="8203">Generic OnOff Set Unacknowledged</option>
-                    </select>
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr id="access_payload_section" hidden="false">
-                <td class="col1">Access Payload (hex)</td>
-                <td class="col2">
-                    <input type="text" class="arg" id="access_payload_hex" maxlength="32" size="32" value="800800">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr id="generic_onoff_params_onoff" hidden="true">
-                <td class="col1">On/Off</td>
-                <td class="col2">
-                    <select id="onoff_selection" class="field">
-                        <option class="field" value="00" selected>Off</option>
-                        <option class="field" value="01">On</option>
-                    </select>
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr id="generic_onoff_params_tid" hidden="true">
-                <td class="col1">TID</td>
-                <td class="col2">
-                    <input type="text" class="arg" id="tid_hex" maxlength="2" size="2" value="01">
-                </td>
-                <td class="col3">
-                    <div class="fixed">NB: same value within 6 secs = retransmit</div>
-                </td>
-            </tr>
-            <tr id="generic_onoff_params_trans_time" hidden="true">
-                <td class="col1">
-                    Transition Time (optional)
-                </td>
-                <td class="col2">
-                    <input type="text" class="arg" id="trans_time_hex" maxlength="2" size="2" value="00">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-            <tr id="generic_onoff_params_delay" hidden="true">
-                <td class="col1">Delay (C)</td>
-                <td class="col2">
-                    <input type="text" class="arg" id="delay_hex" maxlength="2" size="2" value="00">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-        </table>
-
-        <h4>Transport Message Integrity</h4>
-        <table>
-            <tr>
-                <td class="col1">TransMIC (32 bits - unsegmented)</td>
-                <td id="trans_mic" class="col2">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-        </table>
-
-        <h3>Network Message Integrity</h3>
-        <table>
-            <tr>
-                <td class="col1">NetMIC (32 or 64 bits)</td>
-                <td id="net_mic" class="col2">
-                </td>
-                <td class="col3">
-                </td>
-            </tr>
-        </table>
-
-        <h3 id="hdg_network_pdu">Network PDU</h3>
-        <div id="network_pdu_hex" class="emphasised">0x00</div>
-
-        <h3 id="hdg_proxy_pdu">Proxy PDU</h3>
-        <div id="proxy_pdu_hex" class="emphasised">0x00</div>
-
-        <h3>Notes</h3>
-        <p>The destination address and the TransportPDU are encrypted and authenticated using AES-CCM</p>
-        <p>When the CTL field in the Network PDU is 0, the Upper Transport Access PDU contains an access payload and is known
-            as the Upper Transport Access PDU.</p>
-
-        <h4>Cryptography</h4>
-        <h5>AES-CMAC</h5>
-        <p class="indent1">Function S1 which is used by:</p>
-        <p class="indent2">k2 network key material derivation function</p>
-        <p class="indent3">k2 is used to generate instances of EncryptionKey, PrivacyKey, and NID</p>
-        <p class="indent2">k3, used to generate a public value of 64 bits derived from a private key</p>
-        <p class="indent3">Specifically, k3 is used to generate the NID: Network ID = k3 (NetKey)</p>
-        <p class="indent2">k4 is used to generate a public value of 6 bits derived from a private key</p>
-        <p class="indent3">Specifically, k4 is used to generate AIDs: AID = k4(AppKey)</p>
-
-        <h5>AES-CCM</h5>
-        <p class="indent1">Message encryption and authentication. Messages are secured using AES-CCM at two different layers. Messages are encrypted
-            and authenticated at the network layer and at the upper transport layer.</p>
 
     </div>
 
