@@ -29,8 +29,6 @@ app.initialize = function () {
 
     Prov = db.data.provisioners[0];
 
-    Security.initialize();
-
 
     msg = document.getElementById('message');
     selected_device = null;

@@ -17,6 +17,8 @@ db.initialize = function () {
   } else {
     console.log("Loaded db : \n" + JSON.stringify(db.data));
   }
+
+  Security.Load();
 }
 
 db.Create = function () {

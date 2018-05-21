@@ -14,7 +14,7 @@ var Security = {};
 Security.NetKey = {};
 Security.AppKey = {};
 
-Security.initialize = function () {
+Security.Load = function () {
   // Get saved data from sessionStorage
   // devkey = sessionStorage.getItem('devkey');
   // if(!devkey){
@@ -29,6 +29,11 @@ Security.initialize = function () {
 
   N = db.data.netKeys[0];
   A = db.data.appKeys[0];
+
+  //TODO : Select Node Index to configure by wich ID ???
+  if(db.data.nodes.length > 0){
+    D = db.data.nodes[0].deviceKey;
+  }
 
   Security.NetKey.Derivation(N);
   Security.AppKey.Derivation(A);

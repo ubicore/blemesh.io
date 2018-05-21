@@ -6,6 +6,8 @@ UpperTransport.deriveSecure_DeviceKey = function (access_payload) {
     aid = 0;
     akf = 0;
 
+    iv_index = utils.toHex(db.data.IVindex, 4);
+
     // derive Application Nonce (ref 3.8.5.2)
     app_nonce = "0200" + utils.toHex(seq, 3) + src + dst + iv_index;
     upper_trans_pdu = crypto.meshAuthEncAccessPayload(D, app_nonce, access_payload);
@@ -18,6 +20,7 @@ UpperTransport.deriveSecure_AppKey = function (access_payload) {
 
     aid = A.aid;
     akf = 1;
+    iv_index = utils.toHex(db.data.IVindex, 4);
 
     // derive Application Nonce (ref 3.8.5.2)
     app_nonce = "0100" + utils.toHex(seq, 3) + src + dst + iv_index;
@@ -50,6 +53,8 @@ UpperTransport.OUT_ProcessAccessPDU  = function (Access_message) {
   SRC = Access_message.NetworkPDU.SRC;
   DST = Access_message.NetworkPDU.DST;
   SEQ = utils.toHex(Access_message.SeqZero, 3);
+  iv_index = utils.toHex(db.data.IVindex, 4);
+
   var device_nonce = '02' + ASZMIC_and_Pad + SEQ + SRC + DST + iv_index;
   console.log('device_nonce len : ' + device_nonce.length + ' : ' + device_nonce);
 
