@@ -128,7 +128,7 @@ Network.receive = function (netpduhex, privacy_key) {
   }
 
   //Decode Network
-  K = utils.normaliseHex(hex_encryption_key);
+  K = utils.normaliseHex(N.EncryptionKey);
   //3.8.5.1 Network nonce
   var net_nonce = "00" + ctl_ttl_hex + utils.toHex(NetworkPDU.SEQ, 3) + NetworkPDU.SRC + "0000" + iv_index;
   var EncNetData = netpduhex.substring(7*2);

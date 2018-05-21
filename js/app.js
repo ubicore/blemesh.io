@@ -16,19 +16,41 @@ var has_mesh_proxy_data_out = false;
 var has_mesh_proxy_data_in = false;
 var valid_pdu = false;
 
-var src = "1234";
-var dst = "0b0c";
+var src = "";
+var dst = "";
 
 var msg;
 
-var Prov;
+var Provisioner;
+
+var SelectedNode;
+
 
 app.initialize = function () {
     db.initialize();
 
+    //TODO : select provisioner
+    {
+      Provisioner = db.data.provisioners[0];
+      src = Provisioner.unicastAddress;
+      console.log('Select Provisioner: ' + Provisioner.provisionerName + ' @' + src);
+    }
 
-    Prov = db.data.provisioners[0];
+    //TODO : add entry to select Node => identify Node by other method ???
+    {
+      var NodeIndex = 0;
+      if(db.data.nodes.length > NodeIndex){
 
+        Security.SelectNode(NodeIndex);
+        SelectedNode = db.data.nodes[NodeIndex];
+
+        dst = SelectedNode.configuration.BaseAddress;
+        console.log('Select Node: ' + NodeIndex + ' @' + dst);
+      } else {
+        console.log('Invalid Node Index: ' + NodeIndex);
+      }
+
+    }
 
     msg = document.getElementById('message');
     selected_device = null;

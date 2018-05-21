@@ -30,19 +30,25 @@ Security.Load = function () {
   N = db.data.netKeys[0];
   A = db.data.appKeys[0];
 
-  //TODO : Select Node Index to configure by wich ID ???
-  if(db.data.nodes.length > 0){
-    D = db.data.nodes[0].deviceKey;
-  }
+
 
   Security.NetKey.Derivation(N);
   Security.AppKey.Derivation(A);
 
   I = utils.toHex(db.data.IVindex, 4);
   ivi = utils.leastSignificantBit(db.data.IVindex)
-
-
 }
+
+Security.SelectNode = function (index) {
+  //TODO : Select Node Index to configure by wich ID ???
+  if(db.data.nodes.length > index){
+    D = db.data.nodes[index].deviceKey;
+  } else {
+    alert('Error: Invalid Node index');
+  }
+}
+
+
 
 
 Security.NetKey.Create = function (index) {
@@ -61,11 +67,14 @@ Security.NetKey.Create = function (index) {
 
 Security.NetKey.Derivation = function (NetKey) {
 
-  k2_material = crypto.k2(NetKey, "00");
+  k2_material = crypto.k2(NetKey.key, "00");
   NetKey.EncryptionKey = k2_material.encryption_key;
   NetKey.PrivacyKey = k2_material.privacy_key;
   NetKey.NID = k2_material.NID;
-  NetKey.Network_ID = crypto.k3(NetKey);
+  NetKey.Network_ID = crypto.k3(NetKey.key);
+
+  console.log("NetKey: " + JSON.stringify(NetKey));
+
   return;
 }
 
@@ -86,6 +95,6 @@ Security.AppKey.Create = function (index, boundNetKeyIndex ) {
 }
 
 Security.AppKey.Derivation = function (AppKey) {
-  AppKey.aid = crypto.k4(AppKey);
+  AppKey.aid = crypto.k4(AppKey.key);
   return;
 }

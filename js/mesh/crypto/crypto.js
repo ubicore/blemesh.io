@@ -20,21 +20,21 @@ crypto.s1 = function (M) {
 }
 
 
-crypto.k1 = function (N, SALT, P) {
+crypto.k1 = function (Net, SALT, P) {
     //console.log('AES_CMAC_k1');
     //console.log('N: ' + N);
     //console.log('SALT: ' + SALT);
     //console.log('P: ' + P);
-    var T = crypto.getAesCmac(SALT, N );
+    var T = crypto.getAesCmac(SALT, Net );
     //console.log('T: ' + T.toString());
     var cmac = CryptoJS.CMAC(T, P);
     return cmac.toString();
 }
 
-crypto.k2 = function (N, P) {
+crypto.k2 = function (Net, P) {
 	k2_salt = crypto.s1("736d6b32"); // "smk2"
 	// T = AES-CMACsalt (N)
-	T = crypto.getAesCmac(k2_salt.toString(), N);
+	T = crypto.getAesCmac(k2_salt.toString(), Net);
 	// T0 = empty string (zero length)
 	T0 = "";
 	// T1 = AES-CMACt (T0 || P || 0x01)
@@ -64,10 +64,10 @@ crypto.k2 = function (N, P) {
 	return k2_material;
 };
 
-crypto.k3 = function (N) {
+crypto.k3 = function (Net) {
 	k3_salt = crypto.s1("736d6b33"); // "smk3"
 	// T = AES-CMACsalt (N)
-	T = crypto.getAesCmac(k3_salt.toString(), N);
+	T = crypto.getAesCmac(k3_salt.toString(), Net);
 	// k3(N) = AES-CMACt ( “id64” || 0x01 ) mod 2^64
 	k3_cmac = crypto.getAesCmac(T.toString(), id64_hex + "01");
 	var k3_cmac_bigint = bigInt(k3_cmac.toString(), 16);

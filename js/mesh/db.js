@@ -18,6 +18,9 @@ db.initialize = function () {
     console.log("Loaded db : \n" + JSON.stringify(db.data));
   }
 
+
+
+  //
   Security.Load();
 }
 
@@ -130,6 +133,7 @@ db.Add_Node = function () {
     {
       "deviceKey":"",
       "configuration":{
+        "BaseAddress":"",
         "netKeys":[],
         "elements":[],
         "appKeys":[],
