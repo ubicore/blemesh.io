@@ -221,7 +221,7 @@ app.discoverSvcsAndChars = function () {
     }
     //
     //Add AppKeyAdd
-    Config.IN.AppKeyAdd(NetKeyIndex, AppKeyIndex, appkey)
+    Config.IN.AppKeyAdd(N.index, A.index, A.key)
     .then(() =>{
       console.log("SendAppKey FINISH WITH SUCCESS !");
     })
