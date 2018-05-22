@@ -206,7 +206,7 @@ app.discoverSvcsAndChars = function () {
     }
     //
     //Add AppKeyAdd
-    Config.IN.AppKeyAdd(N.index, A.index, A.key)
+    Config.IN.AppKeyAdd(NetKey.index, AppKey.index, AppKey.key)
     .then(() =>{
       console.log("SendAppKey FINISH WITH SUCCESS !");
     })
@@ -228,10 +228,10 @@ app.discoverSvcsAndChars = function () {
     }
 
     var parameters = {
-      ElementAddress: '0b0c',
+      //ElementAddress: '',
       //          PublishAddress: 'ABCDEF0000000001ABCDEF0000000001',
       PublishAddress: 'c000',
-      AppKeyIndex: AppKeyIndex,
+      //AppKeyIndex: 0,
       // CredentialFlag: 0,
       // PublishTTL: 0,
       // PublishPeriod : 0,
@@ -240,6 +240,9 @@ app.discoverSvcsAndChars = function () {
       ModelIdentifier: '1001',//Client : switch
       //      ModelIdentifier: '1000',//Server : lanp
     }
+    parameters.ElementAddress = Node.dst;
+    parameters.AppKeyIndex = AppKey.index;
+
 
     Config.IN.Model_Publication_Set(parameters)
     .then(() =>{
@@ -262,15 +265,16 @@ app.discoverSvcsAndChars = function () {
     }
 
     var parameters = {
-      ElementAddress: '0b0c',
+      //ElementAddress: '0b0c',
       Address: 'c000',
       ModelIdentifier: '1000',//Server : lanp
     }
+    parameters.ElementAddress = Node.dst;
 
     Config.IN.Model_Subscription_Add(parameters)
     .then(() =>{
       console.log("PublicationSet FINISH WITH SUCCESS ! " + parameters.ElementAddress);
-      parameters.ElementAddress = '0b0d';
+      parameters.ElementAddress = '0101';
       return Config.IN.Model_Subscription_Add(parameters)
     })
     .then(() =>{
@@ -294,12 +298,21 @@ app.discoverSvcsAndChars = function () {
     }
 
     var parameters = {
-      ElementAddress: '0b0c',
-      AppKeyIndex: AppKeyIndex,
+      //ElementAddress: '0b0c',
+      //AppKeyIndex: 0,
       ModelIdentifier: '1000',//Server : lanp
     }
+    parameters.ElementAddress = Node.dst;
+    parameters.AppKeyIndex = AppKey.index;
 
     Config.IN.Model_App_Bind(parameters)
+    .then(() =>{
+      console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+
+      var NewDST = utils.toHex(parseInt(Node.dst, 16) + 1 , 2);
+      parameters.ElementAddress =  NewDST;
+      return Config.IN.Model_App_Bind(parameters)
+    })
     .then(() =>{
       console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
     })
