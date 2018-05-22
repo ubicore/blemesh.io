@@ -13,7 +13,7 @@ Network.deriveSecure = function (hex_dst, lower_transport_pdu) {
     network_pdu = "";
     ctl_ttl = (ctl << 7) + (ttl & 0x7F);
     npdu2 = utils.intToHex(ctl_ttl);
-    K = utils.normaliseHex(N.EncryptionKey);
+    K = utils.normaliseHex(NetKey.EncryptionKey);
     iv_index = utils.toHex(db.data.IVindex, 4);
     net_nonce = "00" + npdu2 + utils.toHex(seq, 3) + src + "0000" + iv_index;
     console.log("net_nonce: " + net_nonce);
@@ -29,7 +29,7 @@ Network.deriveSecure = function (hex_dst, lower_transport_pdu) {
 Network.obfuscate = function (network_pdu) {
     obfuscated = "";
     iv_index = utils.toHex(db.data.IVindex, 4);
-    obfuscated = crypto.obfuscate(network_pdu.EncDST, network_pdu.EncTransportPDU, network_pdu.NetMIC, ctl, ttl, utils.toHex(seq, 3), src, iv_index, N.PrivacyKey);
+    obfuscated = crypto.obfuscate(network_pdu.EncDST, network_pdu.EncTransportPDU, network_pdu.NetMIC, ctl, ttl, utils.toHex(seq, 3), src, iv_index, NetKey.PrivacyKey);
     return obfuscated;
 };
 
@@ -51,7 +51,7 @@ Network.Send = function(lower_transport_pdu){
     console.log("obfuscated: " + JSON.stringify(obfuscated));
 
     // finalise network PDU
-    finalised_network_pdu = Network.finalise(ivi, N.NID, obfuscated.obfuscated_ctl_ttl_seq_src, secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, network_pdu.NetMIC);
+    finalised_network_pdu = Network.finalise(ivi, NetKey.NID, obfuscated.obfuscated_ctl_ttl_seq_src, secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, network_pdu.NetMIC);
     console.log("finalised_network_pdu: " + finalised_network_pdu);
 
     proxy_pdu_bytes = utils.hexToBytes('00' + finalised_network_pdu);
@@ -74,7 +74,7 @@ Network.Send = function(lower_transport_pdu){
 
 /*********************************/
 //Out
-Network.receive = function (netpduhex, privacy_key) {
+Network.receive = function (netpduhex) {
 
   var NetworkPDU =  {};
 		// ivi: 0,
@@ -100,7 +100,7 @@ Network.receive = function (netpduhex, privacy_key) {
   iv_index = utils.toHex(db.data.IVindex, 4);
 
   var pecb_input = "0000000000" + iv_index + privacy_random_hex;
-  var pecb_hex = crypto.e(pecb_input, privacy_key);
+  var pecb_hex = crypto.e(pecb_input, NetKey.PrivacyKey);
   var pecb = pecb_hex.substring(0, 6*2);
 
   //Reverse Obfuscate
@@ -128,7 +128,7 @@ Network.receive = function (netpduhex, privacy_key) {
   }
 
   //Decode Network
-  K = utils.normaliseHex(N.EncryptionKey);
+  K = utils.normaliseHex(NetKey.EncryptionKey);
   //3.8.5.1 Network nonce
   var net_nonce = "00" + ctl_ttl_hex + utils.toHex(NetworkPDU.SEQ, 3) + NetworkPDU.SRC + "0000" + iv_index;
   var EncNetData = netpduhex.substring(7*2);

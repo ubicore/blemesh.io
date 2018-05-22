@@ -78,10 +78,10 @@ crypto.k3 = function (Net) {
 	return k3_material;
 };
 
-crypto.k4 = function (N) {
+crypto.k4 = function (Key) {
 	// K4(N) = AES-CMACt ( “id6” || 0x01 ) mod 2^6
 	k4_salt = crypto.s1("736d6b34"); // "smk4"
-	T = crypto.getAesCmac(k4_salt.toString(), N);
+	T = crypto.getAesCmac(k4_salt.toString(), Key);
 	k4_cmac = crypto.getAesCmac(T.toString(), id6_hex + "01");
 	var k4_cmac_bigint = bigInt(k4_cmac.toString(), 16);
 	k4_modval = k4_cmac_bigint.divmod(64);

@@ -56,8 +56,6 @@ const PROVISIONING_CAPABILITIES_PARAM_SIZE = 11;
 const PDU_Parameters_Offset = 1;
 const PROV_Attention_Duration = 0x10;
 
-var Node;
-var NodeIndex;
 
 class Conf_Caps {
     constructor() {
@@ -541,7 +539,7 @@ class Provisionner {
             //var Key_Index = '0000';
             var Flags = '00'
             var iv_index = utils.toHex(db.data.IVindex, 4);
-            var ProvDATAHex = N.key + N.index + Flags + iv_index + Node.configuration.BaseAddress;
+            var ProvDATAHex = NetKey.key + NetKey.index + Flags + iv_index + SelectedNode.configuration.BaseAddress;
             console.log('ProvDATAHex : ' + ProvDATAHex);
 
             var EncProvDATAHex = this.Ecc_1.Encrypt_Provision_DATA(ProvDATAHex);
@@ -722,20 +720,20 @@ class Provisionner {
 
                     //TODO : Dynamic genration of provision data's
                     //Create empty node struct in db
-                    NodeIndex = db.Add_Node();
-                    Node = db.data.nodes[NodeIndex];
+                    var NodeIndex = db.Add_Node();
+                    SelectedNode = db.data.nodes[NodeIndex];
                     var StartAddress = parseInt(Provisioner.allocatedUnicastRange[0].lowAddress, 16);
-                    Node.configuration.BaseAddress = utils.toHex(StartAddress + (0x100 * NodeIndex), 2);
-                    console.log('Add new Node index with index : ' + NodeIndex + ' @' + Node.configuration.BaseAddress);
+                    SelectedNode.configuration.BaseAddress = utils.toHex(StartAddress + (0x100 * NodeIndex), 2);
+                    console.log('Add new Node with index : ' + NodeIndex + ' @' + SelectedNode.configuration.BaseAddress);
                     return this.IN_DATA();
                 })
                 .then(() => {
                   console.log('Device_Key =>');
                     this.Ecc_1.Create_Device_Key();
-                    console.log('Add devicekey : ' + Node.deviceKey);
-                    Node.deviceKey = this.Ecc_1.DeviceKey;
+                    console.log('Add devicekey : ' + SelectedNode.deviceKey);
+                    SelectedNode.deviceKey = this.Ecc_1.DeviceKey;
 
-                    Security.SelectNode(NodeIndex);
+                    db.Save();
 
                     console.log('End of provision procedure');
                     prov_trace.appendMessage('End of provision procedure');

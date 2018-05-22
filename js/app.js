@@ -22,7 +22,6 @@ var dst = "";
 var msg;
 
 var Provisioner;
-
 var SelectedNode;
 
 
@@ -40,8 +39,6 @@ app.initialize = function () {
     {
       var NodeIndex = 0;
       if(db.data.nodes.length > NodeIndex){
-
-        Security.SelectNode(NodeIndex);
         SelectedNode = db.data.nodes[NodeIndex];
 
         dst = SelectedNode.configuration.BaseAddress;

@@ -1,14 +1,9 @@
 
 
-//src
-//dst
-//iv_index
-
-
-
 var seq = 0; //
 
-
+var NetKey;
+var AppKey;
 
 var Security = {};
 Security.NetKey = {};
@@ -27,27 +22,15 @@ Security.Load = function () {
   }
   console.log('seq: ' + seq);
 
-  N = db.data.netKeys[0];
-  A = db.data.appKeys[0];
+  NetKey = db.data.netKeys[0];
+  AppKey = db.data.appKeys[0];
 
-
-
-  Security.NetKey.Derivation(N);
-  Security.AppKey.Derivation(A);
+  Security.NetKey.Derivation(NetKey);
+  Security.AppKey.Derivation(AppKey);
 
   I = utils.toHex(db.data.IVindex, 4);
   ivi = utils.leastSignificantBit(db.data.IVindex)
 }
-
-Security.SelectNode = function (index) {
-  //TODO : Select Node Index to configure by wich ID ???
-  if(db.data.nodes.length > index){
-    D = db.data.nodes[index].deviceKey;
-  } else {
-    alert('Error: Invalid Node index');
-  }
-}
-
 
 
 

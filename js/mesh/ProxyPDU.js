@@ -152,7 +152,7 @@ class ProxyPDU_OUT {
         switch (Proxy_PDU_Type) {
           case 0x00 :
             console.log("Network PDU");
-            Network.receive(Net_pdu_bytes, N.PrivacyKey);
+            Network.receive(Net_pdu_bytes);
             break;
           case 0x01:
             console.log("Mesh Beacon");
