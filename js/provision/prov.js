@@ -539,7 +539,7 @@ class Provisionner {
             //var Key_Index = '0000';
             var Flags = '00'
             var iv_index = utils.toHex(db.data.IVindex, 4);
-            var ProvDATAHex = NetKey.key + NetKey.index + Flags + iv_index + SelectedNode.configuration.BaseAddress;
+            var ProvDATAHex = NetKey.key + NetKey.index + Flags + iv_index + Node.SelectedNode.configuration.BaseAddress;
             console.log('ProvDATAHex : ' + ProvDATAHex);
 
             var EncProvDATAHex = this.Ecc_1.Encrypt_Provision_DATA(ProvDATAHex);
@@ -721,17 +721,18 @@ class Provisionner {
                     //TODO : Dynamic genration of provision data's
                     //Create empty node struct in db
                     var NodeIndex = db.Add_Node();
-                    SelectedNode = db.data.nodes[NodeIndex];
+                    Node.Select(NodeIndex);
+
                     var StartAddress = parseInt(Provisioner.allocatedUnicastRange[0].lowAddress, 16);
-                    SelectedNode.configuration.BaseAddress = utils.toHex(StartAddress + (0x100 * NodeIndex), 2);
-                    console.log('Add new Node with index : ' + NodeIndex + ' @' + SelectedNode.configuration.BaseAddress);
+                    Node.SelectedNode.configuration.BaseAddress = utils.toHex(StartAddress + (0x100 * NodeIndex), 2);
+                    console.log('Add new Node with index : ' + NodeIndex + ' @' + Node.SelectedNode.configuration.BaseAddress);
                     return this.IN_DATA();
                 })
                 .then(() => {
                   console.log('Device_Key =>');
                     this.Ecc_1.Create_Device_Key();
-                    console.log('Add devicekey : ' + SelectedNode.deviceKey);
-                    SelectedNode.deviceKey = this.Ecc_1.DeviceKey;
+                    console.log('Add devicekey : ' + Node.SelectedNode.deviceKey);
+                    Node.SelectedNode.deviceKey = this.Ecc_1.DeviceKey;
 
                     db.Save();
 

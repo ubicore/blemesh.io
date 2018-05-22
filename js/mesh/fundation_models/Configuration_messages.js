@@ -63,7 +63,7 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
   var data = parameters.substring(1*2);
 
   //Page0
-  var result = {
+  var composition = {
 		CID: '',
 		PID: '',
 		VID: '',
@@ -76,16 +76,16 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
     } ,
 		Elements:[],
 	}
-  result.CID = utils.getUint16LEfromhex(data.substring(0, 2*2)).toString(16);
-  result.PID = utils.getUint16LEfromhex(data.substring(2*2, 4*2)).toString(16);
-  result.VID = utils.getUint16LEfromhex(data.substring(4*2, 6*2)).toString(16);
-  result.CRPL = utils.getUint16LEfromhex(data.substring(6*2, 8*2)).toString(16);
+  composition.CID = utils.getUint16LEfromhex(data.substring(0, 2*2)).toString(16);
+  composition.PID = utils.getUint16LEfromhex(data.substring(2*2, 4*2)).toString(16);
+  composition.VID = utils.getUint16LEfromhex(data.substring(4*2, 6*2)).toString(16);
+  composition.CRPL = utils.getUint16LEfromhex(data.substring(6*2, 8*2)).toString(16);
 
   var Features = utils.getUint16LEfromhex(data.substring(8*2, 10*2));
-  result.Features.Relay = (Features & (1<<0))?true:false;
-  result.Features.Proxy = (Features & (1<<1))?true:false;
-  result.Features.Friend = (Features & (1<<2))?true:false;
-  result.Features.Low_Power = (Features & (1<<3))?true:false;
+  composition.Features.Relay = (Features & (1<<0))?true:false;
+  composition.Features.Proxy = (Features & (1<<1))?true:false;
+  composition.Features.Friend = (Features & (1<<2))?true:false;
+  composition.Features.Low_Power = (Features & (1<<3))?true:false;
 
 
   // Loc 2 Contains a location descriptor
@@ -124,11 +124,14 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
       data = data.substring(4*2);
     }
     //
-    result.Elements.push(
+    composition.Elements.push(
       Element
     );
   }
-    console.log('Composition_Data_Status Page 0 : ' + JSON.stringify(result));
+
+
+    Node.SelectedNode.composition = composition;
+    console.log('Composition_Data_Status Page 0 : ' + JSON.stringify(Node.SelectedNode.composition));
 
     var status = 0;//Success
     Config.std_callback(obj.callback, status);

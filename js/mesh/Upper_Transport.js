@@ -9,8 +9,8 @@ UpperTransport.deriveSecure_DeviceKey = function (access_payload) {
     iv_index = utils.toHex(db.data.IVindex, 4);
 
     // derive Application Nonce (ref 3.8.5.2)
-    app_nonce = "0200" + utils.toHex(seq, 3) + src + dst + iv_index;
-    upper_trans_pdu = crypto.meshAuthEncAccessPayload(SelectedNode.deviceKey, app_nonce, access_payload);
+    app_nonce = "0200" + utils.toHex(seq, 3) + src + Node.dst + iv_index;
+    upper_trans_pdu = crypto.meshAuthEncAccessPayload(Node.SelectedNode.deviceKey, app_nonce, access_payload);
     return upper_trans_pdu;
 }
 
@@ -23,7 +23,7 @@ UpperTransport.deriveSecure_AppKey = function (access_payload) {
     iv_index = utils.toHex(db.data.IVindex, 4);
 
     // derive Application Nonce (ref 3.8.5.2)
-    app_nonce = "0100" + utils.toHex(seq, 3) + src + dst + iv_index;
+    app_nonce = "0100" + utils.toHex(seq, 3) + src + Node.dst + iv_index;
     upper_trans_pdu = crypto.meshAuthEncAccessPayload(AppKey.key, app_nonce, access_payload);
     return upper_trans_pdu;
 }
@@ -58,9 +58,9 @@ UpperTransport.OUT_ProcessAccessPDU  = function (Access_message) {
   var device_nonce = '02' + ASZMIC_and_Pad + SEQ + SRC + DST + iv_index;
   console.log('device_nonce len : ' + device_nonce.length + ' : ' + device_nonce);
 
-  console.log('SelectedNode.deviceKey : ' + SelectedNode.deviceKey);
+  console.log('Node.SelectedNode.deviceKey : ' + Node.SelectedNode.deviceKey);
   var TransMIC_size = Access_message.SZMIC?8:4;
-  dec_upper_transport_layer = crypto.meshAuthEncAccessPayload_decode(SelectedNode.deviceKey, device_nonce, Access_message.UpperTransportAccessPDU, TransMIC_size);
+  dec_upper_transport_layer = crypto.meshAuthEncAccessPayload_decode(Node.SelectedNode.deviceKey, device_nonce, Access_message.UpperTransportAccessPDU, TransMIC_size);
   console.log('meshAuthEncAccessPayload_decode complete');
   console.log('meshAuthEncAccessPayload_decode : ' + JSON.stringify(dec_upper_transport_layer));
 

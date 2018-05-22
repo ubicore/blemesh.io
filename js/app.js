@@ -17,12 +17,10 @@ var has_mesh_proxy_data_in = false;
 var valid_pdu = false;
 
 var src = "";
-var dst = "";
 
 var msg;
 
 var Provisioner;
-var SelectedNode;
 
 
 app.initialize = function () {
@@ -36,18 +34,7 @@ app.initialize = function () {
     }
 
     //TODO : add entry to select Node => identify Node by other method ???
-    {
-      var NodeIndex = 0;
-      if(db.data.nodes.length > NodeIndex){
-        SelectedNode = db.data.nodes[NodeIndex];
-
-        dst = SelectedNode.configuration.BaseAddress;
-        console.log('Select Node: ' + NodeIndex + ' @' + dst);
-      } else {
-        console.log('Invalid Node Index: ' + NodeIndex);
-      }
-
-    }
+    Node.Select(0);
 
     msg = document.getElementById('message');
     selected_device = null;
@@ -200,6 +187,7 @@ app.discoverSvcsAndChars = function () {
      Config.IN.Composition_Data_Get(0)
      .then(() =>{
        console.log("GetPage0 FINISH WITH SUCCESS !");
+       db.Save();
      })
      .catch(error => {
          app.showMessageRed(error);

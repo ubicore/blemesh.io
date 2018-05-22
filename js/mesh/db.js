@@ -138,19 +138,7 @@ db.Add_Node = function () {
         "elements":[],
         "appKeys":[],
       },
-      "composition":{
-        "cid":"",
-        "pid":"",
-        "vid":"",
-        "crpl":"",
-        "features":{
-          "relay":false,
-          "proxy":false,
-          "friend":false,
-          "lpn":false
-        },
-        "elements":[]
-      },
+      "composition":{},
      "IVindex":0,
      "sequenceNumber":0
   }

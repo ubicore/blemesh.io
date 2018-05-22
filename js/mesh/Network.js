@@ -43,7 +43,7 @@ Network.finalise = function (ivi, nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_
 
 Network.Send = function(lower_transport_pdu){
     // encrypt network PDU
-    secured_network_pdu = Network.deriveSecure(dst, lower_transport_pdu);
+    secured_network_pdu = Network.deriveSecure(Node.dst, lower_transport_pdu);
     console.log("secured_network_pdu: " + JSON.stringify(secured_network_pdu));
 
     // obfuscate
