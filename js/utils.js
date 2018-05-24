@@ -41,11 +41,6 @@ utils.bytesToHex = function(bytes) {
     return hex.join("");
 }
 
-utils.bigIntegerToHexString = function(x) {
-    var hexString = x.toString(16);
-    return hexString;
-}
-
 utils.toAsciiCodes = function(text) {
     var bytes = [];
     for (var i = 0; i < text.length; i++) {

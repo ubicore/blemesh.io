@@ -52,7 +52,12 @@ crypto.k2 = function (Net, P) {
 	var T123_bigint = bigInt(T123, 16);
 	modval = T123_bigint.divmod(TWO_POW_263);
 	modval_bigint = bigInt(modval.remainder);
-	k2_hex = utils.bigIntegerToHexString(modval_bigint);
+	k2_hex_old = utils.bigIntegerToHexString(modval_bigint);
+	k2_hex = bigInt(modval_bigint).toString(16);
+	//
+	for(i = 0; i < (66 - k2_hex.length); i++){
+		k2_hex = '0' + k2_hex;
+	}
 	var k2_material = {
 		NID: 0,
 		encryption_key: 0,
