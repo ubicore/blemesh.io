@@ -78,7 +78,13 @@ crypto.k3 = function (Net) {
 	var TWO_POW_64 = bigInt(2).pow(64);
 	k3_modval = k3_cmac_bigint.divmod(TWO_POW_64);
 	k3_modval_bigint = bigInt(k3_modval.remainder);
-	k3_material = utils.bigIntegerToHexString(k3_modval_bigint);
+	//k3_material = utils.bigIntegerToHexString(k3_modval_bigint);
+	k3_material = bigInt(k3_modval_bigint).toString(16);
+	//
+	for(i = 0; i < (16 - k3_material.length); i++){
+		k3_material = '0' + k3_material;
+	}
+
 	return k3_material;
 };
 
@@ -90,7 +96,13 @@ crypto.k4 = function (Key) {
 	var k4_cmac_bigint = bigInt(k4_cmac.toString(), 16);
 	k4_modval = k4_cmac_bigint.divmod(64);
 	k4_modval_bigint = bigInt(k4_modval.remainder);
-	k4_material = utils.bigIntegerToHexString(k4_modval_bigint);
+	//k4_material = utils.bigIntegerToHexString(k4_modval_bigint);
+	k4_material = bigInt(k4_modval_bigint).toString(16);
+	//
+	for(i = 0; i < (2 - k4_material.length); i++){
+		k4_material = '0' + k4_material;
+	}
+
 	return k4_material;
 };
 
