@@ -128,7 +128,7 @@ connection.connection = function () {
 
 connection.discoverSvcsAndChars = function () {
     return new Promise(function (resolve, reject) {
-        console.log("discoverSvcsAndChars server=" + connected_server);
+        console.log("discoverSvcsAndChars on " + connected_server.name + ', ' + connected_server.id);
         connected_server.getPrimaryServices()
             .then(services => {
                 console.log('Getting Characteristics...');
