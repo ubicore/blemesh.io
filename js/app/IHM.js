@@ -27,21 +27,21 @@ IHM.setBluetoothButtons = function () {
       btn_connection.innerHTML = "Connect";
       IHM.enableButton('btn_scan');
       IHM.disableButton('btn_connection');
-      IHM.disableButton('btn_submit');
+//      IHM.disableButton('btn_submit');
       return;
   }
   if (connected == false && selected_device != null) {
       btn_connection.innerHTML = "Connect";
       IHM.enableButton('btn_scan');
       IHM.enableButton('btn_connection');
-      IHM.disableButton('btn_submit');
+//      IHM.disableButton('btn_submit');
       return;
   }
   btn_connection.innerHTML = "Disconnect";
   IHM.disableButton('btn_scan');
   IHM.enableButton('btn_connection');
   if (has_mesh_proxy_service && has_mesh_proxy_data_in) {
-      IHM.enableButton('btn_submit');
+      //IHM.enableButton('btn_submit');
   }
 };
 
