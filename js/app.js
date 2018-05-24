@@ -43,9 +43,10 @@ var app = {};
     }
     //
     //Add AppKeyAdd
-    Config.IN.AppKeyAdd(NetKey.index, AppKey.index, AppKey.key)
+    Config.IN.AppKeyAdd(Selected_NetKey.index, Selected_AppKey.index, Selected_AppKey.key)
     .then(() =>{
       console.log("SendAppKey FINISH WITH SUCCESS !");
+      Node.Add_AppKey(Node.SelectedNode, Selected_AppKey);
     })
     .catch(error => {
       IHM.showMessageRed(error);
@@ -78,7 +79,7 @@ var app = {};
       //      ModelIdentifier: '1000',//Server : lanp
     }
     parameters.ElementAddress = Node.dst;
-    parameters.AppKeyIndex = AppKey.index;
+    parameters.AppKeyIndex = Selected_AppKey.index;
 
 
     Config.IN.Model_Publication_Set(parameters)
@@ -140,7 +141,7 @@ var app = {};
       ModelIdentifier: '1000',//Server : lanp
     }
     parameters.ElementAddress = Node.dst;
-    parameters.AppKeyIndex = AppKey.index;
+    parameters.AppKeyIndex = Selected_AppKey.index;
 
     Config.IN.Model_App_Bind(parameters)
     .then(() =>{

@@ -58,7 +58,6 @@ db.Create = function () {
 db.Load = function () {
   var readed = localStorage.getItem(localStorageName)
   if(readed){
-    console.log("readed  : \n" + readed);
     db.data =  JSON.parse(readed);
   } else {
     console.log("failed to load db");

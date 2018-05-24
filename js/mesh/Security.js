@@ -2,8 +2,8 @@
 
 var seq = 0; //
 
-var NetKey;
-var AppKey;
+var Selected_NetKey;
+var Selected_AppKey;
 
 var Security = {};
 Security.NetKey = {};
@@ -22,11 +22,11 @@ Security.Load = function () {
   }
   console.log('seq: ' + seq);
 
-  NetKey = db.data.netKeys[0];
-  AppKey = db.data.appKeys[0];
+  Selected_NetKey = db.data.netKeys[0];
+  Selected_AppKey = db.data.appKeys[0];
 
-  Security.NetKey.Derivation(NetKey);
-  Security.AppKey.Derivation(AppKey);
+  Security.NetKey.Derivation(Selected_NetKey);
+  Security.AppKey.Derivation(Selected_AppKey);
 
   I = utils.toHex(db.data.IVindex, 4);
   ivi = utils.leastSignificantBit(db.data.IVindex)

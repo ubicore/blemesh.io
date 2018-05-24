@@ -519,7 +519,7 @@ class Provisionner {
         });
     };
 
-    IN_DATA() {
+    IN_DATA(ProvDATA_NetKey) {
         return new Promise((resolve, reject) => {
             this.CurrentStepResolve = resolve;
             this.CurrentStepReject = reject;
@@ -539,7 +539,7 @@ class Provisionner {
             //var Key_Index = '0000';
             var Flags = '00'
             var iv_index = utils.toHex(db.data.IVindex, 4);
-            var ProvDATAHex = NetKey.key + NetKey.index + Flags + iv_index + Node.SelectedNode.configuration.BaseAddress;
+            var ProvDATAHex = ProvDATA_NetKey.key + ProvDATA_NetKey.index + Flags + iv_index + Node.SelectedNode.configuration.BaseAddress;
             console.log('ProvDATAHex : ' + ProvDATAHex);
 
             var EncProvDATAHex = this.Ecc_1.Encrypt_Provision_DATA(ProvDATAHex);
@@ -718,17 +718,19 @@ class Provisionner {
                     console.log('STEP : Provisioning DATA');
                     prov_trace.appendMessage('STEP : Provisioning DATA');
 
+                    var ProvDATA_NetKey = Selected_NetKey;
                     //Add Node struct in db
                     Node.Add_Node(prov_device);
+                    Node.SelectbyNodeID(prov_device.id);
                     console.log('Added Node: ' + JSON.stringify(Node.SelectedNode));
-                    return this.IN_DATA();
+
+                    Node.Add_NetKey(Node.SelectedNode, ProvDATA_NetKey);
+                    return this.IN_DATA(ProvDATA_NetKey);
                 })
                 .then(() => {
                   console.log('Device_Key =>');
                     this.Ecc_1.Create_Device_Key();
-                    console.log('Add devicekey : ' + Node.SelectedNode.deviceKey);
-                    Node.SelectedNode.deviceKey = this.Ecc_1.DeviceKey;
-
+                    Node.Add_DevKey(Node.SelectedNode, this.Ecc_1.DeviceKey);
                     db.Save();
 
                     console.log('End of provision procedure');

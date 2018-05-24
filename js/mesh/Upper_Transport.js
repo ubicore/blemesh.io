@@ -18,13 +18,13 @@ UpperTransport.deriveSecure_DeviceKey = function (access_payload) {
 UpperTransport.deriveSecure_AppKey = function (access_payload) {
     upper_trans_pdu = {};
 
-    aid = AppKey.aid;
+    aid = Selected_AppKey.aid;
     akf = 1;
     iv_index = utils.toHex(db.data.IVindex, 4);
 
     // derive Application Nonce (ref 3.8.5.2)
     app_nonce = "0100" + utils.toHex(seq, 3) + src + Node.dst + iv_index;
-    upper_trans_pdu = crypto.meshAuthEncAccessPayload(AppKey.key, app_nonce, access_payload);
+    upper_trans_pdu = crypto.meshAuthEncAccessPayload(Selected_AppKey.key, app_nonce, access_payload);
     return upper_trans_pdu;
 }
 
