@@ -7,12 +7,17 @@ Node.SelectedNode = null;
 
 Node.SelectbyNodeID = function (ID) {
 
-  var found = db.data.nodes.find(function(node) {
+  var index = db.data.nodes.findIndex(function(node) {
     return node.id == ID;
   })
-  console.log('Found Node: ' + found.name + ', ' + found.id);
-  Node.SelectedNode = found;
-  Node.dst = Node.SelectedNode.configuration.BaseAddress;
+
+  if(index >= 0){
+    Node.SelectedNode = db.data.nodes[index];
+    console.log('Found Node: ' + Node.SelectedNode.name + ', ' + Node.SelectedNode.id);
+    Node.dst = Node.SelectedNode.configuration.BaseAddress;
+  }
+
+  return index;
 }
 
 
@@ -20,19 +25,13 @@ Node.Add_Node = function (device) {
   if(!db.data){
     return;
   }
-
-  var New_Index = db.data.nodes.length;
-
-  var StartAddress = parseInt(Provisioner.allocatedUnicastRange[0].lowAddress, 16);
-  var BaseAddress = utils.toHex(StartAddress + (0x100 * New_Index), 2);
-
   var node =
     {
       "id": device.id,
       "name": device.name,
       "deviceKey":"",
       "configuration":{
-        "BaseAddress":BaseAddress,
+        "BaseAddress":"",
         "netKeys":[],
         "elements":[],
         "appKeys":[],
@@ -42,9 +41,20 @@ Node.Add_Node = function (device) {
      "sequenceNumber":0
   }
 
-  db.data.nodes.push(node);
+  console.log('Search previous record for this Node');
+  var index = Node.SelectbyNodeID(device.id);
+  if( index >= 0 ){
+    console.log('Node already exist in db !');
+  } else {
+    console.log('Create a new entry for this Node');
+    index = db.data.nodes.length;
+    db.data.nodes.push(node);
+  }
+  Node.SelectedNode = db.data.nodes[index];
 
-  Node.SelectedNode = db.data.nodes[New_Index];
+  var StartAddress = parseInt(Provisioner.allocatedUnicastRange[0].lowAddress, 16);
+  var BaseAddress = utils.toHex(StartAddress + (0x100 * index), 2);
+  Node.SelectedNode.configuration.BaseAddress = BaseAddress;
   Node.dst = Node.SelectedNode.configuration.BaseAddress;
 
   return;
