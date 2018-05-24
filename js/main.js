@@ -7,17 +7,12 @@ addEventListener('DOMContentLoaded', function() {
 
     var btn_scan = document.getElementById('btn_scan');
     btn_scan.addEventListener('click', function() {
-        app.findProxies();
+        connection.findProxies();
     });
 
     var btn_connection = document.getElementById('btn_connection');
     btn_connection.addEventListener('click', function() {
-        app.connection();
-    });
-
-    var btn_submit = document.getElementById('btn_submit');
-    btn_submit.addEventListener('click', function() {
-        app.submitPdu();
+        connection.connection();
     });
 
     var btn_page0 = document.getElementById('btn_page0');
@@ -44,5 +39,5 @@ addEventListener('DOMContentLoaded', function() {
     btn_AppBind.addEventListener('click', function() {
         app.AppBind();
     });
-  
+
 })

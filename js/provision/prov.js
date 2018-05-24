@@ -718,14 +718,9 @@ class Provisionner {
                     console.log('STEP : Provisioning DATA');
                     prov_trace.appendMessage('STEP : Provisioning DATA');
 
-                    //TODO : Dynamic genration of provision data's
-                    //Create empty node struct in db
-                    var NodeIndex = db.Add_Node();
-                    Node.Select(NodeIndex);
-
-                    var StartAddress = parseInt(Provisioner.allocatedUnicastRange[0].lowAddress, 16);
-                    Node.SelectedNode.configuration.BaseAddress = utils.toHex(StartAddress + (0x100 * NodeIndex), 2);
-                    console.log('Add new Node with index : ' + NodeIndex + ' @' + Node.SelectedNode.configuration.BaseAddress);
+                    //Add Node struct in db
+                    Node.Add_Node(prov_device);
+                    console.log('Added Node: ' + JSON.stringify(Node.SelectedNode));
                     return this.IN_DATA();
                 })
                 .then(() => {

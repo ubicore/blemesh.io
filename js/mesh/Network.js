@@ -57,7 +57,7 @@ Network.Send = function(lower_transport_pdu){
     proxy_pdu_bytes = utils.hexToBytes('00' + finalised_network_pdu);
     proxy_pdu_data = new Uint8Array(proxy_pdu_bytes)
 
-    app.ProxyPDU_IN.Send(proxy_pdu_data,
+    connection.ProxyPDU_IN.Send(proxy_pdu_data,
       function(){
         console.log('sent proxy pdu OK');
         seq++;
@@ -65,7 +65,7 @@ Network.Send = function(lower_transport_pdu){
       },
       function(){
         alert('Error: ' + error);
-        app.showMessageRed('Error: ' + error);
+        IHM.showMessageRed('Error: ' + error);
         console.log('Error: ' + error);
         return;
       }

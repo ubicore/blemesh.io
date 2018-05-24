@@ -18,10 +18,14 @@ db.initialize = function () {
     console.log("Loaded db : \n" + JSON.stringify(db.data));
   }
 
-
-
-  //
-  Security.Load();
+  //TODO : select provisioner
+  {
+    Provisioner = db.data.provisioners[0];
+    src = Provisioner.unicastAddress;
+    console.log('Select Provisioner: ' + Provisioner.provisionerName + ' @' + src);
+    //
+    Security.Load();
+  }
 }
 
 db.Create = function () {
@@ -73,7 +77,7 @@ db.Add_NetKey = function () {
   }
 
   var New_Index = db.data.netKeys.length;
-  console.log("New_Key_Index :" + New_Index);
+  console.log("New_NetKey_Index :" + New_Index);
 
   var NetKey  = Security.NetKey.Create(New_Index);
   db.data.netKeys.push(NetKey);
@@ -87,7 +91,7 @@ db.Add_AppKey = function (boundNetKeyIndex) {
   }
 
   var New_Index = db.data.appKeys.length;
-  console.log("New_Key_Index :" + New_Index);
+  console.log("New_AppKey_Index :" + New_Index);
 
   var AppKey  = Security.AppKey.Create(New_Index, boundNetKeyIndex);
   db.data.appKeys.push(AppKey);
@@ -122,31 +126,7 @@ db.Add_Provisionner = function () {
 }
 
 
-db.Add_Node = function () {
-  if(!db.data){
-    return;
-  }
 
-  var New_Index = db.data.nodes.length;
-
-  var node =
-    {
-      "deviceKey":"",
-      "configuration":{
-        "BaseAddress":"",
-        "netKeys":[],
-        "elements":[],
-        "appKeys":[],
-      },
-      "composition":{},
-     "IVindex":0,
-     "sequenceNumber":0
-  }
-
-  db.data.nodes.push(node);
-
-  return New_Index;
-}
 
 
 
