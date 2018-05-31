@@ -37,8 +37,8 @@ var app = {};
    //For test only
    Node.SelectedNode = db.data.nodes[0];
 
-   ModelElmt.renderModels(Node.SelectedNode.composition.Elements, $('#ModelTree'));
-   //MenuTree.walk();
+   ModelElmt.renderModels(Node.SelectedNode.composition.Elements, $('#tree'));
+   ModelTree.walk();
    $('ul > li').has('ul').addClass('sub');
  }
 

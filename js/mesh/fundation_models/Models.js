@@ -93,7 +93,7 @@ const Models = [
    /*******************************************************/
    //Generic Client model
    /*******************************************************/
-   {id: 0x1001, name: 'Generic OnOff Client', Subscribing: true, Publishing: true,
+   {id: 0x1001, name: 'Generic OnOff Client',
    SupportedRxMessages: [
    ]},
    {id: 0x1003, name: 'Generic Level Client' ,
