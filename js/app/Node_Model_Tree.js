@@ -1,5 +1,6 @@
 
-var ModelElmt = function (modelId) {
+var ModelElmt = function (index, modelId) {
+    this.index = index;
     this.data = modelId;
 };
 
@@ -11,7 +12,7 @@ ModelElmt.prototype.render = function (root) {
     if(model == null) return;
     $li.append($('<a></a>', {
         href: '#',
-        text: model.name,
+        text: this.index + ' -> ' + model.name ,
     })).appendTo(root);
 
     var messageroot = $('<ul></ul>').appendTo($li);
@@ -27,13 +28,13 @@ ModelElmt.prototype.render = function (root) {
 };
 
 ModelElmt.renderModels = function (Elements, root) {
-    $.each(Elements, function (index, element) {
+    $.each(Elements, function (ElementIndex, element) {
             $.each(element.SIG_Models, function (index, val) {
-                var m = new ModelElmt(val);
+                var m = new ModelElmt(ElementIndex, val);
                 m.render(root);
             });
             $.each(element.Vendor_Models, function (index, val) {
-                var m = new ModelElmt(val);
+                var m = new ModelElmt(ElementIndex, val);
                 m.render(root);
             });
     });

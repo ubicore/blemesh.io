@@ -96,6 +96,7 @@ connection.connect = function () {
                 Node.SelectbyNodeID(selected_device.id);
                 //
                 app.GetPage0();
+                IHM.DisplayNodeModels();
             })
             .catch(error => {
               console.log('The error is: ' + error);

@@ -87,9 +87,11 @@ IHM.wrongServices = function () {
 }
 
 
-
-
-
+IHM.DisplayNodeModels = function () {
+  ModelElmt.renderModels(Node.SelectedNode.composition.Elements, $('#tree'));
+  ModelTree.walk();
+  $('ul > li').has('ul').addClass('sub');
+}
 
 function addItem(){
 	var ul = document.getElementById("dynamic-list");
