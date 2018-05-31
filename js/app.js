@@ -32,6 +32,16 @@ var app = {};
      });
   }
 
+
+ app.DisplayNodeModels = function () {
+   //For test only
+   Node.SelectedNode = db.data.nodes[0];
+
+   ModelElmt.renderModels(Node.SelectedNode.composition.Elements, $('#ModelTree'));
+   //MenuTree.walk();
+   $('ul > li').has('ul').addClass('sub');
+ }
+
   app.SendAppKey = function () {
     if (!connected) {
       return;

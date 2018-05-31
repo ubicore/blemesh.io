@@ -7,8 +7,8 @@ Fundation_models_layer.receiver = function (result){
   console.log('Opcode : ' + JSON.stringify(opcode_obj));
 
 
-  if(opcode_obj.process){
+  if(opcode_obj.RX_fct){
     //
-    opcode_obj.process(opcode_obj, result.parameters);
+    opcode_obj.RX_fct(opcode_obj, result.parameters);
   }
 }

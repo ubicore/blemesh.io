@@ -85,3 +85,28 @@ IHM.wrongServices = function () {
   IHM.showMessageRed("Error: peripheral device is not running the required Bluetooth services");
   selected_device.gatt.disconnect();
 }
+
+
+
+
+
+
+function addItem(){
+	var ul = document.getElementById("dynamic-list");
+  var candidate = document.getElementById("candidate");
+  var opt = document.createElement('option');
+  //opt.setAttribute('id',candidate.value);
+  opt.appendChild(document.createTextNode(candidate.value));
+  // set value property of opt
+  opt.value = 'option value';
+
+  ul.appendChild(opt);
+}
+
+function removeItem(){
+	var ul = document.getElementById("dynamic-list");
+  var candidate = document.getElementById("candidate");
+  //var item = document.getElementById(candidate.value);
+  var item = ul.options[ul.selectedIndex];
+  ul.removeChild(item);
+}
