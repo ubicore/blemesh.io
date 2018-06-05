@@ -29,7 +29,7 @@ connection.initialize = function () {
 };
 
 connection.findProxies = function () {
-    if (IHM.buttonIsDisabled('btn_scan')) {
+    if (HMI.buttonIsDisabled('btn_scan')) {
         return;
     }
     console.log('Scanning....');
@@ -52,7 +52,7 @@ connection.startScan = function () {
             connection.connect();
         })
         .catch(error => {
-            IHM.showMessageRed(error);
+            HMI.showMessageRed(error);
             console.log('ERROR: ' + error);
         });
 };
@@ -65,23 +65,23 @@ connection.connect = function () {
                 console.log("Connected to " + server.device.id);
                 connected = true;
                 connected_server = server;
-                IHM.displayConnectionStatus();
-                IHM.setBluetoothButtons();
+                HMI.displayConnectionStatus();
+                HMI.setBluetoothButtons();
                 selected_device.addEventListener('gattserverdisconnected', connection.onDisconnected);
                 return connection.discoverSvcsAndChars()
             },
             function (error) {
                 console.log("ERROR: could not connect - " + error);
-                IHM.showMessageRed("ERROR: could not connect - " + error);
+                HMI.showMessageRed("ERROR: could not connect - " + error);
                 connected = false;
-                IHM.displayConnectionStatus();
-                IHM.setBluetoothButtons();
+                HMI.displayConnectionStatus();
+                HMI.setBluetoothButtons();
             })
             .then( () => {
                 console.log("service discovery has completed");
 
                 if (!has_mesh_proxy_service || !has_mesh_proxy_data_in || !has_mesh_proxy_data_out) {
-                  IHM.showMessageRed("ERROR: connected device does not have the required GATT service and characteristic");
+                  HMI.showMessageRed("ERROR: connected device does not have the required GATT service and characteristic");
                   return;
                 }
 
@@ -90,13 +90,13 @@ connection.connect = function () {
             })
             .then( () => {
                 connection.ProxyPDU_IN = new ProxyPDU_IN(mesh_proxy_data_in);
-                IHM.clearMessage();
-                IHM.setBluetoothButtons();
+                HMI.clearMessage();
+                HMI.setBluetoothButtons();
                 //
                 Node.SelectbyNodeID(selected_device.id);
                 //
                 app.GetPage0();
-                IHM.DisplayNodeModels();
+                HMI.DisplayNodeModels();
             })
             .catch(error => {
               console.log('The error is: ' + error);
@@ -112,12 +112,12 @@ connection.disconnect = function () {
 connection.onDisconnected = function () {
     console.log("onDisconnected");
     connected = false;
-    IHM.displayConnectionStatus();
-    IHM.setBluetoothButtons();
+    HMI.displayConnectionStatus();
+    HMI.setBluetoothButtons();
 };
 
 connection.connection = function () {
-    if (IHM.buttonIsDisabled('btn_connection')) {
+    if (HMI.buttonIsDisabled('btn_connection')) {
         return;
     }
     if (connected == true) {
@@ -159,7 +159,7 @@ connection.discoverSvcsAndChars = function () {
                 });
             })
             .catch(error => {
-                IHM.showMessageRed('Error: ' + error);
+                HMI.showMessageRed('Error: ' + error);
                 console.log('Error: ' + error);
                 reject(error);
             });

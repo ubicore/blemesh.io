@@ -65,7 +65,7 @@ Network.Send = function(lower_transport_pdu){
       },
       function(){
         alert('Error: ' + error);
-        IHM.showMessageRed('Error: ' + error);
+        HMI.showMessageRed('Error: ' + error);
         console.log('Error: ' + error);
         return;
       }

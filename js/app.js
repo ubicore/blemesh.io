@@ -7,7 +7,7 @@ var app = {};
    connection.initialize();
    prov_trace.initialize();
    db.initialize();
-   IHM.initialize();
+   HMI.initialize();
 }
 
 
@@ -16,7 +16,7 @@ var app = {};
          return;
      }
      if (!has_mesh_proxy_data_in) {
-         IHM.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+         HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
          console.log("Error: mesh_proxy_data_in characteristic not discovered");
          return;
      }
@@ -27,7 +27,7 @@ var app = {};
        db.Save();
      })
      .catch(error => {
-         IHM.showMessageRed(error);
+         HMI.showMessageRed(error);
          console.log('ERROR: ' + error);
      });
   }
@@ -35,7 +35,7 @@ var app = {};
   //For test only
  app.DisplayNodeModels = function () {
    Node.SelectedNode = db.data.nodes[0];
-   IHM.DisplayNodeModels();
+   HMI.DisplayNodeModels();
  }
 
   app.SendAppKey = function () {
@@ -43,7 +43,7 @@ var app = {};
       return;
     }
     if (!has_mesh_proxy_data_in) {
-      IHM.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
       console.log("Error: mesh_proxy_data_in characteristic not discovered");
       return;
     }
@@ -55,7 +55,7 @@ var app = {};
       Node.Add_AppKey(Node.SelectedNode, Selected_AppKey);
     })
     .catch(error => {
-      IHM.showMessageRed(error);
+      HMI.showMessageRed(error);
       console.log('ERROR: ' + error);
     });
   }
@@ -66,7 +66,7 @@ var app = {};
       return;
     }
     if (!has_mesh_proxy_data_in) {
-      IHM.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
       console.log("Error: mesh_proxy_data_in characteristic not discovered");
       return;
     }
@@ -93,7 +93,7 @@ var app = {};
       console.log("PublicationSet FINISH WITH SUCCESS !");
     })
     .catch(error => {
-      IHM.showMessageRed(error);
+      HMI.showMessageRed(error);
       console.log('ERROR: ' + error);
     });
   }
@@ -103,7 +103,7 @@ var app = {};
       return;
     }
     if (!has_mesh_proxy_data_in) {
-      IHM.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
       console.log("Error: mesh_proxy_data_in characteristic not discovered");
       return;
     }
@@ -125,7 +125,7 @@ var app = {};
       console.log("PublicationSet FINISH WITH SUCCESS ! " + parameters.ElementAddress);
     })
     .catch(error => {
-      IHM.showMessageRed(error);
+      HMI.showMessageRed(error);
       console.log('ERROR: ' + error);
     });
 
@@ -136,7 +136,7 @@ var app = {};
       return;
     }
     if (!has_mesh_proxy_data_in) {
-      IHM.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
       console.log("Error: mesh_proxy_data_in characteristic not discovered");
       return;
     }
@@ -161,7 +161,7 @@ var app = {};
       console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
     })
     .catch(error => {
-      IHM.showMessageRed(error);
+      HMI.showMessageRed(error);
       console.log('ERROR: ' + error);
     });
 
