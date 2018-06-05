@@ -120,10 +120,18 @@ IHM.GroupAddress = {};
 IHM.GroupAddress.addItem = function () {
 	var candidate = document.getElementById("candidate");
 
+  var found = IHM.GroupAddress.FindByName(candidate.value);
+
+  if(found != undefined){
+    alert('This GroupAddress Name already exist in db !');
+    return;
+  }
+
 	var group =
     {
       "name": candidate.value,
       "address":0xc000,
+      "NbOfUser":0,
   	}
 
 	db.data.GroupAddress.push(group);
@@ -157,4 +165,17 @@ IHM.GroupAddress.Refresh = function () {
 	  ul.appendChild(opt);
   });
 }
+
+IHM.GroupAddress.FindByName = function (name) {
+  var obj = db.data.GroupAddress.find(function (obj) {
+    return obj.name == name;
+  });
+  return obj;
+};
+
+
+
+
+
+
 /*************************************************************/
