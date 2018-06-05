@@ -86,7 +86,7 @@ IHM.wrongServices = function () {
   selected_device.gatt.disconnect();
 }
 
-IHM.SelectMessage = function (opcode) {
+IHM.DisplayMessageBox = function (opcode) {
   console.log('opcode: ' + opcode);
   var message = OPCODE.FindByID(opcode);
   console.log('message: ' + message.name);
@@ -102,7 +102,7 @@ IHM.DisplayNodeModels = function () {
 //      var MessageIndex = $(this).parent('li').index();
 //      var ElementIndex = $(this).parent('li').parent('ul').parent('li').index();
       var opcode = $(this).parent('li').attr("opcode");
-      IHM.SelectMessage(opcode);
+      IHM.DisplayMessageBox(opcode);
   });
 
   ModelTree.walk();
