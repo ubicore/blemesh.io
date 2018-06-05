@@ -40,6 +40,7 @@ db.Create = function () {
        appKeys : [],
        provisioners : [],
        nodes : [],
+       GroupAddress : [],
      }
      console.log("New_db : \n" + JSON.stringify(New_db));
 

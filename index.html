@@ -13,6 +13,7 @@
     <script src="js/app/connection.js"></script>
     <script src="js/IHM/IHM.js"></script>
     <script src="js/IHM/Node_Model_Tree.js"></script>
+    <script src="js/IHM/Message_Box.js"></script>
     <script src="js/mesh/crypto/crypto-js-ext/cryptojs-aes.min.js"></script>
     <script src="js/mesh/crypto/crypto-js-ext/all.min.js"></script>
     <script src="js/mesh/crypto/aes_cmac_adapter.js"></script>
@@ -114,10 +115,12 @@
         <table>
         <tr>
           <input type="text" id="candidate"/>
-          <button onclick="addItem()">add item</button>
-          <button onclick="removeItem()">remove item</button>
+          <button id="btn_GroupAddress_addItem">add item</button>
           <br>
-          <select name="demo " id="dynamic-list" size=1></select>
+          <select name="demo " id="dynamic-list" size=10></select>
+          <button id="btn_GroupAddress_removeItem">remove item</button>
+            <br>
+          <button id="btn_GroupAddress_empty">Clear</button>
         </tr>
       </table>
       <br>
