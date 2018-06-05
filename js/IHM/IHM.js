@@ -5,6 +5,7 @@ var msg;
 IHM.initialize = function () {
   msg = document.getElementById('message');
   IHM.setBluetoothButtons();
+  IHM.GroupAddress.Refresh();
 }
 
 IHM.displayConnectionStatus = function () {

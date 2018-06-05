@@ -1,8 +1,8 @@
 
-var GroupAddress = {};
+IHM.GroupAddress = {};
 
 
-GroupAddress.addItem = function () {
+IHM.GroupAddress.addItem = function () {
 	var candidate = document.getElementById("candidate");
 
 	var group =
@@ -12,21 +12,25 @@ GroupAddress.addItem = function () {
   	}
 
 	db.data.GroupAddress.push(group);
-	GroupAddress.Refresh();
+	db.Save();
+	IHM.GroupAddress.Refresh();
 }
 
-GroupAddress.removeItem = function () {
+IHM.GroupAddress.removeItem = function () {
 	var ul = document.getElementById("dynamic-list");
 	db.data.GroupAddress.splice(ul.selectedIndex, 1);
-	GroupAddress.Refresh();
+	db.Save();
+	IHM.GroupAddress.Refresh();
 }
 
-GroupAddress.empty = function () {
+IHM.GroupAddress.empty = function () {
 	db.data.GroupAddress = [];
-	GroupAddress.Refresh();
+	db.Save();
+	IHM.GroupAddress.Refresh();
 }
 
-GroupAddress.Refresh = function () {
+
+IHM.GroupAddress.Refresh = function () {
 	var ul = document.getElementById("dynamic-list");
 	$(ul).empty();
 
@@ -38,38 +42,6 @@ GroupAddress.Refresh = function () {
 	  ul.appendChild(opt);
   });
 }
-
-
-
-
-
-
-
-ModelElmt.prototype.render = function (root) {
-  var model = Models.GetByID(this.data);
-  if(model == null) return;
-
-  var $li = $('<li></li>');
-  $li.append($('<a></a>', {
-    //href: '#',
-    text: this.index + ' -> ' + model.name ,
-  })).appendTo(root);
-
-  var $ul = $('<ul></ul>').appendTo($li);
-  $.each(model.SupportedRxMessages, function (index, opcode) {
-    message = OPCODE.FindByID(opcode);
-    var $li = $('<li></li>');
-    $li.append($('<a></a>', {
-      //href: '#',
-//      opcode:opcode,
-      text: message.name,
-    })).appendTo($ul);
-    $li.attr("opcode", opcode);
-  })
-};
-
-
-
 
 
 
