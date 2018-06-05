@@ -109,3 +109,52 @@ IHM.DisplayNodeModels = function () {
   ModelTree.walk();
   $('ul > li').has('ul').addClass('sub');
 }
+
+
+
+/*************************************************************/
+
+IHM.GroupAddress = {};
+
+
+IHM.GroupAddress.addItem = function () {
+	var candidate = document.getElementById("candidate");
+
+	var group =
+    {
+      "name": candidate.value,
+      "address":0xc000,
+  	}
+
+	db.data.GroupAddress.push(group);
+	db.Save();
+	IHM.GroupAddress.Refresh();
+}
+
+IHM.GroupAddress.removeItem = function () {
+	var ul = document.getElementById("dynamic-list");
+	db.data.GroupAddress.splice(ul.selectedIndex, 1);
+	db.Save();
+	IHM.GroupAddress.Refresh();
+}
+
+IHM.GroupAddress.empty = function () {
+	db.data.GroupAddress = [];
+	db.Save();
+	IHM.GroupAddress.Refresh();
+}
+
+
+IHM.GroupAddress.Refresh = function () {
+	var ul = document.getElementById("dynamic-list");
+	$(ul).empty();
+
+  $.each(db.data.GroupAddress, function (index, val) {
+		var opt = document.createElement('option');
+		opt.appendChild(document.createTextNode(val.name));
+  	opt.value = val.address;
+
+	  ul.appendChild(opt);
+  });
+}
+/*************************************************************/
