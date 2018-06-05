@@ -91,8 +91,6 @@ IHM.DisplayMessageBox = function (opcode) {
   console.log('opcode: ' + opcode);
   var message = OPCODE.FindByID(opcode);
   console.log('message: ' + message.name);
-
-
 }
 
 IHM.DisplayNodeModels = function () {
@@ -142,7 +140,7 @@ IHM.GroupAddress.addItem = function () {
 }
 
 IHM.GroupAddress.removeItem = function () {
-	var ul = document.getElementById("dynamic-list");
+	var ul = document.getElementById("GroupAddress-list");
 	db.data.GroupAddress.splice(ul.selectedIndex, 1);
 	db.Save();
 	IHM.GroupAddress.Refresh();
@@ -156,7 +154,7 @@ IHM.GroupAddress.empty = function () {
 
 
 IHM.GroupAddress.Refresh = function () {
-	var ul = document.getElementById("dynamic-list");
+	var ul = document.getElementById("GroupAddress-list");
 	$(ul).empty();
 
   $.each(db.data.GroupAddress, function (index, val) {
@@ -174,9 +172,6 @@ IHM.GroupAddress.FindByName = function (name) {
   });
   return obj;
 };
-
-
-
 
 
 
