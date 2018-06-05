@@ -41,6 +41,7 @@ db.Create = function () {
        provisioners : [],
        nodes : [],
        GroupAddress : [],
+       GroupAddress_NextAddress : 0xc000,
      }
      console.log("New_db : \n" + JSON.stringify(New_db));
 

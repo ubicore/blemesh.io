@@ -127,14 +127,16 @@ IHM.GroupAddress.addItem = function () {
     return;
   }
 
-	var group =
+	var GroupAddress =
     {
       "name": candidate.value,
-      "address":0xc000,
-      "NbOfUser":0,
+      "address": db.data.GroupAddress_NextAddress,
   	}
 
-	db.data.GroupAddress.push(group);
+  db.data.GroupAddress_NextAddress++;
+	db.data.GroupAddress.push(GroupAddress);
+  console.log("Add new db.data.GroupAddress : \n" + JSON.stringify(GroupAddress));
+
 	db.Save();
 	IHM.GroupAddress.Refresh();
 }
