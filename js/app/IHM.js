@@ -86,12 +86,23 @@ IHM.wrongServices = function () {
   selected_device.gatt.disconnect();
 }
 
+IHM.SelectMessage = function (opcode) {
+  console.log('opcode: ' + opcode);
+  var message = OPCODE.FindByID(opcode);
+  console.log('message: ' + message.name);
+
+
+}
 
 IHM.DisplayNodeModels = function () {
   ModelElmt.renderModels(Node.SelectedNode.composition.Elements, $('#tree'));
 
-  $('ul li a').click(function() {
-      console.log($(this).parent('li').index());
+  //Get clicked model and message index
+  $('#tree li ul li a').click(function() {
+//      var MessageIndex = $(this).parent('li').index();
+//      var ElementIndex = $(this).parent('li').parent('ul').parent('li').index();
+      var opcode = $(this).parent('li').attr("opcode");
+      IHM.SelectMessage(opcode);
   });
 
   ModelTree.walk();

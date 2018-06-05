@@ -21,9 +21,11 @@ ModelElmt.prototype.render = function (root) {
     message = OPCODE.FindByID(opcode);
     var $li = $('<li></li>');
     $li.append($('<a></a>', {
-      href: '#',
+      //href: '#',
+//      opcode:opcode,
       text: message.name,
     })).appendTo($ul);
+    $li.attr("opcode", opcode);
   })
 };
 
