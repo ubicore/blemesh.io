@@ -89,6 +89,11 @@ IHM.wrongServices = function () {
 
 IHM.DisplayNodeModels = function () {
   ModelElmt.renderModels(Node.SelectedNode.composition.Elements, $('#tree'));
+
+  $('ul li a').click(function() {
+      console.log($(this).parent('li').index());
+  });
+
   ModelTree.walk();
   $('ul > li').has('ul').addClass('sub');
 }

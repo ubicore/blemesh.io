@@ -7,24 +7,24 @@ var ModelElmt = function (index, modelId) {
 
 
 ModelElmt.prototype.render = function (root) {
+  var model = Models.GetByID(this.data);
+  if(model == null) return;
+
+  var $li = $('<li></li>');
+  $li.append($('<a></a>', {
+    //href: '#',
+    text: this.index + ' -> ' + model.name ,
+  })).appendTo(root);
+
+  var $ul = $('<ul></ul>').appendTo($li);
+  $.each(model.SupportedRxMessages, function (index, opcode) {
+    message = OPCODE.FindByID(opcode);
     var $li = $('<li></li>');
-    var model = Models.GetByID(this.data);
-    if(model == null) return;
     $li.append($('<a></a>', {
-        href: '#',
-        text: this.index + ' -> ' + model.name ,
-    })).appendTo(root);
-
-    var messageroot = $('<ul></ul>').appendTo($li);
-    $.each(model.SupportedRxMessages, function (index, opcode) {
-      message = OPCODE.FindByID(opcode);
-      var $li = $('<li></li>');
-      $li.append($('<a></a>', {
-          href: '#',
-          text: message.name,
-      })).appendTo(messageroot);
-
-    })
+      href: '#',
+      text: message.name,
+    })).appendTo($ul);
+  })
 };
 
 ModelElmt.renderModels = function (Elements, root) {
