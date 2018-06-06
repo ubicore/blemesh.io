@@ -47,8 +47,8 @@ addEventListener('DOMContentLoaded', function() {
     btn_GroupAddress_removeItem.addEventListener('click', function() {
         HMI.GroupAddress.removeItem();
     });
-    var btn_GroupAddress_empty = document.getElementById('btn_GroupAddress_empty');
-    btn_GroupAddress_empty.addEventListener('click', function() {
-        HMI.GroupAddress.empty();
+    var btn_GroupAddress_reset = document.getElementById('btn_GroupAddress_reset');
+    btn_GroupAddress_reset.addEventListener('click', function() {
+        HMI.GroupAddress.reset();
     });
 })

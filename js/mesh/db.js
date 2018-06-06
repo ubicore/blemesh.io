@@ -40,7 +40,12 @@ db.Create = function () {
        appKeys : [],
        provisioners : [],
        nodes : [],
-       GroupAddress : [],
+       GroupAddress : [
+         {
+           "name": "unassigned",
+           "address": 0x0000,
+         }
+       ],
        GroupAddress_NextAddress : 0xc000,
      }
      console.log("New_db : \n" + JSON.stringify(New_db));
@@ -52,6 +57,7 @@ db.Create = function () {
      db.Add_Provisionner();
      var NetKey_index = db.Add_NetKey();
      db.Add_AppKey(NetKey_index);
+     db.Reset_GroupAddress();
 
      console.log("db.data : \n" + JSON.stringify(db.data));
 }
@@ -128,6 +134,22 @@ db.Add_Provisionner = function () {
 
 
 
+db.Reset_GroupAddress = function () {
+  if(!db.data){
+    return;
+  }
+
+  db.data.GroupAddress = [];
+
+  var GroupAddress =
+  {
+    "name": "unassigned",
+    "address": 0x0000,
+	}
+
+  db.data.GroupAddress.push(GroupAddress);
+  db.Save();
+}
 
 
 

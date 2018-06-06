@@ -49,8 +49,8 @@ Node.Add_Node = function (device) {
       "configuration":{
         "BaseAddress":"",
         "netKeys":[],
-        "elements":[],
         "appKeys":[],
+        "Elements":[],
       },
       "composition":{},
      "IVindex":0,

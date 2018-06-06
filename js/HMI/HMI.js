@@ -104,18 +104,32 @@ HMI.DisplayMessageBox = function (opcode) {
   }))
 
   //Append Argument selection
-  var $select = ($('<select></select>', {
+  var $select_GroupAddress = ($('<select></select>', {
     id : opcode + "_GroupAddress",
     text: "Select a Group" ,
   })).appendTo(Input);
   //
-  HMI.GroupAddress.Refresh($select);
+  HMI.GroupAddress.Refresh($select_GroupAddress);
 
   //Button Send
   Input.append($('<button></button>', {
     id : message.id,
     text: "Send",
   }))
+
+
+  var $select_Element = ($('<select></select>', {
+    id : opcode + "Element",
+    text: "Select a Element" ,
+  })).appendTo(Input);
+
+  $.each(Node.SelectedNode.composition.Elements, function (ElementIndex, element) {
+    $select_Element.append($('<option></option>', {
+      value: ElementIndex,
+      text: ElementIndex ,
+    }));
+  });
+
 
 
 //  Messages.DisplayCommand();
@@ -169,15 +183,21 @@ HMI.GroupAddress.addItem = function () {
 }
 
 HMI.GroupAddress.removeItem = function () {
-	//var ul = document.getElementById("GroupAddress-list");
-	db.data.GroupAddress.splice($("#GroupAddress-list").selectedIndex, 1);
+	var ul = document.getElementById("GroupAddress-list");
+  var index = ul.selectedIndex;
+
+  if(index == 0){
+    alert('Could not remove unassigned');
+    return;
+  }
+
+	db.data.GroupAddress.splice(index, 1);
 	db.Save();
 	HMI.GroupAddress.Refresh($("#GroupAddress-list"));
 }
 
-HMI.GroupAddress.empty = function () {
-	db.data.GroupAddress = [];
-	db.Save();
+HMI.GroupAddress.reset = function () {
+  db.Reset_GroupAddress();
 	HMI.GroupAddress.Refresh($("#GroupAddress-list"));
 }
 
