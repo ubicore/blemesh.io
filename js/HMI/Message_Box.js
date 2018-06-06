@@ -40,7 +40,7 @@ const Messages = [
 // {id: 0x8018, size: 2, name: 'Config_Model_Publication_Get', TX_fct: null, RX_fct: null, callback: null},
 // {id: 0x8019, size: 2, name: 'Config_Model_Publication_Status', TX_fct: null, RX_fct: Config.OUT.Model_Publication_Status, callback: null},
 // {id: 0x801A, size: 2, name: 'Config_Model_Publication_Virtual_Address_Set', TX_fct: null, RX_fct: null, callback: null},
- {id: 0x801B, size: 2, name: 'Config_Model_Subscription_Add', TX_fct: null, RX_fct: null, callback: null},
+ {id: 0x801B, size: 2, name: 'Config_Model_Subscription_Add', HMI_Input: null, RX_fct: null, callback: null},
 // {id: 0x801C, size: 2, name: 'Config_Model_Subscription_Delete', TX_fct: null, RX_fct: null, callback: null},
 // {id: 0x801D, size: 2, name: 'Config_Model_Subscription_Delete_All', TX_fct: null, RX_fct: null, callback: null},
 // {id: 0x801E, size: 2, name: 'Config_Model_Subscription_Overwrite', TX_fct: null, RX_fct: null, callback: null},

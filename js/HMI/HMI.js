@@ -5,7 +5,8 @@ var msg;
 HMI.initialize = function () {
   msg = document.getElementById('message');
   HMI.setBluetoothButtons();
-  HMI.GroupAddress.Refresh();
+
+  HMI.GroupAddress.Refresh($("#GroupAddress-list"));
 }
 
 HMI.displayConnectionStatus = function () {
@@ -91,6 +92,34 @@ HMI.DisplayMessageBox = function (opcode) {
   console.log('opcode: ' + opcode);
   var message = OPCODE.FindByID(opcode);
   console.log('message: ' + message.name);
+
+  //Empty
+	var Input = $("#Command");
+  $(Input).empty();
+
+  //append CMD
+  Input.append($('<p></p>', {
+    value : message.id,
+    text: message.name ,
+  }))
+
+  //Append Argument selection
+  var $select = ($('<select></select>', {
+    id : opcode + "_GroupAddress",
+    text: "Select a Group" ,
+  })).appendTo(Input);
+  //
+  HMI.GroupAddress.Refresh($select);
+
+  //Button Send
+  Input.append($('<button></button>', {
+    id : message.id,
+    text: "Send",
+  }))
+
+
+//  Messages.DisplayCommand();
+//  Messages.DisplayArgumentSelection();
 }
 
 HMI.DisplayNodeModels = function () {
@@ -136,33 +165,31 @@ HMI.GroupAddress.addItem = function () {
   console.log("Add new db.data.GroupAddress : \n" + JSON.stringify(GroupAddress));
 
 	db.Save();
-	HMI.GroupAddress.Refresh();
+	HMI.GroupAddress.Refresh($("#GroupAddress-list"));
 }
 
 HMI.GroupAddress.removeItem = function () {
-	var ul = document.getElementById("GroupAddress-list");
-	db.data.GroupAddress.splice(ul.selectedIndex, 1);
+	//var ul = document.getElementById("GroupAddress-list");
+	db.data.GroupAddress.splice($("#GroupAddress-list").selectedIndex, 1);
 	db.Save();
-	HMI.GroupAddress.Refresh();
+	HMI.GroupAddress.Refresh($("#GroupAddress-list"));
 }
 
 HMI.GroupAddress.empty = function () {
 	db.data.GroupAddress = [];
 	db.Save();
-	HMI.GroupAddress.Refresh();
+	HMI.GroupAddress.Refresh($("#GroupAddress-list"));
 }
 
 
-HMI.GroupAddress.Refresh = function () {
-	var ul = document.getElementById("GroupAddress-list");
-	$(ul).empty();
+HMI.GroupAddress.Refresh = function (List) {
+	List.empty();
 
   $.each(db.data.GroupAddress, function (index, val) {
-		var opt = document.createElement('option');
-		opt.appendChild(document.createTextNode(val.name));
-  	opt.value = val.address;
-
-	  ul.appendChild(opt);
+    List.append($('<option></option>', {
+      value: val.address,
+      text: val.name ,
+    }));
   });
 }
 
