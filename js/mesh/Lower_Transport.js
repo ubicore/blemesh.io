@@ -18,24 +18,34 @@ LowerTransport.derive = function (upper_transport_pdu) {
 };
 
 LowerTransport.Segment_Acknowledgment_message = function(Access_message, BlockAck){
-  //3.5.3.3 Segmentation behavior
-  //3.5.2.3.1 Segment Acknowledgment message
+  return new Promise((resolve, reject) => {
 
-  var OBO = 0;
-  // var BlockAck = 0;
-  // //Format BlockAck
-  // for (var i = 0; i <= Access_message.SegN; i++) {
-  //   BlockAck |= (1 << i);
-  // }
-  var Segment_Acknowledgment_message = '';
-  Segment_Acknowledgment_message += '00'; //SEG = 0, OP = 0
-  Segment_Acknowledgment_message += utils.toHex((OBO << 15) + ((Access_message.SeqZero & 0x1FFF) << 2), 2); //OBO, SeqZero
-  Segment_Acknowledgment_message += utils.toHex(BlockAck, 4);
+    //3.5.3.3 Segmentation behavior
+    //3.5.2.3.1 Segment Acknowledgment message
 
-  console.log('Segment_Acknowledgment_message : ' + Segment_Acknowledgment_message);
-  var lower_transport_pdu = Segment_Acknowledgment_message;
-  ctl = 1;
-  Network.Send(lower_transport_pdu);
+    var OBO = 0;
+    // var BlockAck = 0;
+    // //Format BlockAck
+    // for (var i = 0; i <= Access_message.SegN; i++) {
+    //   BlockAck |= (1 << i);
+    // }
+    var Segment_Acknowledgment_message = '';
+    Segment_Acknowledgment_message += '00'; //SEG = 0, OP = 0
+    Segment_Acknowledgment_message += utils.toHex((OBO << 15) + ((Access_message.SeqZero & 0x1FFF) << 2), 2); //OBO, SeqZero
+    Segment_Acknowledgment_message += utils.toHex(BlockAck, 4);
+
+    console.log('Segment_Acknowledgment_message : ' + Segment_Acknowledgment_message);
+    var lower_transport_pdu = Segment_Acknowledgment_message;
+    ctl = 1;
+
+    Network.Send(lower_transport_pdu)
+    .then(() => {
+      resolve();
+    })
+    .catch(error => {
+      reject(error);
+    });
+  });
 }
 
 
@@ -123,13 +133,18 @@ LowerTransport.receive = function (NetworkPDU) {
           console.log('Get a complete Reassembled_Access_message : ' + JSON.stringify(Reassembled_Access_message));
 
           //Send Acknowledgment Segmented Acces message
-          LowerTransport.Segment_Acknowledgment_message(Access_message, LowerTransport.OUT.BlockAck );
+          LowerTransport.Segment_Acknowledgment_message(Access_message, LowerTransport.OUT.BlockAck )
+          .then(() => {
+            UpperTransport.OUT_ProcessAccessPDU(Reassembled_Access_message);
+            return;
+          })
+          .catch(error => {
+            reject(error);
+          });
           //
-          UpperTransport.OUT_ProcessAccessPDU(Reassembled_Access_message);
           return;
         }
       }
-
   }
 
   //Control message
@@ -138,7 +153,6 @@ LowerTransport.receive = function (NetworkPDU) {
       var Control_message = {};
       Control_message.SEG = (octet0 & (1<<7))?1:0;
       Control_message.OP = octet0 & 0x7F;
-
 
       //Unsegmented Control Message
       if(Control_message.SEG == 0) {

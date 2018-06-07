@@ -29,20 +29,25 @@ UpperTransport.deriveSecure_AppKey = function (access_payload) {
 }
 
 UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payload) {
+  return new Promise((resolve, reject) => {
     console.log("UpperTransport.Send_With_DeviceKey");
-
     // access payload
     console.log("access_payload=" + access_payload);
-
     // upper transport PDU
     upper_transport_pdu_obj = UpperTransport.deriveSecure_DeviceKey(access_payload);
     console.log('upper_transport_pdu_obj : ' + JSON.stringify(upper_transport_pdu_obj));
-
     // derive lower transport PDU
     lower_transport_pdu = LowerTransport.derive(upper_transport_pdu_obj);
     console.log('lower_transport_pdu : ' + JSON.stringify(lower_transport_pdu));
     ctl = 0;
-    Network.Send(lower_transport_pdu);
+    Network.Send(lower_transport_pdu)
+    .then(() => {
+      resolve();
+    })
+    .catch(error => {
+      reject(error);
+    });
+  });
 }
 
 

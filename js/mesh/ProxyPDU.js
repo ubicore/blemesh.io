@@ -178,30 +178,27 @@ const MTU = 18;
 class ProxyPDU_IN {
     constructor(characteristicIn) {
       this.IN = characteristicIn;
-
-
-
-
-
     };
 
-    Send(PDU, CbOnSuccess, CbOnFail) {
-      this.CbOnSuccess = CbOnSuccess;
-      this.CbOnFail = CbOnFail;
+    Send(PDU) {
+      return new Promise((resolve, reject) => {
+        this.CbOnSuccess = resolve;
+        this.CbOnFail = reject;
 
-      this.PDU_Type = PDU[0] & 0x3F;
-      this.RemainingDATA = PDU.slice(1);
-      var Remaining = this.RemainingDATA.length;
+        this.PDU_Type = PDU[0] & 0x3F;
+        this.RemainingDATA = PDU.slice(1);
+        var Remaining = this.RemainingDATA.length;
 
-      this.ToSend = (Remaining > (MTU-1))? (MTU-1) : Remaining;
-      var SAR = (Remaining > this.ToSend) ? 0b01 : 0;
+        this.ToSend = (Remaining > (MTU-1))? (MTU-1) : Remaining;
+        var SAR = (Remaining > this.ToSend) ? 0b01 : 0;
 
-      var proxy_pdu = new Uint8Array(1+this.ToSend)
-      proxy_pdu[0] = (SAR << 6) +  this.PDU_Type;
-      proxy_pdu.set(this.RemainingDATA.slice(0, this.ToSend), 1);
+        var proxy_pdu = new Uint8Array(1+this.ToSend)
+        proxy_pdu[0] = (SAR << 6) +  this.PDU_Type;
+        proxy_pdu.set(this.RemainingDATA.slice(0, this.ToSend), 1);
 
-      console.log('Write Fisrt segment:' + proxy_pdu);
-      this.Write(proxy_pdu);
+        console.log('Write Fisrt segment:' + proxy_pdu);
+        this.Write(proxy_pdu);
+      });
     }
 
     Write(ProxyPDU) {

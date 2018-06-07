@@ -95,8 +95,10 @@ connection.connect = function () {
                 //
                 Node.SelectbyNodeID(selected_device.id);
                 //
-                app.GetPage0();
-                HMI.DisplayNodeModels();
+                return app.GetPage0()
+            })
+            .then( () => {
+              HMI.DisplayNodeModels();
             })
             .catch(error => {
               console.log('The error is: ' + error);

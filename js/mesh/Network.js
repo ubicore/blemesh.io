@@ -42,6 +42,7 @@ Network.finalise = function (ivi, nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_
 };
 
 Network.Send = function(lower_transport_pdu){
+  return new Promise((resolve, reject) => {
     // encrypt network PDU
     secured_network_pdu = Network.deriveSecure(Node.dst, lower_transport_pdu);
     console.log("secured_network_pdu: " + JSON.stringify(secured_network_pdu));
@@ -57,19 +58,19 @@ Network.Send = function(lower_transport_pdu){
     proxy_pdu_bytes = utils.hexToBytes('00' + finalised_network_pdu);
     proxy_pdu_data = new Uint8Array(proxy_pdu_bytes)
 
-    connection.ProxyPDU_IN.Send(proxy_pdu_data,
-      function(){
-        console.log('sent proxy pdu OK');
-        seq++;
-        sessionStorage.setItem('seq', seq);
-      },
-      function(){
-        alert('Error: ' + error);
-        HMI.showMessageRed('Error: ' + error);
-        console.log('Error: ' + error);
-        return;
-      }
-    );
+    connection.ProxyPDU_IN.Send(proxy_pdu_data)
+    .then(() => {
+      console.log('sent proxy pdu OK');
+      seq++;
+      sessionStorage.setItem('seq', seq);
+      resolve();
+    })
+    .catch(error => {
+      // HMI.showMessageRed(error);
+      // console.log('ERROR: ' + error);
+      reject(error);
+    });
+  });
 }
 
 /*********************************/

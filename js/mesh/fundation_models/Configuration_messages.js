@@ -34,7 +34,7 @@ Config.std_callback = function(callback, status){
 Config.OUT.AppKey_Status = function (obj, parameters){
   var result = {
   }
-  var status = utils.hexToU8A(parameters.substring(0, 1*2));
+  var status = parseInt(parameters.substring(0, 1*2), 16);
   var NetKeyIndexAndAppKeyIndex = parameters.substring(1*2, 4*2);
   result.NetKeyIndex = (NetKeyIndexAndAppKeyIndex >> 12) & 0xFFF;
   result.AppKeyIndex = (NetKeyIndexAndAppKeyIndex & 0xFFF);
@@ -114,13 +114,19 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
 
     //SIG_Models
     for (var i = 0; i < Element.NumS; i++) {
-      Element.SIG_Models[i] = utils.getUint16LEfromhex(data.substring(0, 2*2)).toString(16);
+      var Model = {
+        ModelIdentifier: utils.toHex(utils.getUint16LEfromhex(data.substring(0, 2*2)),2),
+      }
+      Element.SIG_Models[i] = Model;
       data = data.substring(2*2);
     }
 
     //Vendor_Models
     for (var i = 0; i < Element.NumV; i++) {
-      Element.Vendor_Models[i] = utils.getUint16LEfromhex(data.substring(0, 4*2)).toString(16);
+      var Model = {
+        ModelIdentifier:utils.toHex(utils.getUint16LEfromhex(data.substring(0, 4*2)), 4),
+      }
+      Element.Vendor_Models[i] = Model;
       data = data.substring(4*2);
     }
     //
@@ -155,23 +161,59 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
     ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
   }
 
-  CMPS.Status = utils.hexToU8A(parameters.substring(0, 1*2));
+  CMPS.Status = parseInt(parameters.substring(0, 1*2), 16);
   CMPS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
   CMPS.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
   var number = utils.getUint16LEfromhex(parameters.substring(5*2, 7*2));
   CMPS.AppKeyIndex = number & 0xFFF;
   CMPS.CredentialFlag = (number >> 12) & 0x01;
-  CMPS.PublishTTL = utils.hexToU8A(parameters.substring(7*2, 8*2));
-  CMPS.PublishPeriod = utils.hexToU8A(parameters.substring(8*2, 9*2));
-  var octet9 = utils.hexToU8A(parameters.substring(9*2, 10*2));
+  CMPS.PublishTTL = parseInt(parameters.substring(7*2, 8*2), 16);
+  CMPS.PublishPeriod = parseInt(parameters.substring(8*2, 9*2), 16);
+  var octet9 = parseInt(parameters.substring(9*2, 10*2), 16);
   CMPS.PublishRetransmitCount = octet9 & 0x1F;
   CMPS.PublishRetransmitIntervalSteps = octet9 >> 3;
-  CMPS.ModelIdentifier = parameters.substring(10*2);
+  CMPS.ModelIdentifier = utils.SWAPhex(parameters.substring(10*2));
 
   console.log('Model_Publication_Status : ' + JSON.stringify(CMPS));
   //
   var Status_Code_obj = STATUS_CODE.FindByID(CMPS.Status);
   console.log('Model_Publication_Status status : ' + JSON.stringify(Status_Code_obj));
+
+  //Process CMPS
+  var ElementIndex = parseInt(CMPS.ElementAddress , 16) - parseInt(Node.dst , 16);
+  if(ElementIndex < Node.SelectedNode.composition.Elements.length){
+    var Element = Node.SelectedNode.composition.Elements[ElementIndex];
+    var ModelFound = null;
+
+    //
+    if(CMPS.ModelIdentifier.length == 2*2){
+      ModelFound = Element.SIG_Models.find(function(model) {
+        return model.ModelIdentifier == CMPS.ModelIdentifier;
+      })
+    }
+    //
+    if(CMPS.ModelIdentifier.length == 4*2){
+      ModelFound = Element.Vendor_Models.find(function(model) {
+        return model.ModelIdentifier == CMPS.ModelIdentifier;
+      })
+    }
+    if(ModelFound){
+      var Publication = {
+        PublishAddress: CMPS.PublishAddress,
+        AppKeyIndex: CMPS.AppKeyIndex,
+        CredentialFlag: CMPS.CredentialFlag,
+        PublishTTL: CMPS.PublishTTL,
+        PublishPeriod: CMPS.PublishPeriod,
+        PublishRetransmitCount: CMPS.PublishRetransmitCount,
+        PublishRetransmitIntervalSteps: CMPS.PublishRetransmitIntervalSteps,
+      }
+      //
+      ModelFound.Publication = Publication;
+      console.log('Model_Publication_Status : ' + JSON.stringify(Publication));
+    }
+  } else {
+    console.log("ERROR : bad Element Address: " + CMPS.ElementAddress);
+  }
 
   Config.std_callback(obj.callback, CMPS.Status);
 }
@@ -181,24 +223,126 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
 Config.OUT.Model_Subscription_Status = function (obj, parameters){
 
 //Model_Subscription_Status
-  var CMPS = {
+  var CMSS = {
     Status: 0,//8 Status Code for the requesting message
     ElementAddress: 0,//16 Address of the element
     Address: 0,//16 Value of the address
     ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
   }
 
-  CMPS.Status = utils.hexToU8A(parameters.substring(0, 1*2));
-  CMPS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
-  CMPS.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
-  CMPS.ModelIdentifier = parameters.substring(5*2);
+  CMSS.Status = parseInt(parameters.substring(0, 1*2), 16);
+  CMSS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  CMSS.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
+  CMSS.ModelIdentifier = parameters.substring(5*2);
 
-  console.log('Model_Subscription_Status : ' + JSON.stringify(CMPS));
+  console.log('Model_Subscription_Status : ' + JSON.stringify(CMSS));
   //
-  var Status_Code_obj = STATUS_CODE.FindByID(CMPS.Status);
+  var Status_Code_obj = STATUS_CODE.FindByID(CMSS.Status);
   console.log('Model_Subscription_Status status : ' + JSON.stringify(Status_Code_obj));
 
-  Config.std_callback(obj.callback, CMPS.Status);
+  Config.std_callback(obj.callback, CMSS.Status);
+}
+
+//4.3.2.28 Config SIG Model Subscription List
+Config.OUT.SIG_Model_Subscription_List = function (obj, parameters){
+
+  //SIG_Model_Subscription_List
+    var SMSL = {
+      Status: 0,//8 Status Code for the requesting message
+      ElementAddress: 0,//16 Address of the element
+      ModelIdentifier: 0,// 16 SIG Model ID
+      Address : [], //A block of all addresses from the Subscription List
+    }
+
+    SMSL.Status = parseInt(parameters.substring(0, 1*2), 16);
+    SMSL.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+    SMSL.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 5*2));
+
+    if(parameters.length > 5*2){
+      var data = data.substring(5*2);
+
+      //Get all addresses from the Subscription List
+      while(data.length >= 2*2){
+        var Address = utils.SWAPhex(data.substring(0, 2*2));
+        SMSL.Address.push(Address);
+      }
+    }
+
+    console.log('SIG_Model_Subscription_List : ' + JSON.stringify(SMSL));
+    //
+    var Status_Code_obj = STATUS_CODE.FindByID(SMSL.Status);
+    console.log('SIG_Model_Subscription_List status : ' + JSON.stringify(Status_Code_obj));
+
+    //Process SMSL
+    var ElementIndex = parseInt(SMSL.ElementAddress , 16) - parseInt(Node.dst , 16);
+    if(ElementIndex < Node.SelectedNode.composition.Elements.length){
+      var Element = Node.SelectedNode.composition.Elements[ElementIndex];
+      //
+      var ModelFound = Element.SIG_Models.find(function(model) {
+        return model.ModelIdentifier == SMSL.ModelIdentifier;
+      })
+      if(ModelFound){
+        ModelFound.SIG_Subscription_List = SMSL.Address;
+        console.log('SIG_Model_Subscription_List : ' + JSON.stringify(ModelFound));
+      } else {
+        console.log("ERROR : Model Not Found: " + SMSL.ModelIdentifier);
+      }
+    } else {
+      console.log("ERROR : bad Element Address: " + SMSL.ElementAddress);
+    }
+
+    Config.std_callback(obj.callback, SMSL.Status);
+}
+
+//4.3.2.30 Config Vendor Model Subscription List
+Config.OUT.Vendor_Model_Subscription_List = function (obj, parameters){
+
+    //Vendor_Model_Subscription_List
+      var VMSL = {
+        Status: 0,//8 Status Code for the requesting message
+        ElementAddress: 0,//16 Address of the element
+        ModelIdentifier: 0,// 32 Vendor Model ID
+        Address : [], //A block of all addresses from the Subscription List
+      }
+
+      VMSL.Status = parseInt(parameters.substring(0, 1*2), 16);
+      VMSL.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+      VMSL.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 7*2));
+
+      if(parameters.length > 5*2){
+        var data = data.substring(7*2);
+
+        //Get all addresses from the Subscription List
+        while(data.length >= 2*2){
+          var Address = utils.SWAPhex(data.substring(0, 2*2));
+          VMSL.Address.push(Address);
+        }
+      }
+
+      console.log('Vendor_Model_Subscription_List : ' + JSON.stringify(VMSL));
+      //
+      var Status_Code_obj = STATUS_CODE.FindByID(VMSL.Status);
+      console.log('Vendor_Model_Subscription_List status : ' + JSON.stringify(Status_Code_obj));
+
+      //Process VMSL
+      var ElementIndex = parseInt(VMSL.ElementAddress , 16) - parseInt(Node.dst , 16);
+      if(ElementIndex < Node.SelectedNode.composition.Elements.length){
+        var Element = Node.SelectedNode.composition.Elements[ElementIndex];
+        //
+        var ModelFound = Element.Vendor_Models.find(function(model) {
+          return model.ModelIdentifier == VMSL.ModelIdentifier;
+        })
+        if(ModelFound){
+          ModelFound.Vendor_Subscription_List = VMSL.Address;
+          console.log('Vendor_Model_Subscription_List : ' + JSON.stringify(ModelFound));
+        } else {
+          console.log("ERROR : Model Not Found: " + VMSL.ModelIdentifier);
+        }
+      } else {
+        console.log("ERROR : bad Element Address: " + VMSL.ElementAddress);
+      }
+
+      Config.std_callback(obj.callback, VMSL.Status);
 }
 
 
@@ -206,25 +350,25 @@ Config.OUT.Model_Subscription_Status = function (obj, parameters){
 Config.OUT.Model_App_Status = function (obj, parameters){
 
 //Config_Model_App_Status
-  var CMPS = {
+  var CMAS = {
     Status: 0,//8 Status Code for the requesting message
     ElementAddress: 0,//16 Address of the element
     AppKeyIndex: 0,//12 Index of the application key
     ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
   }
 
-  CMPS.Status = utils.hexToU8A(parameters.substring(0, 1*2));
-  CMPS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  CMAS.Status = parseInt(parameters.substring(0, 1*2), 16);
+  CMAS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
   var number = utils.getUint16LEfromhex(parameters.substring(3*2, 5*2));
-  CMPS.AppKeyIndex = number & 0xFFF;
-  CMPS.ModelIdentifier = parameters.substring(5*2);
+  CMAS.AppKeyIndex = number & 0xFFF;
+  CMAS.ModelIdentifier = parameters.substring(5*2);
 
-  console.log('Model_App_Status : ' + JSON.stringify(CMPS));
+  console.log('Model_App_Status : ' + JSON.stringify(CMAS));
   //
-  var Status_Code_obj = STATUS_CODE.FindByID(CMPS.Status);
+  var Status_Code_obj = STATUS_CODE.FindByID(CMAS.Status);
   console.log('Model_App_Status status : ' + JSON.stringify(Status_Code_obj));
 
-  Config.std_callback(obj.callback, CMPS.Status);
+  Config.std_callback(obj.callback, CMAS.Status);
 }
 
 
@@ -273,6 +417,54 @@ Config.IN.AppKeyAdd = function (NetKeyIndex, AppKeyIndex, AppKey){
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });
 }
+
+//4.3.2.15 Config Model Publication Get
+Config.IN.Model_Publication_Get = function (parameters){
+  return new Promise((resolve, reject) => {
+
+    // Field Size(bits) Notes
+    // ElementAddress 16 Address of the element
+    // ModelIdentifier 16 or 32 SIG Model ID or Vendor Model ID
+
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_Model_Publication_Status');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_Model_Publication_Get');
+
+    var Message = {
+      //ElementAddress: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if((parameters.ModelIdentifier.length != 2*2) && (parameters.ModelIdentifier.length != 4*2)){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    //Message = Object.assign(parameters);
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log(opcode_obj.name + ': ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
+
 //4.3.2.16 Config Model Publication Set
 Config.IN.Model_Publication_Set = function (parameters){
   return new Promise((resolve, reject) => {
@@ -468,6 +660,97 @@ Config.IN.Model_Subscription_Add = function (parameters){
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });
 }
+
+//4.3.2.27 Config SIG Model Subscription Get
+Config.IN.SIG_Model_Subscription_Get = function (parameters){
+  return new Promise((resolve, reject) => {
+
+  // Field Size (octets) Notes
+  // ElementAddress 2 Address of the element
+  // ModelIdentifier 2 SIG Model ID
+
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_SIG_Model_Subscription_List');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_SIG_Model_Subscription_Get');
+
+    var Message = {
+      //ElementAddress: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if(parameters.ModelIdentifier.length != 2*2){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log(opcode_obj.name + ': ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
+//4.3.2.29 Config Vendor Model Subscription Get
+Config.IN.Vendor_Model_Subscription_Get = function (parameters){
+  return new Promise((resolve, reject) => {
+
+  // Field Size (octets) Notes
+  // ElementAddress 2 Address of the element
+  // ModelIdentifier 4 Vendor Model ID
+
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_Vendor_Model_Subscription_List');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_Vendor_Model_Subscription_Get');
+
+    var Message = {
+      //ElementAddress: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if(parameters.ModelIdentifier.length != 4*2){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log(opcode_obj.name + ': ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
 
 //4.3.2.46 Config Model App Bind
 Config.IN.Model_App_Bind = function (parameters){

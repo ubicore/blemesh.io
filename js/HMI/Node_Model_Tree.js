@@ -35,12 +35,12 @@ ModelElmt.prototype.render = function (root) {
 
 ModelElmt.renderModels = function (Elements, root) {
     $.each(Elements, function (ElementIndex, element) {
-            $.each(element.SIG_Models, function (index, modelId) {
-                var m = new ModelElmt(ElementIndex, modelId);
+            $.each(element.SIG_Models, function (index, model) {
+                var m = new ModelElmt(ElementIndex, model.ModelIdentifier);
                 m.render(root);
             });
-            $.each(element.Vendor_Models, function (index, modelId) {
-                var m = new ModelElmt(ElementIndex, modelId);
+            $.each(element.Vendor_Models, function (index, model) {
+                var m = new ModelElmt(ElementIndex, model.ModelIdentifier);
                 m.render(root);
             });
     });
@@ -50,11 +50,12 @@ ModelElmt.Populate_GroupBox = function ($li) {
   var ElementIndex = $li.attr("ElementIndex");
   var modelId = $li.attr("modelId");
   console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
+  //
+  Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId);
 
-
-
-
-
+  //TODO :
+  //Populate Box with Element Model Publication and subscription
+  //create an IHM function
 }
 
 /*********************************************************/
