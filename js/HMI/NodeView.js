@@ -1,4 +1,3 @@
-
 var ModelElmt = function (index, modelId) {
     this.index = index;
     this.modelId = modelId;
@@ -33,7 +32,11 @@ ModelElmt.prototype.render = function (root) {
   })
 };
 
-ModelElmt.renderModels = function (Elements, root) {
+/******************************************************/
+var NodeView ={};
+
+
+NodeView.renderElement = function (Elements, root) {
     $.each(Elements, function (ElementIndex, element) {
             $.each(element.SIG_Models, function (index, model) {
                 var m = new ModelElmt(ElementIndex, model.ModelIdentifier);
@@ -46,7 +49,7 @@ ModelElmt.renderModels = function (Elements, root) {
     });
 }
 
-ModelElmt.Populate_GroupBox = function ($li) {
+NodeView.DisplayModelPublicationAndSubscription = function ($li) {
   var ElementIndex = $li.attr("ElementIndex");
   var modelId = $li.attr("modelId");
   console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
@@ -56,6 +59,21 @@ ModelElmt.Populate_GroupBox = function ($li) {
   //TODO :
   //Populate Box with Element Model Publication and subscription
   //create an IHM function
+}
+
+NodeView.DisplayElementAndModel = function () {
+  NodeView.renderElement(Node.SelectedNode.composition.Elements, $('#tree'));
+
+  //Get clicked model and message index
+  $('#tree li ul li a').click(function() {
+//      var MessageIndex = $(this).parent('li').index();
+//      var ElementIndex = $(this).parent('li').parent('ul').parent('li').index();
+      var opcode = $(this).parent('li').attr("opcode");
+      NodeView.DisplayMessageBox(opcode);
+  });
+
+  ModelTree.walk();
+  $('ul > li').has('ul').addClass('sub');
 }
 
 /*********************************************************/
@@ -76,7 +94,7 @@ var ModelTree = {
 
                     if($a.hasClass('active')){
 
-                      ModelElmt.Populate_GroupBox($li);
+                      NodeView.DisplayModelPublicationAndSubscription($li);
                       //
                       //TODO :
                       //Config_Model_Publication_Get
@@ -95,4 +113,49 @@ var ModelTree = {
         });
     }
 };
-//MenuTree.walk();
+
+
+/*********************************************************/
+
+NodeView.DisplayMessageBox = function (opcode) {
+  console.log('opcode: ' + opcode);
+  var message = OPCODE.FindByID(opcode);
+  console.log('message: ' + message.name);
+
+  //Empty
+	var Input = $("#Command");
+  $(Input).empty();
+
+  //append CMD
+  Input.append($('<p></p>', {
+    value : message.id,
+    text: message.name ,
+  }))
+
+  //Append Argument selection
+  var $select_GroupAddress = ($('<select></select>', {
+    id : opcode + "_GroupAddress",
+    text: "Select a Group" ,
+  })).appendTo(Input);
+  //
+  GroupView.Refresh($select_GroupAddress);
+
+  //Button Send
+  Input.append($('<button></button>', {
+    id : message.id,
+    text: "Send",
+  }))
+
+
+  var $select_Element = ($('<select></select>', {
+    id : opcode + "Element",
+    text: "Select a Element" ,
+  })).appendTo(Input);
+
+  $.each(Node.SelectedNode.composition.Elements, function (ElementIndex, element) {
+    $select_Element.append($('<option></option>', {
+      value: ElementIndex,
+      text: ElementIndex ,
+    }));
+  });
+}

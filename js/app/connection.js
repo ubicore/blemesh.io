@@ -98,7 +98,7 @@ connection.connect = function () {
                 return app.GetPage0()
             })
             .then( () => {
-              HMI.DisplayNodeModels();
+              NodeView.DisplayElementAndModel();
             })
             .catch(error => {
               console.log('The error is: ' + error);

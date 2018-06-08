@@ -14,7 +14,7 @@ Element.RefreshModelPublicationAndSubscription = function (ElementIndex, modelId
   .then(() =>{
     console.log("Model_Publication_Get FINISH WITH SUCCESS !");
 
-    if(parameters.ModelIdentifier.length == 2*2){
+      if(parameters.ModelIdentifier.length == 2*2){
       Config.IN.SIG_Model_Subscription_Get(parameters)
       .then(() =>{
         console.log("SIG_Model_Subscription_Get FINISH WITH SUCCESS !");

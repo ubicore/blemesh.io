@@ -41,7 +41,7 @@ app.GetPage0 = function () {
 //For test only
 app.DisplayNodeModels = function () {
   Node.SelectedNode = db.data.nodes[0];
-  HMI.DisplayNodeModels();
+  NodeView.DisplayElementAndModel();
 }
 
 app.SendAppKey = function () {

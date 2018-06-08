@@ -41,14 +41,14 @@ addEventListener('DOMContentLoaded', function() {
 
     var btn_GroupAddress_addItem = document.getElementById('btn_GroupAddress_addItem');
     btn_GroupAddress_addItem.addEventListener('click', function() {
-        HMI.GroupAddress.addItem();
+        GroupView.addItem();
     });
     var btn_GroupAddress_removeItem = document.getElementById('btn_GroupAddress_removeItem');
     btn_GroupAddress_removeItem.addEventListener('click', function() {
-        HMI.GroupAddress.removeItem();
+        GroupView.removeItem();
     });
     var btn_GroupAddress_reset = document.getElementById('btn_GroupAddress_reset');
     btn_GroupAddress_reset.addEventListener('click', function() {
-        HMI.GroupAddress.reset();
+        GroupView.reset();
     });
 })
