@@ -282,8 +282,8 @@ Config.OUT.SIG_Model_Subscription_List = function (obj, parameters){
         return model.ModelIdentifier == SMSL.ModelIdentifier;
       })
       if(ModelFound){
-        ModelFound.SIG_Subscription_List = SMSL.Address;
-        console.log('SIG_Model_Subscription_List : ' + JSON.stringify(ModelFound));
+        ModelFound.SubscriptionList = SMSL.Address;
+        console.log('ModelFound : ' + JSON.stringify(ModelFound));
       } else {
         console.log("ERROR : Model Not Found: " + SMSL.ModelIdentifier);
       }
@@ -333,8 +333,8 @@ Config.OUT.Vendor_Model_Subscription_List = function (obj, parameters){
           return model.ModelIdentifier == VMSL.ModelIdentifier;
         })
         if(ModelFound){
-          ModelFound.Vendor_Subscription_List = VMSL.Address;
-          console.log('Vendor_Model_Subscription_List : ' + JSON.stringify(ModelFound));
+          ModelFound.SubscriptionList = VMSL.Address;
+          console.log('ModelFound : ' + JSON.stringify(ModelFound));
         } else {
           console.log("ERROR : Model Not Found: " + VMSL.ModelIdentifier);
         }

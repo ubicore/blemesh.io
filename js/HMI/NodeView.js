@@ -138,9 +138,95 @@ NodeView.DisplayMessageBox = function (opcode) {
   });
 }
 /*********************************************************/
+var PublicationView = function (ModelFound) {
+  this.ModelFound = ModelFound;
+};
+
+PublicationView.prototype.render = function ($model) {
+  var jsonPretty = JSON.stringify(this.ModelFound.Publication, null, 4);
+  var $textarea = $($model).find("#PublicationTextArea");
+
+  if(!$textarea.length){
+    $textarea = $('<textarea id="PublicationTextArea" cols=50 rows=15></textarea>').appendTo($model);
+  }
+  $($textarea).val(jsonPretty);
+};
+
+PublicationView.prototype.AddUpdateButton = function ($model) {
+  var $button = ($('<button></button>', {
+    id : "button",
+    text: "Update" ,
+  })).appendTo($model);
+
+  var $textarea = $($model).find("#PublicationTextArea");
+  var ModelFound = this.ModelFound;
+
+
+  $button.click(function (e) {
+    e.preventDefault();
+    var data = null;
+    try {
+        data = JSON.parse(  $($textarea).val() );
+        ModelFound.Publication = data;
+        db.Save();
+    }
+    catch (error) {
+        if (error instanceof SyntaxError) {
+            alert("There was a syntax error. Please correct it and try again: " + error.message);
+        }
+        else {
+            throw error;
+        }
+    }
+  });
+};
+/*********************************************************/
+
+var SubscriptionView = function (ModelFound) {
+  this.ModelFound = ModelFound;
+};
+
+SubscriptionView.prototype.render = function ($model) {
+  var jsonPretty = JSON.stringify(this.ModelFound.SubscriptionList, null, 4);
+  var $textarea = $($model).find("#SubscriptionTextArea");
+
+  if(!$textarea.length){
+      $textarea = $('<textarea id="SubscriptionTextArea" cols=50 rows=15></textarea>').appendTo($model);
+  }
+  $($textarea).val(jsonPretty);
+};
+
+SubscriptionView.prototype.AddUpdateButton = function ($model) {
+  var $button = ($('<button></button>', {
+    id : "button",
+    text: "Update" ,
+  })).appendTo($model);
+
+  var $textarea = $($model).find("#SubscriptionTextArea");
+  var ModelFound = this.ModelFound;
+
+  $button.click(function (e) {
+    e.preventDefault();
+    var data = null;
+    try {
+        data = JSON.parse(  $($textarea).val() );
+        ModelFound.SubscriptionList = data;
+        db.Save();
+    }
+    catch (error) {
+        if (error instanceof SyntaxError) {
+            alert("There was a syntax error. Please correct it and try again: " + error.message);
+        }
+        else {
+            throw error;
+        }
+    }
+  });
+};
+/*********************************************************/
 var ElementView = {};
 
-ElementView.renderModelPublicationAndSubscription = function (ElementIndex, modelId) {
+ElementView.renderModelPublicationAndSubscription = function ($li, ElementIndex, modelId) {
   //Get Data from Element->Model
   var Element = Node.SelectedNode.composition.Elements[ElementIndex];
   var ModelFound;
@@ -157,8 +243,14 @@ ElementView.renderModelPublicationAndSubscription = function (ElementIndex, mode
     })
   }
   if(ModelFound != undefined){
-    console.log('ModelFound.Publication : ' + JSON.stringify(ModelFound.Publication));
-    console.log('ModelFound.SIG_Subscription_List : ' + JSON.stringify(ModelFound.SIG_Subscription_List));
+    console.log('ModelFound : ' + JSON.stringify(ModelFound));
+    var m = new PublicationView(ModelFound);
+    m.render($li);
+    m.AddUpdateButton($li);
+
+    var m = new SubscriptionView(ModelFound);
+    m.render($li);
+    m.AddUpdateButton($li);
   }
 }
 
@@ -169,7 +261,8 @@ ElementView.DisplayModelPublicationAndSubscription = function ($li) {
   //
   Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId)
   .then(() =>{
-    ElementView.renderModelPublicationAndSubscription(ElementIndex, modelId);
+    ElementView.renderModelPublicationAndSubscription($li, ElementIndex, modelId);
+    db.Save();
   })
   .catch(error => {
     HMI.showMessageRed(error);
