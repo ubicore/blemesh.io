@@ -317,7 +317,13 @@ class Provisionner {
             console.log('Invite PDU ' + PDU.length);
             this.PDU_Invite = PDU;
 
-            this.ProxyPDU_IN.Send(PDU, null, reject)
+            this.ProxyPDU_IN.Send(PDU)
+            .then(() => {
+            })
+            .catch(error => {
+              reject(error);
+            });
+
         });
     };
 
@@ -420,7 +426,13 @@ class Provisionner {
             console.log('Start PDU ' + PDU.length);
             this.PDU_Start = PDU;
 
-            this.ProxyPDU_IN.Send(PDU, resolve, reject)
+            this.ProxyPDU_IN.Send(PDU)
+            .then(() => {
+              resolve();
+            })
+            .catch(error => {
+              reject(error);
+            });
         });
     };
 
@@ -456,7 +468,12 @@ class Provisionner {
             console.log('Public_Key PDU : ' + PDU);
             console.log('Public_Key PDU : ' + PDU.length);
 
-            this.ProxyPDU_IN.Send(PDU, null, reject)
+            this.ProxyPDU_IN.Send(PDU)
+            .then(() => {
+            })
+            .catch(error => {
+              reject(error);
+            });
         });
     };
 
@@ -496,7 +513,12 @@ class Provisionner {
 
             console.log('Confirmation PDU : ' + PDU);
             console.log('Confirmation PDU : ' + PDU.length);
-            this.ProxyPDU_IN.Send(PDU, null, reject)
+            this.ProxyPDU_IN.Send(PDU)
+            .then(() => {
+            })
+            .catch(error => {
+              reject(error);
+            });
         });
     };
 
@@ -515,7 +537,13 @@ class Provisionner {
 
             console.log('PDU_Random : ' + PDU);
             console.log('PDU_Random : ' + PDU.length);
-            this.ProxyPDU_IN.Send(PDU, null, reject)
+            this.ProxyPDU_IN.Send(PDU)
+            .then(() => {
+            })
+            .catch(error => {
+              reject(error);
+            });
+
         });
     };
 
@@ -547,7 +575,12 @@ class Provisionner {
             PDU.set(Payload, index);
 
             console.log('PDU_Random len ' + PDU.length + '\n' + PDU);
-            this.ProxyPDU_IN.Send(PDU, null, reject)
+            this.ProxyPDU_IN.Send(PDU)
+            .then(() => {
+            })
+            .catch(error => {
+              reject(error);
+            });
         });
     };
 
