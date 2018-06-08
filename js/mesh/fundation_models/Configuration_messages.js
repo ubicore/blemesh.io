@@ -183,7 +183,7 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
   var ElementIndex = parseInt(CMPS.ElementAddress , 16) - parseInt(Node.dst , 16);
   if(ElementIndex < Node.SelectedNode.composition.Elements.length){
     var Element = Node.SelectedNode.composition.Elements[ElementIndex];
-    var ModelFound = null;
+    var ModelFound;
 
     //
     if(CMPS.ModelIdentifier.length == 2*2){
@@ -197,7 +197,7 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
         return model.ModelIdentifier == CMPS.ModelIdentifier;
       })
     }
-    if(ModelFound){
+    if(ModelFound != undefined){
       var Publication = {
         PublishAddress: CMPS.PublishAddress,
         AppKeyIndex: CMPS.AppKeyIndex,

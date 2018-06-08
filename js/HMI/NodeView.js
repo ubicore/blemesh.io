@@ -49,17 +49,6 @@ NodeView.renderElement = function (Elements, root) {
     });
 }
 
-NodeView.DisplayModelPublicationAndSubscription = function ($li) {
-  var ElementIndex = $li.attr("ElementIndex");
-  var modelId = $li.attr("modelId");
-  console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
-  //
-  Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId);
-
-  //TODO :
-  //Populate Box with Element Model Publication and subscription
-  //create an IHM function
-}
 
 NodeView.DisplayElementAndModel = function () {
   NodeView.renderElement(Node.SelectedNode.composition.Elements, $('#tree'));
@@ -94,19 +83,8 @@ var ModelTree = {
 
                     if($a.hasClass('active')){
 
-                      NodeView.DisplayModelPublicationAndSubscription($li);
+                      ElementView.DisplayModelPublicationAndSubscription($li);
                       //
-                      //TODO :
-                      //Config_Model_Publication_Get
-                      //Config_SIG_Model_Subscription_Get
-                      //Config_Vendor_Model_Subscription_Get
-
-                      //Then DO :
-                      // {id: 0x801B, size: 2, name: 'Config_Model_Subscription_Add', TX_fct: null, RX_fct: null, callback: null},
-                      // {id: 0x801C, size: 2, name: 'Config_Model_Subscription_Delete', TX_fct: null, RX_fct: null, callback: null},
-                      // {id: 0x801D, size: 2, name: 'Config_Model_Subscription_Delete_All', TX_fct: null, RX_fct: null, callback: null},
-                      // {id: 0x801E, size: 2, name: 'Config_Model_Subscription_Overwrite', TX_fct: null, RX_fct: null, callback: null},
-
                     }
                 });
             }
@@ -158,4 +136,36 @@ NodeView.DisplayMessageBox = function (opcode) {
       text: ElementIndex ,
     }));
   });
+}
+/*********************************************************/
+var ElementView = {};
+
+ElementView.renderModelPublicationAndSubscription = function (ElementIndex, modelId) {
+  //Get Data from Element->Model
+  var Element = Node.SelectedNode.composition.Elements[ElementIndex];
+  var ModelFound;
+  //
+  if(modelId.length == 2*2){
+    ModelFound = Element.SIG_Models.find(function(model) {
+      return model.ModelIdentifier == modelId;
+    })
+  }
+  //
+  if(modelId == 4*2){
+    ModelFound = Element.Vendor_Models.find(function(model) {
+      return model.ModelIdentifier == modelId;
+    })
+  }
+  if(ModelFound != undefined){
+    console.log('ModelFound.Publication : ' + JSON.stringify(ModelFound.Publication));
+  }
+}
+
+ElementView.DisplayModelPublicationAndSubscription = function ($li) {
+  var ElementIndex = $li.attr("ElementIndex");
+  var modelId = $li.attr("modelId");
+  console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
+  //
+  Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId);
+  ElementView.renderModelPublicationAndSubscription(ElementIndex, modelId);
 }
