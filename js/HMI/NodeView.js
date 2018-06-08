@@ -158,6 +158,7 @@ ElementView.renderModelPublicationAndSubscription = function (ElementIndex, mode
   }
   if(ModelFound != undefined){
     console.log('ModelFound.Publication : ' + JSON.stringify(ModelFound.Publication));
+    console.log('ModelFound.SIG_Subscription_List : ' + JSON.stringify(ModelFound.SIG_Subscription_List));
   }
 }
 
@@ -166,6 +167,12 @@ ElementView.DisplayModelPublicationAndSubscription = function ($li) {
   var modelId = $li.attr("modelId");
   console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
   //
-  Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId);
-  ElementView.renderModelPublicationAndSubscription(ElementIndex, modelId);
+  Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId)
+  .then(() =>{
+    ElementView.renderModelPublicationAndSubscription(ElementIndex, modelId);
+  })
+  .catch(error => {
+    HMI.showMessageRed(error);
+    console.log('ERROR: ' + error);
+  });
 }
