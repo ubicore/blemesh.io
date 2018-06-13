@@ -101,10 +101,10 @@ var AppListView = function (ElementIndex, ModelFound) {
 
 AppListView.prototype.render = function ($model) {
   var jsonPretty = JSON.stringify(this.ModelFound.AppKeyIndexes, null, 4);
-  var $textarea = $($model).find("#AppListTextArea");
+  var $textarea = $($model).find("#AppKeyListTextArea");
 
   if(!$textarea.length){
-      $textarea = $('<textarea id="AppListTextArea" cols=50 rows=15></textarea>').appendTo($model);
+      $textarea = $('<textarea id="AppKeyListTextArea" cols=50 rows=15></textarea>').appendTo($model);
   }
   $($textarea).val(jsonPretty);
 };
@@ -117,7 +117,7 @@ function forEachPromise(items, fn, context) {
     }, Promise.resolve());
 }
 
-function SendItem(item, context){
+function BindItem(item, context){
 
   if(context.lastSend != null){
     console.log('done');
@@ -137,19 +137,19 @@ function SendItem(item, context){
 
 AppListView.prototype.AddUpdateButton = function ($model) {
 
-  var $ExistingButton = $($model).find("#buttonSub");
+  var $ExistingButton = $($model).find("#buttonApp");
 
   if($ExistingButton.length){
-    console.log("SubscriptionView $button Already exist ! ");
+    console.log("AppListView $button Already exist ! ");
     return;
   }
 
   $button = ($('<button></button>', {
-    id : "buttonSub",
+    id : "buttonApp",
     text: "Update" ,
   })).appendTo($model);
 
-  var $textarea = $($model).find("#SubscriptionTextArea");
+  var $textarea = $($model).find("#AppKeyListTextArea");
   var ModelFound = this.ModelFound;
   var ElementIndex = this.ElementIndex;
 
@@ -157,30 +157,26 @@ AppListView.prototype.AddUpdateButton = function ($model) {
     e.preventDefault();
     var data = null;
     try {
-        var SubscriptionList = JSON.parse(  $($textarea).val() );
+        var AppKeyList = JSON.parse(  $($textarea).val() );
         var ElementAddress = utils.toHex(parseInt(Node.dst , 16) + parseInt(ElementIndex , 16), 2);
         var parameters = {
           ElementAddress: ElementAddress,
           ModelIdentifier: ModelFound.ModelIdentifier,
         }
-        Config.IN.Model_Subscription_Delete_All(parameters)
-        .then(() =>{
-          console.log("SubscriptionDeleteAll FINISH WITH SUCCESS ! ");
-          //Add each Address in list
-          var context = {};
-          context.ElementAddress = ElementAddress;
-          context.ModelFound = ModelFound;
-          context.lastSend = null;
+        //Add each Address in list
+        var context = {};
+        context.ElementAddress = ElementAddress;
+        context.ModelFound = ModelFound;
+        context.lastSend = null;
 
-          var items = SubscriptionList;
-          forEachPromise(items, SendItem, context).then(() => {
-            if(context.lastSend != null){
-              console.log('done');
-              context.ModelFound.SubscriptionList.push(context.lastSend);
-              db.Save();
-            }
-            console.log("SubscriptionAdd FINISH WITH SUCCESS ! " + JSON.stringify(SubscriptionList));
-          });
+        var items = AppKeyList;
+        forEachPromise(items, BindItem, context).then(() => {
+          if(context.lastSend != null){
+            console.log('done');
+            context.ModelFound.AppKeyIndexes.push(context.lastSend);
+            db.Save();
+          }
+          console.log("AppKeyIndexes update FINISH WITH SUCCESS ! " + JSON.stringify(AppKeyList));
         })
         .catch(error => {
           HMI.showMessageRed(error);
