@@ -24,7 +24,7 @@ ul {
     padding-right: 4px;
     font-weight: bold;
 }
-#tree li ul {
+#tree li div ul {
     margin: 0.5em 0 0.5em 2em;
     display: none;
 }

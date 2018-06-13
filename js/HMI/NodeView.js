@@ -18,7 +18,14 @@ ModelElmt.prototype.render = function (root) {
     text: this.index + ' -> ' + model.name ,
   })).appendTo(root);
 
-  var $ul = $('<ul></ul>').appendTo($li);
+
+    var $div = $('<div></div>', {
+      id: this.index,
+    //  text: this.modelId,
+    }).appendTo($li);
+
+
+  var $ul = $('<ul></ul>').appendTo($div);
   $.each(model.SupportedRxMessages, function (index, opcode) {
     message = OPCODE.FindByID(opcode);
     var $li = $('<li></li>', {
@@ -54,7 +61,7 @@ NodeView.DisplayElementAndModel = function () {
   NodeView.renderElement(Node.SelectedNode.composition.Elements, $('#tree'));
 
   //Get clicked model and message index
-  $('#tree li ul li a').click(function() {
+  $('#tree li div ul li a').click(function() {
 //      var MessageIndex = $(this).parent('li').index();
 //      var ElementIndex = $(this).parent('li').parent('ul').parent('li').index();
       var opcode = $(this).parent('li').attr("opcode");
@@ -62,29 +69,33 @@ NodeView.DisplayElementAndModel = function () {
   });
 
   ModelTree.walk();
-  $('ul > li').has('ul').addClass('sub');
+  $('ul > li ').has('ul').addClass('sub');
 }
 
 /*********************************************************/
 var ModelTree = {
-    collapse: function (element) {
-        element.slideToggle(300);
-    },
+    // collapse: function (element) {
+    //     element.slideToggle(300);
+    // },
     walk: function () {
         $('a', '#tree').each(function () {
             var $a = $(this);
             var $li = $a.parent();
-            if ($a.next().is('ul')) {
-                var $ul = $a.next();
+            if ($a.next().is('div')) {
+                var $div = $a.next();
                 $a.click(function (e) {
                     e.preventDefault();
-                    ModelTree.collapse($ul);
+
                     $a.toggleClass('active');
 
                     if($a.hasClass('active')){
-
-                      ElementView.DisplayModelPublicationAndSubscription($li);
+                      ElementView.DisplayModelPublicationAndSubscription($div);
+                      $div.slideDown();
+                      $div.find('ul').slideDown();
                       //
+                    } else {
+                      $div.slideUp();
+                      $div.find('ul').slideUp();
                     }
                 });
             }
@@ -342,14 +353,15 @@ ElementView.renderModelPublicationAndSubscription = function ($li, ElementIndex,
   }
 }
 
-ElementView.DisplayModelPublicationAndSubscription = function ($li) {
+ElementView.DisplayModelPublicationAndSubscription = function ($div) {
+  var $li = $div.parent();
   var ElementIndex = $li.attr("ElementIndex");
   var modelId = $li.attr("modelId");
   console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
   //
   Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId)
   .then(() =>{
-    ElementView.renderModelPublicationAndSubscription($li, ElementIndex, modelId);
+    ElementView.renderModelPublicationAndSubscription($div, ElementIndex, modelId);
     db.Save();
   })
   .catch(error => {
