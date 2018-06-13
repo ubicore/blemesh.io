@@ -1,7 +1,7 @@
 
-var Element = {};
+var Model = {};
 
-Element.RefreshModelPublicationAndSubscription = function (ElementIndex, modelId) {
+Model.RefreshPublicationAndSubscription = function (ElementIndex, modelId) {
   return new Promise((resolve, reject) => {
 
     var ElementAddress = parseInt(Node.dst , 16) + parseInt(ElementIndex , 16);

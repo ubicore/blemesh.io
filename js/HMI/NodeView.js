@@ -89,7 +89,8 @@ var ModelTree = {
                     $a.toggleClass('active');
 
                     if($a.hasClass('active')){
-                      ElementView.DisplayModelPublicationAndSubscription($div);
+                      ModelView.DisplayPublicationAndSubscription($div);
+
                       $div.slideDown();
                       $div.find('ul').slideDown();
                       //
@@ -323,9 +324,9 @@ SubscriptionView.prototype.AddUpdateButton = function ($model) {
   });
 };
 /*********************************************************/
-var ElementView = {};
+var ModelView = {};
 
-ElementView.renderModelPublicationAndSubscription = function ($li, ElementIndex, modelId) {
+ModelView.renderPublicationAndSubscription = function ($li, ElementIndex, modelId) {
   //Get Data from Element->Model
   var Element = Node.SelectedNode.composition.Elements[ElementIndex];
   var ModelFound;
@@ -353,15 +354,16 @@ ElementView.renderModelPublicationAndSubscription = function ($li, ElementIndex,
   }
 }
 
-ElementView.DisplayModelPublicationAndSubscription = function ($div) {
+
+ModelView.DisplayPublicationAndSubscription = function ($div) {
   var $li = $div.parent();
   var ElementIndex = $li.attr("ElementIndex");
   var modelId = $li.attr("modelId");
   console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
   //
-  Element.RefreshModelPublicationAndSubscription(ElementIndex, modelId)
+  Model.RefreshPublicationAndSubscription(ElementIndex, modelId)
   .then(() =>{
-    ElementView.renderModelPublicationAndSubscription($div, ElementIndex, modelId);
+    ModelView.renderPublicationAndSubscription($div, ElementIndex, modelId);
     db.Save();
   })
   .catch(error => {
