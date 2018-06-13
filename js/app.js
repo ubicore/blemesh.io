@@ -79,7 +79,6 @@ app.PublicationSet = function () {
 
   var parameters = {
     //ElementAddress: '',
-    //          PublishAddress: 'ABCDEF0000000001ABCDEF0000000001',
     PublishAddress: 'c000',
     //AppKeyIndex: 0,
     // CredentialFlag: 0,
@@ -123,12 +122,12 @@ app.SubscriptionAdd = function () {
 
   Config.IN.Model_Subscription_Add(parameters)
   .then(() =>{
-    console.log("PublicationSet FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+    console.log("SubscriptionAdd FINISH WITH SUCCESS ! " + parameters.ElementAddress);
     parameters.ElementAddress = '0101';
     return Config.IN.Model_Subscription_Add(parameters)
   })
   .then(() =>{
-    console.log("PublicationSet FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+    console.log("SubscriptionAdd FINISH WITH SUCCESS ! " + parameters.ElementAddress);
   })
   .catch(error => {
     HMI.showMessageRed(error);

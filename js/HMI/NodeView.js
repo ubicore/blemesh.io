@@ -138,7 +138,8 @@ NodeView.DisplayMessageBox = function (opcode) {
   });
 }
 /*********************************************************/
-var PublicationView = function (ModelFound) {
+var PublicationView = function (ElementIndex, ModelFound) {
+  this.ElementIndex = ElementIndex;
   this.ModelFound = ModelFound;
 };
 
@@ -160,15 +161,33 @@ PublicationView.prototype.AddUpdateButton = function ($model) {
 
   var $textarea = $($model).find("#PublicationTextArea");
   var ModelFound = this.ModelFound;
-
+  var ElementIndex = this.ElementIndex;
 
   $button.click(function (e) {
     e.preventDefault();
     var data = null;
     try {
-        data = JSON.parse(  $($textarea).val() );
-        ModelFound.Publication = data;
-        db.Save();
+        var Publication = JSON.parse(  $($textarea).val() );
+
+        var parameters = {};
+        for(var k in parameters) Message[k]=parameters[k];
+
+        var ElementAddress = parseInt(Node.dst , 16) + parseInt(ElementIndex , 16);
+        parameters.ElementAddress = utils.toHex(ElementAddress, 2);
+        parameters.PublishAddress = Publication.PublishAddress;
+        parameters.AppKeyIndex = Selected_AppKey.index;
+        parameters.ModelIdentifier = ModelFound.ModelIdentifier;
+
+        Config.IN.Model_Publication_Set(parameters)
+        .then(() =>{
+          console.log("PublicationSet FINISH WITH SUCCESS ! " + JSON.stringify(parameters));
+          ModelFound.Publication = Publication;
+          db.Save();
+        })
+        .catch(error => {
+          HMI.showMessageRed(error);
+          console.log('ERROR: ' + error);
+        });
     }
     catch (error) {
         if (error instanceof SyntaxError) {
@@ -182,7 +201,8 @@ PublicationView.prototype.AddUpdateButton = function ($model) {
 };
 /*********************************************************/
 
-var SubscriptionView = function (ModelFound) {
+var SubscriptionView = function (ElementIndex, ModelFound) {
+  this.ElementIndex = ElementIndex;
   this.ModelFound = ModelFound;
 };
 
@@ -196,6 +216,32 @@ SubscriptionView.prototype.render = function ($model) {
   $($textarea).val(jsonPretty);
 };
 
+function forEachPromise(items, fn, context) {
+    return items.reduce(function (promise, item) {
+        return promise.then(function () {
+            return fn(item, context);
+        });
+    }, Promise.resolve());
+}
+
+function SendItem(item, context){
+
+  if(context.lastSend != null){
+    console.log('done');
+    context.ModelFound.SubscriptionList.push(context.lastSend);
+    db.Save();
+  }
+
+  var parameters = {
+    ElementAddress:context.ElementAddress,
+    Address: item,
+    ModelIdentifier: context.ModelFound.ModelIdentifier,
+  }
+  context.lastSend = item;
+  return Config.IN.Model_Subscription_Add(parameters)
+}
+
+
 SubscriptionView.prototype.AddUpdateButton = function ($model) {
   var $button = ($('<button></button>', {
     id : "button",
@@ -204,14 +250,41 @@ SubscriptionView.prototype.AddUpdateButton = function ($model) {
 
   var $textarea = $($model).find("#SubscriptionTextArea");
   var ModelFound = this.ModelFound;
+  var ElementIndex = this.ElementIndex;
 
   $button.click(function (e) {
     e.preventDefault();
     var data = null;
     try {
-        data = JSON.parse(  $($textarea).val() );
-        ModelFound.SubscriptionList = data;
-        db.Save();
+        var SubscriptionList = JSON.parse(  $($textarea).val() );
+        var ElementAddress = utils.toHex(parseInt(Node.dst , 16) + parseInt(ElementIndex , 16), 2);
+        var parameters = {
+          ElementAddress: ElementAddress,
+          ModelIdentifier: ModelFound.ModelIdentifier,
+        }
+        Config.IN.Model_Subscription_Delete_All(parameters)
+        .then(() =>{
+          console.log("SubscriptionDeleteAll FINISH WITH SUCCESS ! ");
+          //Add each Address in list
+          var context = {};
+          context.ElementAddress = ElementAddress;
+          context.ModelFound = ModelFound;
+          context.lastSend = null;
+
+          var items = SubscriptionList;
+          forEachPromise(items, SendItem, context).then(() => {
+            if(context.lastSend != null){
+              console.log('done');
+              context.ModelFound.SubscriptionList.push(context.lastSend);
+              db.Save();
+            }
+            console.log("SubscriptionAdd FINISH WITH SUCCESS ! " + JSON.stringify(SubscriptionList));
+          });
+        })
+        .catch(error => {
+          HMI.showMessageRed(error);
+          console.log('ERROR: ' + error);
+        });
     }
     catch (error) {
         if (error instanceof SyntaxError) {
@@ -244,11 +317,11 @@ ElementView.renderModelPublicationAndSubscription = function ($li, ElementIndex,
   }
   if(ModelFound != undefined){
     console.log('ModelFound : ' + JSON.stringify(ModelFound));
-    var m = new PublicationView(ModelFound);
+    var m = new PublicationView(ElementIndex, ModelFound);
     m.render($li);
     m.AddUpdateButton($li);
 
-    var m = new SubscriptionView(ModelFound);
+    var m = new SubscriptionView(ElementIndex, ModelFound);
     m.render($li);
     m.AddUpdateButton($li);
   }

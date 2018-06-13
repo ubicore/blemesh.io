@@ -259,12 +259,13 @@ Config.OUT.SIG_Model_Subscription_List = function (obj, parameters){
     SMSL.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 5*2));
 
     if(parameters.length > 5*2){
-      var data = data.substring(5*2);
+      var data = parameters.substring(5*2);
 
       //Get all addresses from the Subscription List
       while(data.length >= 2*2){
         var Address = utils.SWAPhex(data.substring(0, 2*2));
         SMSL.Address.push(Address);
+        data = data.substring(2*2);
       }
     }
 
@@ -611,6 +612,47 @@ Config.IN.Model_Publication_Virtual_Address_Set = function (parameters){
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });
 
+}
+
+//4.3.2.25 Config Model Subscription Delete All
+Config.IN.Model_Subscription_Delete_All = function (parameters){
+  return new Promise((resolve, reject) => {
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_Model_Subscription_Status');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_Model_Subscription_Delete_All');
+
+    var Message = {
+      //ElementAddress: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if((parameters.ModelIdentifier.length != 2*2) && (parameters.ModelIdentifier.length != 4*2)){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    //Message = Object.assign(parameters);
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log('Config_Model_Subscription_Delete_All : ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
 }
 
 
