@@ -154,8 +154,15 @@ PublicationView.prototype.render = function ($model) {
 };
 
 PublicationView.prototype.AddUpdateButton = function ($model) {
+  var $ExistingButton = $($model).find("#buttonPub");
+
+  if($ExistingButton.length){
+    console.log("SubscriptionView $button Already exist ! ");
+    return;
+  }
+
   var $button = ($('<button></button>', {
-    id : "button",
+    id : "buttonPub",
     text: "Update" ,
   })).appendTo($model);
 
@@ -243,8 +250,16 @@ function SendItem(item, context){
 
 
 SubscriptionView.prototype.AddUpdateButton = function ($model) {
-  var $button = ($('<button></button>', {
-    id : "button",
+
+  var $ExistingButton = $($model).find("#buttonSub");
+
+  if($ExistingButton.length){
+    console.log("SubscriptionView $button Already exist ! ");
+    return;
+  }
+
+  $button = ($('<button></button>', {
+    id : "buttonSub",
     text: "Update" ,
   })).appendTo($model);
 
