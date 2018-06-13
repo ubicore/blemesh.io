@@ -247,16 +247,16 @@ Config.OUT.Model_Subscription_Status = function (obj, parameters){
 Config.OUT.SIG_Model_Subscription_List = function (obj, parameters){
 
   //SIG_Model_Subscription_List
-    var SMSL = {
+    var MP = {
       Status: 0,//8 Status Code for the requesting message
       ElementAddress: 0,//16 Address of the element
       ModelIdentifier: 0,// 16 SIG Model ID
       Address : [], //A block of all addresses from the Subscription List
     }
 
-    SMSL.Status = parseInt(parameters.substring(0, 1*2), 16);
-    SMSL.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
-    SMSL.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 5*2));
+    MP.Status = parseInt(parameters.substring(0, 1*2), 16);
+    MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+    MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 5*2));
 
     if(parameters.length > 5*2){
       var data = parameters.substring(5*2);
@@ -264,88 +264,223 @@ Config.OUT.SIG_Model_Subscription_List = function (obj, parameters){
       //Get all addresses from the Subscription List
       while(data.length >= 2*2){
         var Address = utils.SWAPhex(data.substring(0, 2*2));
-        SMSL.Address.push(Address);
+        MP.Address.push(Address);
         data = data.substring(2*2);
       }
     }
 
-    console.log('SIG_Model_Subscription_List : ' + JSON.stringify(SMSL));
+    console.log('SIG_Model_Subscription_List : ' + JSON.stringify(MP));
     //
-    var Status_Code_obj = STATUS_CODE.FindByID(SMSL.Status);
+    var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
     console.log('SIG_Model_Subscription_List status : ' + JSON.stringify(Status_Code_obj));
 
-    //Process SMSL
-    var ElementIndex = parseInt(SMSL.ElementAddress , 16) - parseInt(Node.dst , 16);
+    //Process MP
+    var ElementIndex = parseInt(MP.ElementAddress , 16) - parseInt(Node.dst , 16);
     if(ElementIndex < Node.SelectedNode.composition.Elements.length){
       var Element = Node.SelectedNode.composition.Elements[ElementIndex];
       //
       var ModelFound = Element.SIG_Models.find(function(model) {
-        return model.ModelIdentifier == SMSL.ModelIdentifier;
+        return model.ModelIdentifier == MP.ModelIdentifier;
       })
       if(ModelFound){
-        ModelFound.SubscriptionList = SMSL.Address;
+        ModelFound.SubscriptionList = MP.Address;
         console.log('ModelFound : ' + JSON.stringify(ModelFound));
       } else {
-        console.log("ERROR : Model Not Found: " + SMSL.ModelIdentifier);
+        console.log("ERROR : Model Not Found: " + MP.ModelIdentifier);
       }
     } else {
-      console.log("ERROR : bad Element Address: " + SMSL.ElementAddress);
+      console.log("ERROR : bad Element Address: " + MP.ElementAddress);
     }
 
-    Config.std_callback(obj.callback, SMSL.Status);
+    Config.std_callback(obj.callback, MP.Status);
 }
 
 //4.3.2.30 Config Vendor Model Subscription List
 Config.OUT.Vendor_Model_Subscription_List = function (obj, parameters){
 
     //Vendor_Model_Subscription_List
-      var VMSL = {
+      var MP = {
         Status: 0,//8 Status Code for the requesting message
         ElementAddress: 0,//16 Address of the element
         ModelIdentifier: 0,// 32 Vendor Model ID
         Address : [], //A block of all addresses from the Subscription List
       }
 
-      VMSL.Status = parseInt(parameters.substring(0, 1*2), 16);
-      VMSL.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
-      VMSL.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 7*2));
+      MP.Status = parseInt(parameters.substring(0, 1*2), 16);
+      MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+      MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 7*2));
 
-      if(parameters.length > 5*2){
-        var data = data.substring(7*2);
+      if(parameters.length > 7*2){
+        var data = parameters.substring(7*2);
 
         //Get all addresses from the Subscription List
         while(data.length >= 2*2){
           var Address = utils.SWAPhex(data.substring(0, 2*2));
-          VMSL.Address.push(Address);
+          MP.Address.push(Address);
+          data = data.substring(2*2);
         }
       }
 
-      console.log('Vendor_Model_Subscription_List : ' + JSON.stringify(VMSL));
+      console.log('Vendor_Model_Subscription_List : ' + JSON.stringify(MP));
       //
-      var Status_Code_obj = STATUS_CODE.FindByID(VMSL.Status);
+      var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
       console.log('Vendor_Model_Subscription_List status : ' + JSON.stringify(Status_Code_obj));
 
-      //Process VMSL
-      var ElementIndex = parseInt(VMSL.ElementAddress , 16) - parseInt(Node.dst , 16);
+      //Process MP
+      var ElementIndex = parseInt(MP.ElementAddress , 16) - parseInt(Node.dst , 16);
       if(ElementIndex < Node.SelectedNode.composition.Elements.length){
         var Element = Node.SelectedNode.composition.Elements[ElementIndex];
         //
         var ModelFound = Element.Vendor_Models.find(function(model) {
-          return model.ModelIdentifier == VMSL.ModelIdentifier;
+          return model.ModelIdentifier == MP.ModelIdentifier;
         })
         if(ModelFound){
-          ModelFound.SubscriptionList = VMSL.Address;
+          ModelFound.SubscriptionList = MP.Address;
           console.log('ModelFound : ' + JSON.stringify(ModelFound));
         } else {
-          console.log("ERROR : Model Not Found: " + VMSL.ModelIdentifier);
+          console.log("ERROR : Model Not Found: " + MP.ModelIdentifier);
         }
       } else {
-        console.log("ERROR : bad Element Address: " + VMSL.ElementAddress);
+        console.log("ERROR : bad Element Address: " + MP.ElementAddress);
       }
 
-      Config.std_callback(obj.callback, VMSL.Status);
+      Config.std_callback(obj.callback, MP.Status);
 }
 
+
+//4.3.2.50 Config SIG Model App List
+Config.OUT.SIG_Model_App_List = function (obj, parameters){
+
+  //SIG_Model_Subscription_List
+    var MP = {
+      Status: 0,//8 Status Code for the requesting message
+      ElementAddress: 0,//16 Address of the element
+      ModelIdentifier: 0,// 16 SIG Model ID
+      AppKeyIndexes : [], //All AppKey indexes bound to the Model
+    }
+
+    MP.Status = parseInt(parameters.substring(0, 1*2), 16);
+    MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+    MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 5*2));
+
+    if(parameters.length > 5*2){
+      var data = parameters.substring(5*2);
+
+      //Get all AppKeyIndex from the App List
+      while(data.length >= 3*2){
+        var octet0 = parseInt(data.substring(0, 1*2), 16);
+        var octet1 = parseInt(data.substring(1*2, 2*2), 16);
+        var octet2 = parseInt(data.substring(2*2, 3*2), 16);
+
+        var AppKeyIndex = ((octet1 & 0x0F) << 8) + octet0;
+        MP.AppKeyIndexes.push(AppKeyIndex);
+        AppKeyIndex = (octet2 << 4) + (octet1 >> 4);
+        MP.AppKeyIndexes.push(AppKeyIndex);
+        data = data.substring(3*2);
+      }
+
+      if(data.length >= 2*2){
+        var octet0 = parseInt(data.substring(0, 1*2), 16);
+        var octet1 = parseInt(data.substring(1*2, 2*2), 16);
+
+        var AppKeyIndex = ((octet1 & 0x0F) << 8) + octet0;
+        MP.AppKeyIndexes.push(AppKeyIndex);
+        data = data.substring(2*2);
+      }
+    }
+
+    console.log('SIG_Model_App_List : ' + JSON.stringify(MP));
+    //
+    var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
+    console.log('SIG_Model_App_List status : ' + JSON.stringify(Status_Code_obj));
+
+    //Process MP
+    var ElementIndex = parseInt(MP.ElementAddress , 16) - parseInt(Node.dst , 16);
+    if(ElementIndex < Node.SelectedNode.composition.Elements.length){
+      var Element = Node.SelectedNode.composition.Elements[ElementIndex];
+      //
+      var ModelFound = Element.SIG_Models.find(function(model) {
+        return model.ModelIdentifier == MP.ModelIdentifier;
+      })
+      if(ModelFound){
+        ModelFound.AppKeyIndexes = MP.AppKeyIndexes;
+        console.log('ModelFound : ' + JSON.stringify(ModelFound));
+      } else {
+        console.log("ERROR : Model Not Found: " + MP.ModelIdentifier);
+      }
+    } else {
+      console.log("ERROR : bad Element Address: " + MP.ElementAddress);
+    }
+
+    Config.std_callback(obj.callback, MP.Status);
+}
+
+//4.3.2.52 Config Vendor Model App List
+Config.OUT.Vendor_Model_App_List = function (obj, parameters){
+
+    //Vendor_Model_Subscription_List
+      var MP = {
+        Status: 0,//8 Status Code for the requesting message
+        ElementAddress: 0,//16 Address of the element
+        ModelIdentifier: 0,// 32 Vendor Model ID
+        AppKeyIndexes : [], //A block of all addresses from the Subscription List
+      }
+
+      MP.Status = parseInt(parameters.substring(0, 1*2), 16);
+      MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+      MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 7*2));
+
+      if(parameters.length > 7*2){
+        var data = parameters.substring(7*2);
+
+        //Get all AppKeyIndex from the App List
+        while(data.length >= 3*2){
+          var octet0 = parseInt(data.substring(0, 1*2), 16);
+          var octet1 = parseInt(data.substring(1*2, 2*2), 16);
+          var octet2 = parseInt(data.substring(2*2, 3*2), 16);
+
+          var AppKeyIndex = ((octet1 & 0x0F) << 8) + octet0;
+          MP.AppKeyIndexes.push(AppKeyIndex);
+          AppKeyIndex = (octet2 << 4) + (octet1 >> 4);
+          MP.AppKeyIndexes.push(AppKeyIndex);
+          data = data.substring(3*2);
+        }
+
+        if(data.length >= 2*2){
+          var octet0 = parseInt(data.substring(0, 1*2), 16);
+          var octet1 = parseInt(data.substring(1*2, 2*2), 16);
+
+          var AppKeyIndex = ((octet1 & 0x0F) << 8) + octet0;
+          MP.AppKeyIndexes.push(AppKeyIndex);
+          data = data.substring(2*2);
+        }
+      }
+
+      console.log('Vendor_Model_App_List : ' + JSON.stringify(MP));
+      //
+      var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
+      console.log('Vendor_Model_App_List status : ' + JSON.stringify(Status_Code_obj));
+
+      //Process MP
+      var ElementIndex = parseInt(MP.ElementAddress , 16) - parseInt(Node.dst , 16);
+      if(ElementIndex < Node.SelectedNode.composition.Elements.length){
+        var Element = Node.SelectedNode.composition.Elements[ElementIndex];
+        //
+        var ModelFound = Element.Vendor_Models.find(function(model) {
+          return model.ModelIdentifier == MP.ModelIdentifier;
+        })
+        if(ModelFound){
+          ModelFound.AppKeyIndexes = MP.AppKeyIndexes;
+          console.log('ModelFound : ' + JSON.stringify(ModelFound));
+        } else {
+          console.log("ERROR : Model Not Found: " + MP.ModelIdentifier);
+        }
+      } else {
+        console.log("ERROR : bad Element Address: " + MP.ElementAddress);
+      }
+
+      Config.std_callback(obj.callback, MP.Status);
+}
 
 //4.3.2.48 Config Model App Status
 Config.OUT.Model_App_Status = function (obj, parameters){
@@ -834,6 +969,97 @@ Config.IN.Model_App_Bind = function (parameters){
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
     access_payload += utils.SWAPhex(utils.toHex((Message.AppKeyIndex & 0xFFF), 2));
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
+
+//4.3.2.49 Config SIG Model App Get
+Config.IN.SIG_Model_App_Get = function (parameters){
+  return new Promise((resolve, reject) => {
+
+  // Field Size (octets) Notes
+  // ElementAddress 2 Address of the element
+  // ModelIdentifier 2 SIG Model ID
+
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_SIG_Model_App_List');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_SIG_Model_App_Get');
+
+    var Message = {
+      //ElementAddress: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if(parameters.ModelIdentifier.length != 2*2){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log(opcode_obj.name + ': ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    console.log('access_payload : ' + access_payload);
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
+//4.3.2.51 Config Vendor Model App Get
+Config.IN.Vendor_Model_App_Get = function (parameters){
+  return new Promise((resolve, reject) => {
+
+  // Field Size (octets) Notes
+  // ElementAddress 2 Address of the element
+  // ModelIdentifier 4 Vendor Model ID
+
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_Vendor_Model_App_List');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_Vendor_Model_App_Get');
+
+    var Message = {
+      //ElementAddress: '',
+      //ModelIdentifier: '',
+    }
+
+    if(parameters.ElementAddress.length != (2*2)){
+      reject('bad parameters.ElementAddress');
+      return;
+    }
+    if(parameters.ModelIdentifier.length != 4*2){
+      reject('bad parameters.ModelIdentifier');
+      return;
+    }
+
+    for(var k in parameters) Message[k]=parameters[k];
+
+    console.log(opcode_obj.name + ': ' + JSON.stringify(Message));
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(Message.ElementAddress);
     access_payload += utils.SWAPhex(Message.ModelIdentifier);
     console.log('access_payload : ' + access_payload);
 

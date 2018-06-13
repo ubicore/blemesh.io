@@ -30,23 +30,173 @@ ModelView.renderPublicationAndSubscription = function ($li, ElementIndex, modelI
 
 
 ModelView.DisplayPublicationAndSubscription = function ($div) {
-  var $li = $div.parent();
-  var ElementIndex = $li.attr("ElementIndex");
-  var modelId = $li.attr("modelId");
-  console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
-  //
-  Model.RefreshPublicationAndSubscription(ElementIndex, modelId)
-  .then(() =>{
-    ModelView.renderPublicationAndSubscription($div, ElementIndex, modelId);
-    db.Save();
-  })
-  .catch(error => {
-    HMI.showMessageRed(error);
-    console.log('ERROR: ' + error);
+  return new Promise((resolve, reject) => {
+    var $li = $div.parent();
+    var ElementIndex = $li.attr("ElementIndex");
+    var modelId = $li.attr("modelId");
+    console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
+    //
+    Model.RefreshPublicationAndSubscription(ElementIndex, modelId)
+    .then(() =>{
+      ModelView.renderPublicationAndSubscription($div, ElementIndex, modelId);
+      db.Save();
+      resolve();
+    })
+    .catch(error => {
+      reject(error);
+    });
   });
 }
 
+/*********************************************************/
+ModelView.renderAppList = function ($li, ElementIndex, modelId) {
+  //Get Data from Element->Model
+  var Element = Node.SelectedNode.composition.Elements[ElementIndex];
+  var ModelFound;
+  //
+  if(modelId.length == 2*2){
+    ModelFound = Element.SIG_Models.find(function(model) {
+      return model.ModelIdentifier == modelId;
+    })
+  }
+  //
+  if(modelId == 4*2){
+    ModelFound = Element.Vendor_Models.find(function(model) {
+      return model.ModelIdentifier == modelId;
+    })
+  }
+  if(ModelFound != undefined){
+    console.log('ModelFound : ' + JSON.stringify(ModelFound));
+    var m = new AppListView(ElementIndex, ModelFound);
+    m.render($li);
+    m.AddUpdateButton($li);
+  }
+}
 
+ModelView.DisplayAppBind = function ($div) {
+  return new Promise((resolve, reject) => {
+
+    var $li = $div.parent();
+    var ElementIndex = $li.attr("ElementIndex");
+    var modelId = $li.attr("modelId");
+    console.log('ElementIndex->modelId : ' + ElementIndex + '->' + modelId);
+    //
+    Model.RefreshAppList(ElementIndex, modelId)
+    .then(() =>{
+      ModelView.renderAppList($div, ElementIndex, modelId);
+      db.Save();
+      resolve();
+    })
+    .catch(error => {
+      reject(error);
+    });
+  });
+}
+/*********************************************************/
+
+var AppListView = function (ElementIndex, ModelFound) {
+  this.ElementIndex = ElementIndex;
+  this.ModelFound = ModelFound;
+};
+
+AppListView.prototype.render = function ($model) {
+  var jsonPretty = JSON.stringify(this.ModelFound.AppKeyIndexes, null, 4);
+  var $textarea = $($model).find("#AppListTextArea");
+
+  if(!$textarea.length){
+      $textarea = $('<textarea id="AppListTextArea" cols=50 rows=15></textarea>').appendTo($model);
+  }
+  $($textarea).val(jsonPretty);
+};
+
+function forEachPromise(items, fn, context) {
+    return items.reduce(function (promise, item) {
+        return promise.then(function () {
+            return fn(item, context);
+        });
+    }, Promise.resolve());
+}
+
+function SendItem(item, context){
+
+  if(context.lastSend != null){
+    console.log('done');
+    context.ModelFound.AppKeyIndexes.push(context.lastSend);
+    db.Save();
+  }
+
+  var parameters = {
+    ElementAddress:context.ElementAddress,
+    AppKeyIndex: item,
+    ModelIdentifier: context.ModelFound.ModelIdentifier,
+  }
+  context.lastSend = item;
+  return Config.IN.Model_App_Bind(parameters)
+}
+
+
+AppListView.prototype.AddUpdateButton = function ($model) {
+
+  var $ExistingButton = $($model).find("#buttonSub");
+
+  if($ExistingButton.length){
+    console.log("SubscriptionView $button Already exist ! ");
+    return;
+  }
+
+  $button = ($('<button></button>', {
+    id : "buttonSub",
+    text: "Update" ,
+  })).appendTo($model);
+
+  var $textarea = $($model).find("#SubscriptionTextArea");
+  var ModelFound = this.ModelFound;
+  var ElementIndex = this.ElementIndex;
+
+  $button.click(function (e) {
+    e.preventDefault();
+    var data = null;
+    try {
+        var SubscriptionList = JSON.parse(  $($textarea).val() );
+        var ElementAddress = utils.toHex(parseInt(Node.dst , 16) + parseInt(ElementIndex , 16), 2);
+        var parameters = {
+          ElementAddress: ElementAddress,
+          ModelIdentifier: ModelFound.ModelIdentifier,
+        }
+        Config.IN.Model_Subscription_Delete_All(parameters)
+        .then(() =>{
+          console.log("SubscriptionDeleteAll FINISH WITH SUCCESS ! ");
+          //Add each Address in list
+          var context = {};
+          context.ElementAddress = ElementAddress;
+          context.ModelFound = ModelFound;
+          context.lastSend = null;
+
+          var items = SubscriptionList;
+          forEachPromise(items, SendItem, context).then(() => {
+            if(context.lastSend != null){
+              console.log('done');
+              context.ModelFound.SubscriptionList.push(context.lastSend);
+              db.Save();
+            }
+            console.log("SubscriptionAdd FINISH WITH SUCCESS ! " + JSON.stringify(SubscriptionList));
+          });
+        })
+        .catch(error => {
+          HMI.showMessageRed(error);
+          console.log('ERROR: ' + error);
+        });
+    }
+    catch (error) {
+        if (error instanceof SyntaxError) {
+            alert("There was a syntax error. Please correct it and try again: " + error.message);
+        }
+        else {
+            throw error;
+        }
+    }
+  });
+};
 
 /*********************************************************/
 var PublicationView = function (ElementIndex, ModelFound) {

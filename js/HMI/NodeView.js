@@ -89,10 +89,19 @@ var ModelTree = {
                     $a.toggleClass('active');
 
                     if($a.hasClass('active')){
-                      ModelView.DisplayPublicationAndSubscription($div);
+                      ModelView.DisplayPublicationAndSubscription($div)
+                      .then(() =>{
+                        return ModelView.DisplayAppBind($div);
+                      })
+                      .then(() =>{
+                        $div.slideDown();
+                        $div.find('ul').slideDown();
+                      })
+                      .catch(error => {
+                        HMI.showMessageRed(error);
+                        console.log('ERROR: ' + error);
+                      });
 
-                      $div.slideDown();
-                      $div.find('ul').slideDown();
                       //
                     } else {
                       $div.slideUp();

@@ -84,9 +84,9 @@ const OPCODE = [
 {id: 0x8049, size: 2, name: 'Config_Node_Reset', TX_fct: null, RX_fct: null, callback: null},
 {id: 0x804A, size: 2, name: 'Config_Node_Reset_Status', TX_fct: null, RX_fct: null, callback: null},
 {id: 0x804B, size: 2, name: 'Config_SIG_Model_App_Get', TX_fct: null, RX_fct: null, callback: null},
-{id: 0x804C, size: 2, name: 'Config_SIG_Model_App_List', TX_fct: null, RX_fct: null, callback: null},
+{id: 0x804C, size: 2, name: 'Config_SIG_Model_App_List', TX_fct: null, RX_fct: Config.OUT.SIG_Model_App_List, callback: null},
 {id: 0x804D, size: 2, name: 'Config_Vendor_Model_App_Get', TX_fct: null, RX_fct: null, callback: null},
-{id: 0x804E, size: 2, name: 'Config_Vendor_Model_App_List', TX_fct: null, RX_fct: null, callback: null},
+{id: 0x804E, size: 2, name: 'Config_Vendor_Model_App_List', TX_fct: null, RX_fct: Config.OUT.Vendor_Model_App_List, callback: null},
 //Defined in Mesh Model Specification
 {id: 0x8201, size: 2, name: 'Generic OnOff Get', TX_fct: null, RX_fct: null, callback: null},
 {id: 0x8202, size: 2, name: 'Generic OnOff Set', TX_fct: null, RX_fct: null, callback: null},
