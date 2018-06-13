@@ -147,7 +147,7 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
 Config.OUT.Model_Publication_Status = function (obj, parameters){
 
 //Config_Model_Publication_Status
-  var CMPS = {
+  var MP = {
     Status: 0,//8 Status Code for the requesting message
     ElementAddress: 0,//16 Address of the element
     PublishAddress: 0,//16 Value of the publish address
@@ -161,61 +161,61 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
     ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
   }
 
-  CMPS.Status = parseInt(parameters.substring(0, 1*2), 16);
-  CMPS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
-  CMPS.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
+  MP.Status = parseInt(parameters.substring(0, 1*2), 16);
+  MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  MP.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
   var number = utils.getUint16LEfromhex(parameters.substring(5*2, 7*2));
-  CMPS.AppKeyIndex = number & 0xFFF;
-  CMPS.CredentialFlag = (number >> 12) & 0x01;
-  CMPS.PublishTTL = parseInt(parameters.substring(7*2, 8*2), 16);
-  CMPS.PublishPeriod = parseInt(parameters.substring(8*2, 9*2), 16);
+  MP.AppKeyIndex = number & 0xFFF;
+  MP.CredentialFlag = (number >> 12) & 0x01;
+  MP.PublishTTL = parseInt(parameters.substring(7*2, 8*2), 16);
+  MP.PublishPeriod = parseInt(parameters.substring(8*2, 9*2), 16);
   var octet9 = parseInt(parameters.substring(9*2, 10*2), 16);
-  CMPS.PublishRetransmitCount = octet9 & 0x1F;
-  CMPS.PublishRetransmitIntervalSteps = octet9 >> 3;
-  CMPS.ModelIdentifier = utils.SWAPhex(parameters.substring(10*2));
+  MP.PublishRetransmitCount = octet9 & 0x1F;
+  MP.PublishRetransmitIntervalSteps = octet9 >> 3;
+  MP.ModelIdentifier = utils.SWAPhex(parameters.substring(10*2));
 
-  console.log('Model_Publication_Status : ' + JSON.stringify(CMPS));
+  console.log('Model_Publication_Status : ' + JSON.stringify(MP));
   //
-  var Status_Code_obj = STATUS_CODE.FindByID(CMPS.Status);
+  var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
   console.log('Model_Publication_Status status : ' + JSON.stringify(Status_Code_obj));
 
-  //Process CMPS
-  var ElementIndex = parseInt(CMPS.ElementAddress , 16) - parseInt(Node.dst , 16);
+  //Process MP
+  var ElementIndex = parseInt(MP.ElementAddress , 16) - parseInt(Node.dst , 16);
   if(ElementIndex < Node.SelectedNode.composition.Elements.length){
     var Element = Node.SelectedNode.composition.Elements[ElementIndex];
     var ModelFound;
 
     //
-    if(CMPS.ModelIdentifier.length == 2*2){
+    if(MP.ModelIdentifier.length == 2*2){
       ModelFound = Element.SIG_Models.find(function(model) {
-        return model.ModelIdentifier == CMPS.ModelIdentifier;
+        return model.ModelIdentifier == MP.ModelIdentifier;
       })
     }
     //
-    if(CMPS.ModelIdentifier.length == 4*2){
+    if(MP.ModelIdentifier.length == 4*2){
       ModelFound = Element.Vendor_Models.find(function(model) {
-        return model.ModelIdentifier == CMPS.ModelIdentifier;
+        return model.ModelIdentifier == MP.ModelIdentifier;
       })
     }
     if(ModelFound != undefined){
       var Publication = {
-        PublishAddress: CMPS.PublishAddress,
-        AppKeyIndex: CMPS.AppKeyIndex,
-        CredentialFlag: CMPS.CredentialFlag,
-        PublishTTL: CMPS.PublishTTL,
-        PublishPeriod: CMPS.PublishPeriod,
-        PublishRetransmitCount: CMPS.PublishRetransmitCount,
-        PublishRetransmitIntervalSteps: CMPS.PublishRetransmitIntervalSteps,
+        PublishAddress: MP.PublishAddress,
+        AppKeyIndex: MP.AppKeyIndex,
+        CredentialFlag: MP.CredentialFlag,
+        PublishTTL: MP.PublishTTL,
+        PublishPeriod: MP.PublishPeriod,
+        PublishRetransmitCount: MP.PublishRetransmitCount,
+        PublishRetransmitIntervalSteps: MP.PublishRetransmitIntervalSteps,
       }
       //
       ModelFound.Publication = Publication;
       console.log('Model_Publication_Status : ' + JSON.stringify(Publication));
     }
   } else {
-    console.log("ERROR : bad Element Address: " + CMPS.ElementAddress);
+    console.log("ERROR : bad Element Address: " + MP.ElementAddress);
   }
 
-  Config.std_callback(obj.callback, CMPS.Status);
+  Config.std_callback(obj.callback, MP.Status);
 }
 
 
@@ -223,24 +223,24 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
 Config.OUT.Model_Subscription_Status = function (obj, parameters){
 
 //Model_Subscription_Status
-  var CMSS = {
+  var MP = {
     Status: 0,//8 Status Code for the requesting message
     ElementAddress: 0,//16 Address of the element
     Address: 0,//16 Value of the address
     ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
   }
 
-  CMSS.Status = parseInt(parameters.substring(0, 1*2), 16);
-  CMSS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
-  CMSS.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
-  CMSS.ModelIdentifier = parameters.substring(5*2);
+  MP.Status = parseInt(parameters.substring(0, 1*2), 16);
+  MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  MP.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
+  MP.ModelIdentifier = parameters.substring(5*2);
 
-  console.log('Model_Subscription_Status : ' + JSON.stringify(CMSS));
+  console.log('Model_Subscription_Status : ' + JSON.stringify(MP));
   //
-  var Status_Code_obj = STATUS_CODE.FindByID(CMSS.Status);
+  var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
   console.log('Model_Subscription_Status status : ' + JSON.stringify(Status_Code_obj));
 
-  Config.std_callback(obj.callback, CMSS.Status);
+  Config.std_callback(obj.callback, MP.Status);
 }
 
 //4.3.2.28 Config SIG Model Subscription List
@@ -486,25 +486,25 @@ Config.OUT.Vendor_Model_App_List = function (obj, parameters){
 Config.OUT.Model_App_Status = function (obj, parameters){
 
 //Config_Model_App_Status
-  var CMAS = {
+  var MP = {
     Status: 0,//8 Status Code for the requesting message
     ElementAddress: 0,//16 Address of the element
     AppKeyIndex: 0,//12 Index of the application key
     ModelIdentifier: 0,// 16 or 32 SIG Model ID or Vendor Model ID
   }
 
-  CMAS.Status = parseInt(parameters.substring(0, 1*2), 16);
-  CMAS.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
+  MP.Status = parseInt(parameters.substring(0, 1*2), 16);
+  MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
   var number = utils.getUint16LEfromhex(parameters.substring(3*2, 5*2));
-  CMAS.AppKeyIndex = number & 0xFFF;
-  CMAS.ModelIdentifier = parameters.substring(5*2);
+  MP.AppKeyIndex = number & 0xFFF;
+  MP.ModelIdentifier = parameters.substring(5*2);
 
-  console.log('Model_App_Status : ' + JSON.stringify(CMAS));
+  console.log('Model_App_Status : ' + JSON.stringify(MP));
   //
-  var Status_Code_obj = STATUS_CODE.FindByID(CMAS.Status);
+  var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
   console.log('Model_App_Status status : ' + JSON.stringify(Status_Code_obj));
 
-  Config.std_callback(obj.callback, CMAS.Status);
+  Config.std_callback(obj.callback, MP.Status);
 }
 
 
