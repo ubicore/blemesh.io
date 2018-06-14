@@ -2,7 +2,28 @@
 addEventListener('DOMContentLoaded', function() {
     var btn_provision = document.getElementById('btn_provision');
     btn_provision.addEventListener('click', function() {
-        prov_app.start();
+      console.log('requestPermission');
+
+      Notification.requestPermission()
+      .then(function(result) {
+        if (result === 'denied') {
+          console.log('Permission wasn\'t granted. Allow a retry.');
+          return;
+        }
+        if (result === 'default') {
+          console.log('The permission request was dismissed.');
+          return;
+        }
+        // Do something with the granted permission
+          console.log('The permission are granted.');
+      })
+      .catch(error => {
+				console.log('The error is: ' + error);
+			});
+
+
+      prov_app.start();
+
     });
 
     var btn_scan = document.getElementById('btn_scan');

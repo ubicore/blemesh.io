@@ -7,10 +7,18 @@ var mesh_proxy_data_out;
 
 var connection = {};
 
-connection.MESH_PROXY_SERVICE = '00001828-0000-1000-8000-00805f9b34fb';
-connection.MESH_PROXY_DATA_IN = '00002add-0000-1000-8000-00805f9b34fb';
-connection.MESH_PROXY_DATA_OUT = '00002ade-0000-1000-8000-00805f9b34fb';
+// connection.MESH_PROXY_SERVICE = '00001828-0000-1000-8000-00805f9b34fb';
+// connection.MESH_PROXY_DATA_IN = '00002add-0000-1000-8000-00805f9b34fb';
+// connection.MESH_PROXY_DATA_OUT = '00002ade-0000-1000-8000-00805f9b34fb';
+connection.MESH_PROXY_SERVICE = 0x1828;
 
+var MESH_ProxyService_UUID = 0x1828;
+var MESH_ProxyDATA_IN_UUID = 0x2ADD;
+var MESH_ProxyDATA_OUT_UUID = 0x2ADE;
+
+
+//connection.MESH_PROXY_DATA_IN = 0x2ADD;
+//connection.MESH_PROXY_DATA_OUT = 0x2ADE;
 var has_mesh_proxy_service = false;
 var has_mesh_proxy_data_out = false;
 var has_mesh_proxy_data_in = false;
@@ -40,11 +48,10 @@ connection.findProxies = function () {
 connection.startScan = function () {
     console.log("startScan");
     connected = false;
-    var options = {
-        filters: [{ services: [0x1828] }]
-    }
-    navigator.bluetooth.requestDevice(options)
-        .then(device => {
+    bluetooth.requestDevice({
+      filters: [{ services: [0x1828] }]
+    })
+    .then(device => {
             console.log('> Name: ' + device.name);
             console.log('> Id: ' + device.id);
             console.log('> Connected: ' + device.gatt.connected);
@@ -62,6 +69,7 @@ connection.connect = function () {
         return selected_device.gatt.connect()
         .then(
             function (server) {
+                NodeServer = server;
                 console.log("Connected to " + server.device.id);
                 connected = true;
                 connected_server = server;
@@ -130,40 +138,46 @@ connection.connection = function () {
 }
 
 connection.discoverSvcsAndChars = function () {
-    return new Promise(function (resolve, reject) {
-        console.log("discoverSvcsAndChars on " + connected_server.device.name + ', ' + connected_server.device.id);
-        connected_server.getPrimaryServices()
-            .then(services => {
-                console.log('Getting Characteristics...');
-                has_mesh_proxy_service = false;
-                services.forEach(function (service, sv_index, sv_array) {
-                    console.log('> Service: ' + service.uuid);
-                    if (service.uuid == connection.MESH_PROXY_SERVICE) {
-                        has_mesh_proxy_service = true;
-                    }
-                    service.getCharacteristics().then(characteristics => {
-                        characteristics.forEach(function (characteristic, ch_index, ch_array) {
-                            console.log('>> Characteristic: ' + characteristic.uuid);
-                            if (characteristic.uuid == connection.MESH_PROXY_DATA_IN) {
-                                mesh_proxy_data_in = characteristic;
-                                has_mesh_proxy_data_in = true;
-                            }
-                            if (characteristic.uuid == connection.MESH_PROXY_DATA_OUT) {
-                                mesh_proxy_data_out = characteristic;
-                                has_mesh_proxy_data_out = true;
-                            }
-                            if ((sv_index === sv_array.length - 1) && (ch_index === ch_array.length - 1)) {
-                                console.log("Last characteristic discovered");
-                                resolve();
-                            }
-                        });
-                    });
-                });
-            })
-            .catch(error => {
-                HMI.showMessageRed('Error: ' + error);
-                console.log('Error: ' + error);
-                reject(error);
-            });
+  return new Promise(function (resolve, reject) {
+    console.log("discoverSvcsAndChars on " + connected_server.device.name + ', ' + connected_server.device.id);
+    connected_server.getPrimaryService(MESH_ProxyService_UUID)
+    .then(service => {
+      NodeService = service;
+      console.log('Primary service: ' + NodeService.uuid);
+
+      //Get Out
+      return service.getCharacteristic(MESH_ProxyDATA_OUT_UUID)
+    })
+    .then(characteristic => {
+      characteristicOut = characteristic;
+      console.log('characteristicOut: ' + characteristic.uuid);
+
+      //Get In
+      return NodeService.getCharacteristic(MESH_ProxyDATA_IN_UUID)
+    })
+    .then(characteristic => {
+      characteristicIn = characteristic;
+      console.log('characteristicIn: ' + characteristic.uuid);
+
+      //
+      mesh_proxy_data_out = characteristicOut;
+      mesh_proxy_data_in = characteristicIn;
+      has_mesh_proxy_service = true;
+      has_mesh_proxy_data_out = true;
+      has_mesh_proxy_data_in = true;
+      resolve();
+    })
+    .catch(error => {
+      console.log('The error is: ' + error);
+      if (NodeServer != null) {
+        prov_device.gatt.disconnect();
+      }
+
+      if (NodeServer != null) {
+        NodeServer.disconnect()
+        console.log('disconnected');
+      }
+      reject(error);
     });
+  });
 }
