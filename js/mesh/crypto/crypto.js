@@ -54,7 +54,7 @@ crypto.k2 = function (Net, P) {
 	modval_bigint = bigInt(modval.remainder);
 	k2_hex = bigInt(modval_bigint).toString(16);
 	//
-	for(i = 0; i < (66 - k2_hex.length); i++){
+	while((66 - k2_hex.length) > 0){
 		k2_hex = '0' + k2_hex;
 	}
 	var k2_material = {
@@ -81,7 +81,7 @@ crypto.k3 = function (Net) {
 	//k3_material = utils.bigIntegerToHexString(k3_modval_bigint);
 	k3_material = bigInt(k3_modval_bigint).toString(16);
 	//
-	for(i = 0; i < (16 - k3_material.length); i++){
+	while((16 - k3_material.length) > 0){
 		k3_material = '0' + k3_material;
 	}
 
@@ -99,7 +99,7 @@ crypto.k4 = function (Key) {
 	//k4_material = utils.bigIntegerToHexString(k4_modval_bigint);
 	k4_material = bigInt(k4_modval_bigint).toString(16);
 	//
-	for(i = 0; i < (2 - k4_material.length); i++){
+	while((2 - k4_material.length) > 0){
 		k4_material = '0' + k4_material;
 	}
 
