@@ -24,7 +24,7 @@ prov_trace.clearMessage = function () {
 };
 
 prov_trace.showMessage = function (msg_text) {
-    prov_msg.style.color = "#ffffff";
+    prov_msg.style.color = "#0000ff";
     prov_msg.innerHTML = msg_text;
     document.getElementById('provision_message').hidden = false;
 };
@@ -37,7 +37,7 @@ prov_trace.showMessageRed = function (msg_text) {
 
 
 prov_trace.appendMessage = function (msg_text) {
-    prov_msg.style.color = "#ffffff";
+    prov_msg.style.color = "#0000ff";
     prov_msg.innerHTML += '<br>' + msg_text;
     document.getElementById('provision_message').hidden = false;
 };

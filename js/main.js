@@ -40,25 +40,25 @@ addEventListener('DOMContentLoaded', function() {
         app.SendAppKey();
     });
 
-    var btn_DisplayNodeModels = document.getElementById('btn_DisplayNodeModels');
-    btn_DisplayNodeModels.addEventListener('click', function() {
-        app.DisplayNodeModels();
-    });
-
-    var btn_PublicationSet = document.getElementById('btn_PublicationSet');
-    btn_PublicationSet.addEventListener('click', function() {
-        app.PublicationSet();
-    });
-
-    var btn_SubscriptionAdd = document.getElementById('btn_SubscriptionAdd');
-    btn_SubscriptionAdd.addEventListener('click', function() {
-        app.SubscriptionAdd();
-    });
-
-    var btn_AppBind = document.getElementById('btn_AppBind');
-    btn_AppBind.addEventListener('click', function() {
-        app.AppBind();
-    });
+    // var btn_DisplayNodeModels = document.getElementById('btn_DisplayNodeModels');
+    // btn_DisplayNodeModels.addEventListener('click', function() {
+    //     app.DisplayNodeModels();
+    // });
+    //
+    // var btn_PublicationSet = document.getElementById('btn_PublicationSet');
+    // btn_PublicationSet.addEventListener('click', function() {
+    //     app.PublicationSet();
+    // });
+    //
+    // var btn_SubscriptionAdd = document.getElementById('btn_SubscriptionAdd');
+    // btn_SubscriptionAdd.addEventListener('click', function() {
+    //     app.SubscriptionAdd();
+    // });
+    // 
+    // var btn_AppBind = document.getElementById('btn_AppBind');
+    // btn_AppBind.addEventListener('click', function() {
+    //     app.AppBind();
+    // });
 
     var btn_GroupAddress_addItem = document.getElementById('btn_GroupAddress_addItem');
     btn_GroupAddress_addItem.addEventListener('click', function() {

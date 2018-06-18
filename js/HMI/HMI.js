@@ -55,7 +55,7 @@ HMI.clearMessage = function () {
 };
 
 HMI.showMessage = function (msg_text) {
-  msg.style.color = "#ffffff";
+  msg.style.color = "#0000ff";
   msg.innerHTML = msg_text;
   document.getElementById('message').hidden = false;
 };
