@@ -28,3 +28,11 @@ ul {
     margin: 0.5em 0 0.5em 2em;
     display: none;
 }
+
+
+label {display:block;}
+textarea { display:block;}
+button {
+  margin-top:10px;
+  margin-bottom: 10px;
+}

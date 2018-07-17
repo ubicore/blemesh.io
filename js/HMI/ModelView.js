@@ -104,7 +104,8 @@ AppListView.prototype.render = function ($model) {
   var $textarea = $($model).find("#AppKeyListTextArea");
 
   if(!$textarea.length){
-      $textarea = $('<textarea id="AppKeyListTextArea" cols=50 rows=15></textarea>').appendTo($model);
+      var $label = $("<label>").text('AppKey:').appendTo($model);
+      $textarea = $('<textarea id="AppKeyListTextArea" cols=40 rows=3></textarea>').appendTo($model);
   }
   $($textarea).val(jsonPretty);
 };
@@ -202,10 +203,12 @@ var PublicationView = function (ElementIndex, ModelFound) {
 
 PublicationView.prototype.render = function ($model) {
   var jsonPretty = JSON.stringify(this.ModelFound.Publication, null, 4);
+
   var $textarea = $($model).find("#PublicationTextArea");
 
   if(!$textarea.length){
-    $textarea = $('<textarea id="PublicationTextArea" cols=50 rows=15></textarea>').appendTo($model);
+    var $label = $("<label>").text('Publication:').appendTo($model);
+    $textarea = $('<textarea id="PublicationTextArea" cols=40 rows=10></textarea>').appendTo($model);
   }
   $($textarea).val(jsonPretty);
 };
@@ -275,7 +278,8 @@ SubscriptionView.prototype.render = function ($model) {
   var $textarea = $($model).find("#SubscriptionTextArea");
 
   if(!$textarea.length){
-      $textarea = $('<textarea id="SubscriptionTextArea" cols=50 rows=15></textarea>').appendTo($model);
+      var $label = $("<label>").text('Subscription:').appendTo($model);
+      $textarea = $('<textarea id="SubscriptionTextArea" cols=40 rows=10></textarea>').appendTo($model);
   }
   $($textarea).val(jsonPretty);
 };
