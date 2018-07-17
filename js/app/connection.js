@@ -124,6 +124,7 @@ connection.onDisconnected = function () {
     connected = false;
     HMI.displayConnectionStatus();
     HMI.setBluetoothButtons();
+    NodeView.ResetElementList($('#tree'));
 };
 
 connection.connection = function () {

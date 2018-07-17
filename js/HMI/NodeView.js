@@ -56,8 +56,12 @@ NodeView.renderElement = function (Elements, root) {
     });
 }
 
+NodeView.ResetElementList = function (List) {
+  	List.empty();
+}
 
 NodeView.DisplayElementAndModel = function () {
+  NodeView.ResetElementList($('#tree'));
   NodeView.renderElement(Node.SelectedNode.composition.Elements, $('#tree'));
 
   //Get clicked model and message index
