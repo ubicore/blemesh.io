@@ -105,6 +105,8 @@ class Provisionner {
         this.Ecc_1 = new Ecc;
 
         this.Dev_Confirmation;
+
+        this.OOB = null;
     };
 
     OUT_Capabilities(PDU_DATA) {
@@ -634,7 +636,7 @@ class Provisionner {
     PROV_STATIC_OOB_Complete() {
         return new Promise((resolve, reject) => {
             console.log('PROV_STATIC_OOB_Complete');
-            resolve();
+            this.Get_OOB_FromUser(resolve, reject);
         });
     }
 

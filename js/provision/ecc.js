@@ -133,9 +133,13 @@ class Ecc {
 
     Set_AuthValue(OOB) {
         console.log('this.OOB : ' + OOB);
-        var OOBhexstring = OOB.toString(16);
-        console.log('OOBhexstring : ' + OOBhexstring + ' len: ' + OOBhexstring.length);
+        var OOBhexstring = "";
 
+        if(OOB){
+          OOBhexstring = OOB.toString(16);
+        }
+
+        console.log('OOBhexstring : ' + OOBhexstring + ' len: ' + OOBhexstring.length);
         this.OOBhexstring = this.FormatNumberLength(OOBhexstring, 32);
         console.log('this.OOBhexstring : ' + this.OOBhexstring + ' len: ' + this.OOBhexstring.length);
         return;
