@@ -103,6 +103,51 @@ const Models = [
    SupportedRxMessages: [
    ]},
 
+   /*******************************************************/
+   //Generic model
+   /*******************************************************/
+   {id: 0x1004, name: 'Generic Default Transition Time Server', SupportedRxMessages: []},
+   {id: 0x1005, name: 'Generic Default Transition Time Client', SupportedRxMessages: []},
+   {id: 0x1006, name: 'Generic Power OnOff Server', SupportedRxMessages: []},
+   {id: 0x1007, name: 'Generic Power OnOff Setup Server', SupportedRxMessages: []},
+   {id: 0x1008, name: 'Generic Power OnOff Client', SupportedRxMessages: []},
+   {id: 0x1009, name: 'Generic Power Level Server', SupportedRxMessages: []},
+   {id: 0x100A, name: 'Generic Power Level Setup Server', SupportedRxMessages: []},
+   {id: 0x100B, name: 'Generic Power Level Client', SupportedRxMessages: []},
+   {id: 0x100C, name: 'Generic Battery Server', SupportedRxMessages: []},
+   {id: 0x100D, name: 'Generic Battery Client', SupportedRxMessages: []},
+   {id: 0x100E, name: 'Generic Location Server', SupportedRxMessages: []},
+   {id: 0x100F, name: 'Generic Location Setup Server', SupportedRxMessages: []},
+   {id: 0x1010, name: 'Generic Location Client', SupportedRxMessages: []},
+   {id: 0x1011, name: 'Generic Admin Property Server', SupportedRxMessages: []},
+   {id: 0x1012, name: 'Generic Manufacturer Property Server', SupportedRxMessages: []},
+   {id: 0x1013, name: 'Generic User Property Server', SupportedRxMessages: []},
+   {id: 0x1014, name: 'Generic Client Property Server', SupportedRxMessages: []},
+   {id: 0x1015, name: 'Generic Property Client', SupportedRxMessages: []},
+
+
+   /*******************************************************/
+   //Lighting model
+   /*******************************************************/
+   {id: 0x1300, name: 'Light Lightness Server', SupportedRxMessages: []},
+   {id: 0x1301, name: 'Light Lightness Setup Server', SupportedRxMessages: []},
+   {id: 0x1302, name: 'Light Lightness Client', SupportedRxMessages: []},
+   {id: 0x1303, name: 'Light CTL Server', SupportedRxMessages: []},
+   {id: 0x1304, name: 'Light CTL Setup Server', SupportedRxMessages: []},
+   {id: 0x1305, name: 'Light CTL Client', SupportedRxMessages: []},
+   {id: 0x1306, name: 'Light CTL Temperature Server', SupportedRxMessages: []},
+   {id: 0x1307, name: 'Light HSL Server', SupportedRxMessages: []},
+   {id: 0x1308, name: 'Light HSL Setup Server', SupportedRxMessages: []},
+   {id: 0x1309, name: 'Light HSL Client', SupportedRxMessages: []},
+   {id: 0x130A, name: 'Light HSL Hue Server', SupportedRxMessages: []},
+   {id: 0x130B, name: 'Light HSL Saturation Server', SupportedRxMessages: []},
+   {id: 0x130C, name: 'Light xyL Server', SupportedRxMessages: []},
+   {id: 0x130D, name: 'Light xyL Setup Server', SupportedRxMessages: []},
+   {id: 0x130E, name: 'Light xyL Client', SupportedRxMessages: []},
+   {id: 0x130F, name: 'Light LC Server', SupportedRxMessages: []},
+   {id: 0x1310, name: 'Light LC Setup Server', SupportedRxMessages: []},
+   {id: 0x1311, name: 'Light LC Client', SupportedRxMessages: []}, 
+
 ];
 
 
