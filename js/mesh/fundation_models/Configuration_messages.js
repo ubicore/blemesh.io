@@ -123,9 +123,15 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
 
     //Vendor_Models
     for (var i = 0; i < Element.NumV; i++) {
+      console.log('Vendor model list: ' + data);
+
       var Model = {
-        ModelIdentifier:utils.toHex(utils.getUint16LEfromhex(data.substring(0, 4*2)), 4),
+        ModelIdentifier:"",
       }
+      Model.ModelIdentifier = utils.toHex(utils.getUint16LEfromhex(data.substring(2*2, 4*2)),2);
+      Model.ModelIdentifier += utils.toHex(utils.getUint16LEfromhex(data.substring(0, 2*2)),2);
+
+
       Element.Vendor_Models[i] = Model;
       data = data.substring(4*2);
     }

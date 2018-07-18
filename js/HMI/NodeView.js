@@ -5,7 +5,7 @@ var ModelElmt = function (index, modelId) {
 
 
 
-ModelElmt.prototype.render = function (root) {
+ModelElmt.prototype.renderSIGModel = function (root) {
   var model = Models.GetByID(this.modelId);
   if(model == null) return;
 
@@ -18,12 +18,10 @@ ModelElmt.prototype.render = function (root) {
     text: this.index + ' -> ' + model.name ,
   })).appendTo(root);
 
-
-    var $div = $('<div></div>', {
-      id: this.index,
+  var $div = $('<div></div>', {
+    id: this.index,
     //  text: this.modelId,
-    }).appendTo($li);
-
+  }).appendTo($li);
 
   var $ul = $('<ul></ul>').appendTo($div);
   $.each(model.SupportedRxMessages, function (index, opcode) {
@@ -39,6 +37,22 @@ ModelElmt.prototype.render = function (root) {
   })
 };
 
+ModelElmt.prototype.renderVendorModel = function (root) {
+
+  var $li = $('<li></li>', {
+    ElementIndex: this.index,
+    modelId: this.modelId,
+  });
+  $li.append($('<a></a>', {
+    //href: '#',
+    text: this.index + ' -> Vendor Model: 0x' + this.modelId.toString(16) ,
+  })).appendTo(root);
+
+  var $div = $('<div></div>', {
+    id: this.index,
+    //  text: this.modelId,
+  }).appendTo($li);
+};
 /******************************************************/
 var NodeView ={};
 
@@ -47,11 +61,11 @@ NodeView.renderElement = function (Elements, root) {
     $.each(Elements, function (ElementIndex, element) {
             $.each(element.SIG_Models, function (index, model) {
                 var m = new ModelElmt(ElementIndex, model.ModelIdentifier);
-                m.render(root);
+                m.renderSIGModel(root);
             });
             $.each(element.Vendor_Models, function (index, model) {
                 var m = new ModelElmt(ElementIndex, model.ModelIdentifier);
-                m.render(root);
+                m.renderVendorModel(root);
             });
     });
 }
@@ -73,7 +87,7 @@ NodeView.DisplayElementAndModel = function () {
   });
 
   ModelTree.walk();
-  $('ul > li ').has('ul').addClass('sub');
+  $('ul > li ').has('div').addClass('sub');
 }
 
 /*********************************************************/

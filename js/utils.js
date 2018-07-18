@@ -8,6 +8,14 @@ utils.getUint16LEfromhex = function(str){
   return val;
 }
 
+utils.getUint32LEfromhex = function(str){
+  octet0 = parseInt(str.substring(0, 1*2), 16);
+  octet1 = parseInt(str.substring(1*2, 2*2), 16);
+  octet2 = parseInt(str.substring(2*2, 3*2), 16);
+  octet3 = parseInt(str.substring(3*2, 4*2), 16);
+  val = (octet3 << 32) + (octet2 << 16) + (octet1 << 8) + octet0;
+  return val;
+}
 
 utils.normaliseHex = function(raw) {
     value = raw.replace(/\s/g, '');

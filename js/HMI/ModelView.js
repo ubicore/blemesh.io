@@ -3,7 +3,7 @@ var ModelView = {};
 ModelView.renderPublicationAndSubscription = function ($li, ElementIndex, modelId) {
   //Get Data from Element->Model
   var Element = Node.SelectedNode.composition.Elements[ElementIndex];
-  var ModelFound;
+  var ModelFound = undefined;
   //
   if(modelId.length == 2*2){
     ModelFound = Element.SIG_Models.find(function(model) {
@@ -11,7 +11,7 @@ ModelView.renderPublicationAndSubscription = function ($li, ElementIndex, modelI
     })
   }
   //
-  if(modelId == 4*2){
+  if(modelId.length == 4*2){
     ModelFound = Element.Vendor_Models.find(function(model) {
       return model.ModelIdentifier == modelId;
     })
@@ -60,7 +60,7 @@ ModelView.renderAppList = function ($li, ElementIndex, modelId) {
     })
   }
   //
-  if(modelId == 4*2){
+  if(modelId.length == 4*2){
     ModelFound = Element.Vendor_Models.find(function(model) {
       return model.ModelIdentifier == modelId;
     })
