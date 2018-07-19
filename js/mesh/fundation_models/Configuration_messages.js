@@ -115,7 +115,7 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
     //SIG_Models
     for (var i = 0; i < Element.NumS; i++) {
       var Model = {
-        ModelIdentifier: utils.toHex(utils.getUint16LEfromhex(data.substring(0, 2*2)),2),
+        ModelIdentifier: utils.SWAPhex(data.substring(0, 2*2)),
       }
       Element.SIG_Models[i] = Model;
       data = data.substring(2*2);
@@ -128,9 +128,8 @@ Config.OUT.Composition_Data_Status = function (obj, parameters){
       var Model = {
         ModelIdentifier:"",
       }
-      Model.ModelIdentifier = utils.toHex(utils.getUint16LEfromhex(data.substring(2*2, 4*2)),2);
-      Model.ModelIdentifier += utils.toHex(utils.getUint16LEfromhex(data.substring(0, 2*2)),2);
-
+      Model.ModelIdentifier = utils.SWAPhex(data.substring(0, 2*2));
+      Model.ModelIdentifier += utils.SWAPhex(data.substring(2*2, 4*2));
 
       Element.Vendor_Models[i] = Model;
       data = data.substring(4*2);
@@ -178,7 +177,12 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
   var octet9 = parseInt(parameters.substring(9*2, 10*2), 16);
   MP.PublishRetransmitCount = octet9 & 0x1F;
   MP.PublishRetransmitIntervalSteps = octet9 >> 3;
-  MP.ModelIdentifier = utils.SWAPhex(parameters.substring(10*2));
+
+  var data = parameters.substring(10*2);
+  MP.ModelIdentifier = utils.SWAPhex(data.substring(0, 2*2));
+  if(data.length == 4*2){
+    MP.ModelIdentifier += utils.SWAPhex(data.substring(2*2));
+  }
 
   console.log('Model_Publication_Status : ' + JSON.stringify(MP));
   //
@@ -190,7 +194,6 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
   if(ElementIndex < Node.SelectedNode.composition.Elements.length){
     var Element = Node.SelectedNode.composition.Elements[ElementIndex];
     var ModelFound;
-
     //
     if(MP.ModelIdentifier.length == 2*2){
       ModelFound = Element.SIG_Models.find(function(model) {
@@ -203,6 +206,7 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
         return model.ModelIdentifier == MP.ModelIdentifier;
       })
     }
+
     if(ModelFound != undefined){
       var Publication = {
         PublishAddress: MP.PublishAddress,
@@ -216,6 +220,8 @@ Config.OUT.Model_Publication_Status = function (obj, parameters){
       //
       ModelFound.Publication = Publication;
       console.log('Model_Publication_Status : ' + JSON.stringify(Publication));
+    } else {
+      console.log('ModelFound undefined!!!!!!');
     }
   } else {
     console.log("ERROR : bad Element Address: " + MP.ElementAddress);
@@ -239,8 +245,12 @@ Config.OUT.Model_Subscription_Status = function (obj, parameters){
   MP.Status = parseInt(parameters.substring(0, 1*2), 16);
   MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
   MP.PublishAddress = utils.SWAPhex(parameters.substring(3*2, 5*2));
-  MP.ModelIdentifier = parameters.substring(5*2);
 
+  var data = parameters.substring(5*2);
+  MP.ModelIdentifier = utils.SWAPhex(data.substring(0, 2*2));
+  if(data.length == 4*2){
+    MP.ModelIdentifier += utils.SWAPhex(data.substring(2*2));
+  }
   console.log('Model_Subscription_Status : ' + JSON.stringify(MP));
   //
   var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
@@ -314,7 +324,8 @@ Config.OUT.Vendor_Model_Subscription_List = function (obj, parameters){
 
       MP.Status = parseInt(parameters.substring(0, 1*2), 16);
       MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
-      MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 7*2));
+      MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 5*2));
+      MP.ModelIdentifier += utils.SWAPhex(parameters.substring(5*2, 7*2));
 
       if(parameters.length > 7*2){
         var data = parameters.substring(7*2);
@@ -434,7 +445,8 @@ Config.OUT.Vendor_Model_App_List = function (obj, parameters){
 
       MP.Status = parseInt(parameters.substring(0, 1*2), 16);
       MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
-      MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 7*2));
+      MP.ModelIdentifier = utils.SWAPhex(parameters.substring(3*2, 5*2));
+      MP.ModelIdentifier += utils.SWAPhex(parameters.substring(5*2, 7*2));
 
       if(parameters.length > 7*2){
         var data = parameters.substring(7*2);
@@ -503,8 +515,12 @@ Config.OUT.Model_App_Status = function (obj, parameters){
   MP.ElementAddress = utils.SWAPhex(parameters.substring(1*2, 3*2));
   var number = utils.getUint16LEfromhex(parameters.substring(3*2, 5*2));
   MP.AppKeyIndex = number & 0xFFF;
-  MP.ModelIdentifier = parameters.substring(5*2);
 
+  var data = parameters.substring(5*2);
+  MP.ModelIdentifier = utils.SWAPhex(data.substring(0, 2*2));
+  if(data.length == 4*2){
+    MP.ModelIdentifier += utils.SWAPhex(data.substring(2*2));
+  }
   console.log('Model_App_Status : ' + JSON.stringify(MP));
   //
   var Status_Code_obj = STATUS_CODE.FindByID(MP.Status);
@@ -599,7 +615,12 @@ Config.IN.Model_Publication_Get = function (parameters){
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    if (Message.ModelIdentifier.length == 4*2){
+      access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+    }
+
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
@@ -674,7 +695,10 @@ Config.IN.Model_Publication_Set = function (parameters){
     access_payload += utils.toHex(Message.PublishTTL, 1);
     access_payload += utils.toHex(Message.PublishPeriod, 1);
     access_payload += utils.toHex((Message.PublishRetransmitCount & 0x7) + ((Message.PublishRetransmitIntervalSteps & 0x1F) << 3), 1);
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    if (Message.ModelIdentifier.length == 4*2){
+      access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+    }
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
@@ -748,7 +772,10 @@ Config.IN.Model_Publication_Virtual_Address_Set = function (parameters){
     access_payload += utils.toHex(Message.PublishTTL, 1);
     access_payload += utils.toHex(Message.PublishPeriod, 1);
     access_payload += utils.toHex((Message.PublishRetransmitCount & 0x7) + ((Message.PublishRetransmitIntervalSteps & 0x1F) << 3), 1);
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    if (Message.ModelIdentifier.length == 4*2){
+      access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+    }
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });
@@ -789,7 +816,10 @@ Config.IN.Model_Subscription_Delete_All = function (parameters){
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    if (Message.ModelIdentifier.length == 4*2){
+      access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+    }
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
@@ -837,7 +867,10 @@ Config.IN.Model_Subscription_Add = function (parameters){
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
     access_payload += utils.SWAPhex(Message.Address);
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    if (Message.ModelIdentifier.length == 4*2){
+      access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+    }
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
@@ -927,7 +960,9 @@ Config.IN.Vendor_Model_Subscription_Get = function (parameters){
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
@@ -975,7 +1010,10 @@ Config.IN.Model_App_Bind = function (parameters){
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
     access_payload += utils.SWAPhex(utils.toHex((Message.AppKeyIndex & 0xFFF), 2));
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    if (Message.ModelIdentifier.length == 4*2){
+      access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+    }
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
@@ -1066,7 +1104,9 @@ Config.IN.Vendor_Model_App_Get = function (parameters){
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.SWAPhex(Message.ElementAddress);
-    access_payload += utils.SWAPhex(Message.ModelIdentifier);
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(0, 2*2));
+    access_payload += utils.SWAPhex(Message.ModelIdentifier.substring(2*2));
+
     console.log('access_payload : ' + access_payload);
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
