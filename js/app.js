@@ -235,38 +235,38 @@ app.SubscriptionAdd = function () {
 
 }
 
-app.AppBind = function () {
-  if (!connected) {
-    return;
-  }
-  if (!has_mesh_proxy_data_in) {
-    HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
-    console.log("Error: mesh_proxy_data_in characteristic not discovered");
-    return;
-  }
-
-  var parameters = {
-    //ElementAddress: '0b0c',
-    //AppKeyIndex: 0,
-    ModelIdentifier: '1000',//Server : lanp
-  }
-  parameters.ElementAddress = Node.dst;
-  parameters.AppKeyIndex = Selected_AppKey.index;
-
-  Config.IN.Model_App_Bind(parameters)
-  .then(() =>{
-    console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
-
-    var NewDST = utils.toHex(parseInt(Node.dst, 16) + 1 , 2);
-    parameters.ElementAddress =  NewDST;
-    return Config.IN.Model_App_Bind(parameters)
-  })
-  .then(() =>{
-    console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
-  })
-  .catch(error => {
-    HMI.showMessageRed(error);
-    console.log('ERROR: ' + error);
-  });
-
-}
+// app.AppBind = function (parameters) {
+//   if (!connected) {
+//     return;
+//   }
+//   if (!has_mesh_proxy_data_in) {
+//     HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+//     console.log("Error: mesh_proxy_data_in characteristic not discovered");
+//     return;
+//   }
+//
+//   var parameters = {
+//     //ElementAddress: '0b0c',
+//     //AppKeyIndex: 0,
+//     ModelIdentifier: '1000',//Server : lanp
+//   }
+//   parameters.ElementAddress = Node.dst;
+//   parameters.AppKeyIndex = Selected_AppKey.index;
+//
+//   Config.IN.Model_App_Bind(parameters)
+//   .then(() =>{
+//     console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+//
+//     var NewDST = utils.toHex(parseInt(Node.dst, 16) + 1 , 2);
+//     parameters.ElementAddress =  NewDST;
+//     return Config.IN.Model_App_Bind(parameters)
+//   })
+//   .then(() =>{
+//     console.log("AppBind FINISH WITH SUCCESS ! " + parameters.ElementAddress);
+//   })
+//   .catch(error => {
+//     HMI.showMessageRed(error);
+//     console.log('ERROR: ' + error);
+//   });
+//
+// }

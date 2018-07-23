@@ -118,20 +118,19 @@ function forEachPromise(items, fn, context) {
     }, Promise.resolve());
 }
 
-function BindItem(item, context){
+function BindItem(CurrentAppKeyIndex, context){
 
   if(context.lastSend != null){
     console.log('done');
     context.ModelFound.AppKeyIndexes.push(context.lastSend);
-    db.Save();
   }
 
   var parameters = {
     ElementAddress:context.ElementAddress,
-    AppKeyIndex: item,
+    AppKeyIndex: CurrentAppKeyIndex,
     ModelIdentifier: context.ModelFound.ModelIdentifier,
   }
-  context.lastSend = item;
+  context.lastSend = CurrentAppKeyIndex;
   return Config.IN.Model_App_Bind(parameters)
 }
 
@@ -158,20 +157,19 @@ AppListView.prototype.AddUpdateButton = function ($model) {
     e.preventDefault();
     var data = null;
     try {
-        var AppKeyList = JSON.parse(  $($textarea).val() );
+        var AppKeyIndexes = JSON.parse(  $($textarea).val() );
         var ElementAddress = utils.toHex(parseInt(Node.dst , 16) + parseInt(ElementIndex , 16), 2);
-        var parameters = {
-          ElementAddress: ElementAddress,
-          ModelIdentifier: ModelFound.ModelIdentifier,
-        }
+        // var parameters = {
+        //   ElementAddress: ElementAddress,
+        //   ModelIdentifier: ModelFound.ModelIdentifier,
+        // }
         //Add each Address in list
         var context = {};
         context.ElementAddress = ElementAddress;
         context.ModelFound = ModelFound;
         context.lastSend = null;
 
-        var items = AppKeyList;
-        forEachPromise(items, BindItem, context).then(() => {
+        forEachPromise(AppKeyIndexes, BindItem, context).then(() => {
           if(context.lastSend != null){
             console.log('done');
             context.ModelFound.AppKeyIndexes.push(context.lastSend);
@@ -247,6 +245,9 @@ PublicationView.prototype.AddUpdateButton = function ($model) {
 
         Config.IN.Model_Publication_Set(parameters)
         .then(() =>{
+          return Config.IN.Model_App_Bind(parameters)
+        })
+        .then(() =>{
           console.log("PublicationSet FINISH WITH SUCCESS ! " + JSON.stringify(parameters));
           ModelFound.Publication = Publication;
           db.Save();
@@ -297,7 +298,7 @@ function SendItem(item, context){
   if(context.lastSend != null){
     console.log('done');
     context.ModelFound.SubscriptionList.push(context.lastSend);
-    db.Save();
+    //db.Save();
   }
 
   var parameters = {
@@ -336,9 +337,13 @@ SubscriptionView.prototype.AddUpdateButton = function ($model) {
         var ElementAddress = utils.toHex(parseInt(Node.dst , 16) + parseInt(ElementIndex , 16), 2);
         var parameters = {
           ElementAddress: ElementAddress,
+          AppKeyIndex: Selected_AppKey.index,
           ModelIdentifier: ModelFound.ModelIdentifier,
         }
         Config.IN.Model_Subscription_Delete_All(parameters)
+        .then(() =>{
+          return Config.IN.Model_App_Bind(parameters)
+        })
         .then(() =>{
           console.log("SubscriptionDeleteAll FINISH WITH SUCCESS ! ");
           //Add each Address in list
