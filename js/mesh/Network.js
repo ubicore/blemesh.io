@@ -1,4 +1,8 @@
 
+//Network_LOG = console.log;
+Network_LOG =  function() {}
+
+
 var Network = {};
 
 // network PDU fields
@@ -16,10 +20,10 @@ Network.deriveSecure = function (hex_dst, lower_transport_pdu) {
     K = utils.normaliseHex(Selected_NetKey.EncryptionKey);
     iv_index = utils.toHex(db.data.IVindex, 4);
     net_nonce = "00" + npdu2 + utils.toHex(seq, 3) + src + "0000" + iv_index;
-    console.log("net_nonce: " + net_nonce);
+    Network_LOG("net_nonce: " + net_nonce);
 
     var MIC_size = ctl?8:4;
-    console.log("MIC_size: " + MIC_size);
+    Network_LOG("MIC_size: " + MIC_size);
 
     network_pdu = crypto.meshAuthEncNetwork(K, net_nonce, hex_dst, lower_transport_pdu, MIC_size);
     return network_pdu;
@@ -45,29 +49,29 @@ Network.Send = function(lower_transport_pdu){
   return new Promise((resolve, reject) => {
     // encrypt network PDU
     secured_network_pdu = Network.deriveSecure(Node.dst, lower_transport_pdu);
-    console.log("secured_network_pdu: " + JSON.stringify(secured_network_pdu));
+    Network_LOG("secured_network_pdu: " + JSON.stringify(secured_network_pdu));
 
     // obfuscate
     obfuscated = Network.obfuscate(secured_network_pdu);
-    console.log("obfuscated: " + JSON.stringify(obfuscated));
+    Network_LOG("obfuscated: " + JSON.stringify(obfuscated));
 
     // finalise network PDU
     finalised_network_pdu = Network.finalise(ivi, Selected_NetKey.NID, obfuscated.obfuscated_ctl_ttl_seq_src, secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, network_pdu.NetMIC);
-    console.log("finalised_network_pdu: " + finalised_network_pdu);
+    Network_LOG("finalised_network_pdu: " + finalised_network_pdu);
 
     proxy_pdu_bytes = utils.hexToBytes('00' + finalised_network_pdu);
     proxy_pdu_data = new Uint8Array(proxy_pdu_bytes)
 
     connection.ProxyPDU_IN.Send(proxy_pdu_data)
     .then(() => {
-      console.log('sent proxy pdu OK');
+      Network_LOG('sent proxy pdu OK');
       seq++;
       sessionStorage.setItem('seq', seq);
       resolve();
     })
     .catch(error => {
       // HMI.showMessageRed(error);
-      // console.log('ERROR: ' + error);
+      // Network_LOG('ERROR: ' + error);
       reject(error);
     });
   });
@@ -108,8 +112,8 @@ Network.receive = function (netpduhex) {
 	var ctl_ttl_seq_src = utils.xorU8Array(utils.hexToU8A(obfuscated_ctl_ttl_seq_src), utils.hexToU8A(pecb));
   var ctl_ttl_seq_src_hex = utils.u8AToHexString(ctl_ttl_seq_src);
   //
-  console.log('ctl_ttl_seq_src : ' + ctl_ttl_seq_src);
-  console.log('ctl_ttl_seq_src_hex : ' + ctl_ttl_seq_src_hex);
+  Network_LOG('ctl_ttl_seq_src : ' + ctl_ttl_seq_src);
+  Network_LOG('ctl_ttl_seq_src_hex : ' + ctl_ttl_seq_src_hex);
 
   var ctl_ttl_hex = ctl_ttl_seq_src_hex.substring(0, 1*2);
   var ctl_ttl = parseInt(ctl_ttl_hex, 16);
@@ -139,6 +143,6 @@ Network.receive = function (netpduhex) {
   NetworkPDU.DST = DecNetData.DST;
   NetworkPDU.TransportPDU = DecNetData.TransportPDU;
 
-  console.log("NetworkPDU : " + JSON.stringify(NetworkPDU));
+  Network_LOG("NetworkPDU : " + JSON.stringify(NetworkPDU));
   LowerTransport.receive(NetworkPDU);
 }

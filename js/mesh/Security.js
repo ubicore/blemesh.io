@@ -22,8 +22,8 @@ Security.Load = function () {
   }
   console.log('seq: ' + seq);
 
-  Selected_NetKey = db.data.netKeys[0];
-  Selected_AppKey = db.data.appKeys[0];
+  Selected_NetKey = db.data.NetKeys[0];
+  Selected_AppKey = db.data.AppKeys[0];
 
   Security.NetKey.Derivation(Selected_NetKey);
   Security.AppKey.Derivation(Selected_AppKey);

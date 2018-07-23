@@ -106,8 +106,8 @@ crypto.k4 = function (Key) {
 	return k4_material;
 };
 
-crypto.meshAuthEncAccessPayload = function (hex_appkey, hex_nonce, hex_payload) {
-	u8_key = utils.hexToU8A(hex_appkey);
+crypto.meshAuthEncAccessPayload = function (hex_AppKey, hex_nonce, hex_payload) {
+	u8_key = utils.hexToU8A(hex_AppKey);
 	u8_nonce = utils.hexToU8A(hex_nonce);
 	u8_payload = utils.hexToU8A(hex_payload);
 	var result = {

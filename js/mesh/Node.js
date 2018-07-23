@@ -48,8 +48,8 @@ Node.Add_Node = function (device) {
       "deviceKey":"",
       "configuration":{
         "BaseAddress":"",
-        "netKeys":[],
-        "appKeys":[],
+        "NetKeys":[],
+        "AppKeys":[],
         //"Elements":[],
       },
       "composition":{},
@@ -82,28 +82,27 @@ Node.Add_NetKey = function (onNode, NetKeyToAdd) {
     return  NetKey.index === NetKeyToAdd.index;
   })
 
-  if(NetKeyFound >= 0){
+  if(NetKeyFound != undefined){
     console.log('This NetKey index already exist for this Node');
-    return;
+    NetKeyFound = NetKeyToAdd;
+  } else {
+      onNode.configuration.NetKeys.push(NetKeyToAdd);
   }
-
-  onNode.configuration.netKeys.push(NetKeyToAdd);
   db.Save();
 }
 
 Node.Add_AppKey = function (onNode, AppKeyToAdd) {
 
-  var AppKeyFound = onNode.configuration.appKeys.find(function(AppKey) {
+  var AppKeyFound = onNode.configuration.AppKeys.find(function(AppKey) {
     return  AppKey.index === AppKeyToAdd.index ;
   })
 
-  if(AppKeyFound >= 0){
+  if(AppKeyFound != undefined){
     console.log('This AppKey index already exist for this Node');
     AppKeyFound = AppKeyToAdd;
-    return;
+  } else {
+    onNode.configuration.AppKeys.push(AppKeyToAdd);
   }
-
-  onNode.configuration.appKeys.push(AppKeyToAdd);
   db.Save();
 }
 

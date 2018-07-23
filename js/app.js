@@ -72,11 +72,11 @@ app.CheckAndUpdateAppKeyOnNode = function () {
     return app.GetAppKeyList()
     .then( () => {
       //Check, update or add the Selected_AppKey on the node
-      var AppKeyIndexFound = Node.SelectedNode.configuration.appKeys.find(function(AppKey) {
-        return  (AppKey.index === Selected_AppKey.index);
+      var AppKeyIndexFound = Node.SelectedNode.configuration.AppKeys.find(function(AppKey) {
+        return  AppKey.index === Selected_AppKey.index;
       })
 
-      if(AppKeyIndexFound >= 0){
+      if(AppKeyIndexFound != undefined){
         if(JSON.stringify(AppKeyIndexFound) == JSON.stringify(Selected_AppKey)){
           console.log('Selected_AppKey is present on the node and up to date');
           resolve();
@@ -124,7 +124,7 @@ app.AppKeyUpdate = function () {
       return;
     }
     //
-    //Add AppKeyAdd
+    //AppKeyUpdate
     Config.IN.AppKeyUpdate(Selected_AppKey)
     .then(() =>{
       console.log("AppKeyUpdate FINISH WITH SUCCESS !");
@@ -153,7 +153,7 @@ app.AppKeyAdd = function () {
     //Add AppKeyAdd
     Config.IN.AppKeyAdd(Selected_AppKey)
     .then(() =>{
-      console.log("SendAppKey FINISH WITH SUCCESS !");
+      console.log("AppKeyAdd FINISH WITH SUCCESS !");
       Node.Add_AppKey(Node.SelectedNode, Selected_AppKey);
       resolve();
     })

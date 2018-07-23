@@ -50,11 +50,12 @@ Config.OUT.AppKey_Status = function (obj, parameters){
 //4.3.2.42 Config AppKey List
 Config.OUT.AppKey_List = function (obj, parameters){
   var result = {
+    AppKeyIndexes:[],
   }
   var status = parseInt(parameters.substring(0, 1*2), 16);
   result.NetKeyIndex = utils.getUint16LEfromhex(parameters.substring(1*2, 3*2)) & 0xFFF;
 
-  data = data.substring(3*2);
+  var data = parameters.substring(3*2);
 
   while (data.length) {
     if(data.length >= 2*2){
@@ -73,11 +74,11 @@ Config.OUT.AppKey_List = function (obj, parameters){
   console.log('AppKey_List result: ' + JSON.stringify(result));
 
   //Delete key entry if it index does not exist on the node;
-  Node.SelectedNode.configuration.appKeys.forEach(function(AppKey, index, object) {
-    var AppKeyIndexFound = result.find(function(AppKeyIndex) {
+  Node.SelectedNode.configuration.AppKeys.forEach(function(AppKey, index, object) {
+    var AppKeyIndexFound = result.AppKeyIndexes.find(function(AppKeyIndex) {
       return  (AppKeyIndex === AppKey.index);
     })
-    if(AppKeyIndexFound >= 0){
+    if(AppKeyIndexFound  != undefined){
       console.log('This AppKey index exist for this Node');
     } else {
       console.log('Delete this AppKey entry');

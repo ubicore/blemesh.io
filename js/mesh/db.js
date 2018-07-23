@@ -36,8 +36,8 @@ db.Create = function () {
        IVindex  : 5, // 12345677
        IVupdate  : 0,
 
-       netKeys : [],
-       appKeys : [],
+       NetKeys : [],
+       AppKeys : [],
        provisioners : [],
        nodes : [],
        GroupAddress : [
@@ -83,11 +83,11 @@ db.Add_NetKey = function () {
     return;
   }
 
-  var New_Index = db.data.netKeys.length;
+  var New_Index = db.data.NetKeys.length;
   console.log("New_NetKey_Index :" + New_Index);
 
   var NetKey  = Security.NetKey.Create(New_Index);
-  db.data.netKeys.push(NetKey);
+  db.data.NetKeys.push(NetKey);
   return NetKey;
 }
 
@@ -97,11 +97,11 @@ db.Add_AppKey = function (boundNetKeyIndex) {
     return;
   }
 
-  var New_Index = db.data.appKeys.length;
+  var New_Index = db.data.AppKeys.length;
   console.log("New_AppKey_Index :" + New_Index);
 
   var AppKey  = Security.AppKey.Create(New_Index, boundNetKeyIndex);
-  db.data.appKeys.push(AppKey);
+  db.data.AppKeys.push(AppKey);
   return New_Index;
 }
 

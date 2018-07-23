@@ -1,4 +1,7 @@
 
+//LowerTransport_LOG = console.log;
+LowerTransport_LOG =  function() {}
+
 var LowerTransport = {};
 LowerTransport.OUT = {};
 
@@ -34,7 +37,7 @@ LowerTransport.Segment_Acknowledgment_message = function(Access_message, BlockAc
     Segment_Acknowledgment_message += utils.toHex((OBO << 15) + ((Access_message.SeqZero & 0x1FFF) << 2), 2); //OBO, SeqZero
     Segment_Acknowledgment_message += utils.toHex(BlockAck, 4);
 
-    console.log('Segment_Acknowledgment_message : ' + Segment_Acknowledgment_message);
+    LowerTransport_LOG('Segment_Acknowledgment_message : ' + Segment_Acknowledgment_message);
     var lower_transport_pdu = Segment_Acknowledgment_message;
     ctl = 1;
 
@@ -81,7 +84,7 @@ LowerTransport.receive = function (NetworkPDU) {
         Access_message.SeqZero = Access_message.NetworkPDU.SEQ;
         //
         Access_message.UpperTransportAccessPDU = TransportPDU.substring(1*2);
-        console.log('Unsegmented Access Message : ' + JSON.stringify(Access_message));
+        LowerTransport_LOG('Unsegmented Access Message : ' + JSON.stringify(Access_message));
         //TODO
 //        alert('TODO: Unsegmented Access Message');
 
@@ -100,7 +103,7 @@ LowerTransport.receive = function (NetworkPDU) {
         Access_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
         Access_message.SegO = (((octet2 & 0x03) << 8) + octet3) >> 5;
         Access_message.SegN = octet3 & 0x1F;
-        console.log('Access_message : ' + JSON.stringify(Access_message));
+        LowerTransport_LOG('Access_message : ' + JSON.stringify(Access_message));
 
         //Init Output on the first Segment
         if(Access_message.SegO == 0){
@@ -120,7 +123,7 @@ LowerTransport.receive = function (NetworkPDU) {
         }
 
         var Segment_m = TransportPDU.substring(4*2);
-        console.log('Segment_m : ' + Segment_m + ' len : ' + Segment_m.length);
+        LowerTransport_LOG('Segment_m : ' + Segment_m + ' len : ' + Segment_m.length);
         LowerTransport.OUT.PayloadFromSegments += Segment_m;
 
         //Format BlockAck
@@ -130,7 +133,7 @@ LowerTransport.receive = function (NetworkPDU) {
         if(Access_message.SegO == Access_message.SegN ){
           var Reassembled_Access_message = Object.assign(LowerTransport.OUT.First_Access_Message);
           Reassembled_Access_message.UpperTransportAccessPDU =  LowerTransport.OUT.PayloadFromSegments;
-          console.log('Get a complete Reassembled_Access_message : ' + JSON.stringify(Reassembled_Access_message));
+          LowerTransport_LOG('Get a complete Reassembled_Access_message : ' + JSON.stringify(Reassembled_Access_message));
 
           //Send Acknowledgment Segmented Acces message
           LowerTransport.Segment_Acknowledgment_message(Access_message, LowerTransport.OUT.BlockAck )
@@ -161,13 +164,13 @@ LowerTransport.receive = function (NetworkPDU) {
           Control_message.OBO = (octet1 & (1<<7))?1:0;
           Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
           Control_message.BlockAck = dec_network_pdu.TransportPDU.substring(3*2, 7*2);
-          console.log('Segment Acknowledgment message : ' + JSON.stringify(Control_message));
+          LowerTransport_LOG('Segment Acknowledgment message : ' + JSON.stringify(Control_message));
         }
       }
 
       //Segmented Control Message
       if(Control_message.SEG == 1) {
-        console.log('Segmented Control message : ' + JSON.stringify(Control_message));
+        LowerTransport_LOG('Segmented Control message : ' + JSON.stringify(Control_message));
       }
   }
   return ;

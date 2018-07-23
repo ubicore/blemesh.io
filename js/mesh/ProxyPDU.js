@@ -22,6 +22,8 @@ const SAR_DataOffset = 1;
 
 const Proxy_PDU_Type_List = ['Network PDU', 'Mesh Beacon', 'Proxy Configuration', 'Provisioning PDU'];
 
+//ProxyPDU_LOG = console.log;
+ProxyPDU_LOG =  function() {}
 
 class ProxyPDU_OUT {
     constructor() {
@@ -36,7 +38,7 @@ class ProxyPDU_OUT {
         this.size = 0;
         /* Invalidate packet and return failure */
         /* Disconnect GATT per last paragraph sec 6.6 */
-        console.log('Prov abord');
+        ProxyPDU_LOG('Prov abord');
     };
 
     Reassembly(value) {
@@ -44,13 +46,13 @@ class ProxyPDU_OUT {
         var type = value.getUint8(0) & GATT_TYPE_MASK;
         var SAR_data = new Uint8Array(value.buffer, SAR_DataOffset);
 
-        console.log('buffer.byteLength : ' + value.buffer.byteLength);
-        //console.log('data : ' + SAR_data);
-        //console.log('type : ' + type);
+        ProxyPDU_LOG('buffer.byteLength : ' + value.buffer.byteLength);
+        //ProxyPDU_LOG('data : ' + SAR_data);
+        //ProxyPDU_LOG('type : ' + type);
 
          switch (sarBits) {
             case GATT_SAR_FIRST:
-                console.log('GATT_SAR_FIRST');
+                ProxyPDU_LOG('GATT_SAR_FIRST');
                 this.gatt_pkt_Uint8view.fill(0);
                 this.gatt_pkt_Uint8view[0] = type;
                 this.size = 1;
@@ -58,7 +60,7 @@ class ProxyPDU_OUT {
             /* fall through */
 
             case GATT_SAR_CONTINUE:
-                console.log('GATT_SAR_CONTINUE');
+                ProxyPDU_LOG('GATT_SAR_CONTINUE');
 
                 if (this.gatt_pkt_Uint8view[0] != type ||
                     (this.gatt_pkt.length + value.length) > MAX_GATT_SIZE) {
@@ -67,21 +69,21 @@ class ProxyPDU_OUT {
                 }
                 this.gatt_pkt_Uint8view.set(SAR_data, this.size);
                 this.size += SAR_data.length;
-                console.log('this.gatt_pkt : ' + this.gatt_pkt_Uint8view);
-                console.log('size : ' + this.size);
+                ProxyPDU_LOG('this.gatt_pkt : ' + this.gatt_pkt_Uint8view);
+                ProxyPDU_LOG('size : ' + this.size);
                 /* We are good to this point, but incomplete */
                 return;
 
             default:
             case GATT_SAR_COMPLETE:
-                console.log('GATT_SAR_COMPLETE');
+                ProxyPDU_LOG('GATT_SAR_COMPLETE');
                 this.gatt_pkt_Uint8view.fill(0);
                 this.gatt_pkt_Uint8view[0] = type;
                 this.size = 1;
             /* fall through */
 
             case GATT_SAR_LAST:
-                console.log('GATT_SAR_LAST');
+                ProxyPDU_LOG('GATT_SAR_LAST');
 
                 if (this.gatt_pkt_Uint8view[0] != type ||
                     (this.gatt_pkt.length + value.length) > MAX_GATT_SIZE) {
@@ -92,16 +94,16 @@ class ProxyPDU_OUT {
                 this.gatt_pkt_Uint8view.set(SAR_data, this.size);
 
                 this.size += SAR_data.length;
-                console.log('size : ' + this.size);
+                ProxyPDU_LOG('size : ' + this.size);
 
                 var PDU = this.gatt_pkt.slice(0, this.size);
                 var Proxy_PDU_Type = (new Uint8Array(PDU))[0];
                 //
                 if( Proxy_PDU_Type < Proxy_PDU_Type_List.length){
-                  console.log('===> ' + Proxy_PDU_Type_List[Proxy_PDU_Type]);
+                  ProxyPDU_LOG('===> ' + Proxy_PDU_Type_List[Proxy_PDU_Type]);
                   this.ProcessPDU(PDU);
                 } else {
-                  console.log('Proxy get a unknow message type: ' + Proxy_PDU_Type);
+                  ProxyPDU_LOG('Proxy get a unknow message type: ' + Proxy_PDU_Type);
                 }
 
                 this.size = 0;
@@ -110,7 +112,7 @@ class ProxyPDU_OUT {
     };
 
     EventListener(event) {
-        console.log('Event');
+        ProxyPDU_LOG('Event');
 
         if (event.target.value.buffer.byteLength) {
             this.Reassembly(event.target.value);
@@ -120,12 +122,12 @@ class ProxyPDU_OUT {
     }
 
     SetListening(characteristic) {
-        console.log('SetListening');
+        ProxyPDU_LOG('SetListening');
 
         return new Promise((resolve, reject) => {
             return characteristic.startNotifications()
                 .then(characteristic => {
-                    console.log('Notifications started');
+                    ProxyPDU_LOG('Notifications started');
                     characteristic.addEventListener("characteristicvaluechanged", event => this.EventListener(event));
                     resolve();
                 })
@@ -140,7 +142,7 @@ class ProxyPDU_OUT {
     }
 
     ProcessPDU (PDU) {
-        console.log("ProcessPDU");
+        ProxyPDU_LOG("ProcessPDU");
 
         var proxy_pdu = new Uint8Array(PDU)
 
@@ -151,23 +153,23 @@ class ProxyPDU_OUT {
         //
         switch (Proxy_PDU_Type) {
           case 0x00 :
-            console.log("Network PDU");
+            ProxyPDU_LOG("Network PDU");
             Network.receive(Net_pdu_bytes);
             break;
           case 0x01:
-            console.log("Mesh Beacon");
+            ProxyPDU_LOG("Mesh Beacon");
             break;
           case 0x02:
-            console.log("Proxy Configuration");
+            ProxyPDU_LOG("Proxy Configuration");
             break;
           case 0x03:
-            console.log("Provisioning PDU");
+            ProxyPDU_LOG("Provisioning PDU");
             if(this.ProvisionnerINCb  && typeof(this.ProvisionnerINCb) === "function"){
               this.ProvisionnerINCb(PDU);
             }
             break;
           default:
-            console.log("RFU");
+            ProxyPDU_LOG("RFU");
         }
     }
 
@@ -196,7 +198,7 @@ class ProxyPDU_IN {
         proxy_pdu[0] = (SAR << 6) +  this.PDU_Type;
         proxy_pdu.set(this.RemainingDATA.slice(0, this.ToSend), 1);
 
-        console.log('Write Fisrt segment:' + proxy_pdu);
+        ProxyPDU_LOG('Write Fisrt segment:' + proxy_pdu);
         this.Write(proxy_pdu);
       });
     }
@@ -204,7 +206,7 @@ class ProxyPDU_IN {
     Write(ProxyPDU) {
       this.IN.writeValue(ProxyPDU)
       .then(() => {
-        console.log('Write OK');
+        ProxyPDU_LOG('Write OK');
         this.RemainingDATA = this.RemainingDATA.slice(this.ToSend);
         var Remaining = this.RemainingDATA.length;
 
@@ -216,19 +218,19 @@ class ProxyPDU_IN {
           proxy_pdu[0] = (SAR << 6) +  this.PDU_Type;
           proxy_pdu.set(this.RemainingDATA.slice(0, this.ToSend), 1);
 
-          console.log('Write n segment : ' + proxy_pdu);
+          ProxyPDU_LOG('Write n segment : ' + proxy_pdu);
           this.Write(proxy_pdu);
         }else {
-          console.log('Send is finish');
+          ProxyPDU_LOG('Send is finish');
 
           if(this.CbOnSuccess  && typeof(this.CbOnSuccess) === "function"){
-            console.log('typeof is function ');
+            ProxyPDU_LOG('typeof is function ');
             this.CbOnSuccess();
           }
         }
       })
       .catch(error => {
-        console.log('Write Fail');
+        ProxyPDU_LOG('Write Fail');
 
         if(this.CbOnFail  && typeof(this.CbOnFail) === "function"){
           this.CbOnFail(`writeValue error: ${error}`);
