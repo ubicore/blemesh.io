@@ -103,7 +103,10 @@ connection.connect = function () {
                 //
                 Node.SelectbyNodeID(selected_device.id);
                 //
-                return app.GetPage0()
+                return app.CheckAndUpdateAppKeyOnNode()
+            })
+            .then( () => {
+              return app.GetPage0()
             })
             .then( () => {
               NodeView.DisplayElementAndModel();

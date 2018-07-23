@@ -55,8 +55,8 @@ db.Create = function () {
 
      //Populate db
      db.Add_Provisionner();
-     var NetKey_index = db.Add_NetKey();
-     db.Add_AppKey(NetKey_index);
+     var NetKey = db.Add_NetKey();
+     db.Add_AppKey(NetKey.index);
      db.Reset_GroupAddress();
 
      console.log("db.data : \n" + JSON.stringify(db.data));
@@ -88,7 +88,7 @@ db.Add_NetKey = function () {
 
   var NetKey  = Security.NetKey.Create(New_Index);
   db.data.netKeys.push(NetKey);
-  return New_Index;
+  return NetKey;
 }
 
 

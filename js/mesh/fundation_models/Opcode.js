@@ -10,7 +10,7 @@ const OPCODE = [
 {id: 0x06, size: 1, name: 'Config_Heartbeat_Publication_Status', TX_fct: null, RX_fct: null, callback: null},
 {id: 0x8000, size: 1, name: 'Config_AppKey_Delete', TX_fct: null, RX_fct: null, callback: null},
 {id: 0x8001, size: 1, name: 'Config_AppKey_Get', TX_fct: null, RX_fct: null, callback: null},
-{id: 0x8002, size: 2, name: 'Config_AppKey_List', TX_fct: null, RX_fct: null, callback: null},
+{id: 0x8002, size: 2, name: 'Config_AppKey_List', TX_fct: null, RX_fct: Config.OUT.AppKey_List, callback: null},
 {id: 0x8003, size: 2, name: 'Config_AppKey_Status', TX_fct: null, RX_fct: Config.OUT.AppKey_Status, callback: null},
 {id: 0x8004, size: 2, name: 'Health_Attention_Get', TX_fct: null, RX_fct: null, callback: null},
 {id: 0x8005, size: 2, name: 'Health_Attention_Set', TX_fct: null, RX_fct: null, callback: null},

@@ -38,31 +38,130 @@ app.GetPage0 = function () {
   });
 }
 
+app.GetAppKeyList = function () {
+  return new Promise((resolve, reject) => {
+    if (!connected) {
+      reject();
+      return;
+    }
+    if (!has_mesh_proxy_data_in) {
+      HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      console.log("Error: mesh_proxy_data_in characteristic not discovered");
+      reject();
+      return;
+    }
+    //Get AppKey List
+    Config.IN.AppKey_Get(Selected_NetKey.index)
+    .then(() =>{
+      console.log("AppKey_Get FINISH WITH SUCCESS !");
+      db.Save();
+      resolve();
+    })
+    .catch(error => {
+      HMI.showMessageRed(error);
+      console.log('ERROR: ' + error);
+      reject(error);
+    });
+  });
+}
+
+app.CheckAndUpdateAppKeyOnNode = function () {
+  return new Promise((resolve, reject) => {
+
+    console.log('CheckAndUpdateAppKeyOnNode');
+    return app.GetAppKeyList()
+    .then( () => {
+      //Check, update or add the Selected_AppKey on the node
+      var AppKeyIndexFound = Node.SelectedNode.configuration.appKeys.find(function(AppKey) {
+        return  (AppKey.index === Selected_AppKey.index);
+      })
+
+      if(AppKeyIndexFound >= 0){
+        if(JSON.stringify(AppKeyIndexFound) == JSON.stringify(Selected_AppKey)){
+          console.log('Selected_AppKey is present on the node and up to date');
+          resolve();
+        }else{
+          console.log('Selected_AppKey is present on the node but not up to date');
+          return app.AppKeyUpdate()
+          .then( () => {
+            resolve();
+          })
+        }
+      } else {
+        console.log('Add Selected_AppKey on the node');
+        return app.AppKeyAdd()
+        .then( () => {
+          resolve();
+        })
+        // .catch(error => {
+        //   console.log('ERROR: ' + error);
+        //   reject(error);
+        // });
+      }
+    })
+    .catch(error => {
+      console.log('ERROR: ' + error);
+      reject(error);
+    });
+  });
+}
+
 //For test only
 app.DisplayNodeModels = function () {
   Node.SelectedNode = db.data.nodes[0];
   NodeView.DisplayElementAndModel();
 }
 
-app.SendAppKey = function () {
-  if (!connected) {
-    return;
-  }
-  if (!has_mesh_proxy_data_in) {
-    HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
-    console.log("Error: mesh_proxy_data_in characteristic not discovered");
-    return;
-  }
-  //
-  //Add AppKeyAdd
-  Config.IN.AppKeyAdd(Selected_NetKey.index, Selected_AppKey.index, Selected_AppKey.key)
-  .then(() =>{
-    console.log("SendAppKey FINISH WITH SUCCESS !");
-    Node.Add_AppKey(Node.SelectedNode, Selected_AppKey);
-  })
-  .catch(error => {
-    HMI.showMessageRed(error);
-    console.log('ERROR: ' + error);
+
+app.AppKeyUpdate = function () {
+  return new Promise((resolve, reject) => {
+    if (!connected) {
+      return;
+    }
+    if (!has_mesh_proxy_data_in) {
+      HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      console.log("Error: mesh_proxy_data_in characteristic not discovered");
+      return;
+    }
+    //
+    //Add AppKeyAdd
+    Config.IN.AppKeyUpdate(Selected_AppKey)
+    .then(() =>{
+      console.log("AppKeyUpdate FINISH WITH SUCCESS !");
+      Node.Add_AppKey(Node.SelectedNode, Selected_AppKey);
+      resolve();
+    })
+    .catch(error => {
+      HMI.showMessageRed(error);
+      console.log('ERROR: ' + error);
+      reject(error);
+    });
+  });
+}
+
+app.AppKeyAdd = function () {
+  return new Promise((resolve, reject) => {
+    if (!connected) {
+      return;
+    }
+    if (!has_mesh_proxy_data_in) {
+      HMI.showMessageRed("Error: mesh_proxy_data_in characteristic not discovered");
+      console.log("Error: mesh_proxy_data_in characteristic not discovered");
+      return;
+    }
+    //
+    //Add AppKeyAdd
+    Config.IN.AppKeyAdd(Selected_AppKey)
+    .then(() =>{
+      console.log("SendAppKey FINISH WITH SUCCESS !");
+      Node.Add_AppKey(Node.SelectedNode, Selected_AppKey);
+      resolve();
+    })
+    .catch(error => {
+      HMI.showMessageRed(error);
+      console.log('ERROR: ' + error);
+      reject(error);
+    });
   });
 }
 

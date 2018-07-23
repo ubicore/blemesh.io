@@ -35,9 +35,10 @@ Config.OUT.AppKey_Status = function (obj, parameters){
   var result = {
   }
   var status = parseInt(parameters.substring(0, 1*2), 16);
-  var NetKeyIndexAndAppKeyIndex = parameters.substring(1*2, 4*2);
-  result.NetKeyIndex = (NetKeyIndexAndAppKeyIndex >> 12) & 0xFFF;
-  result.AppKeyIndex = (NetKeyIndexAndAppKeyIndex & 0xFFF);
+  result.NetKeyIndex = utils.getUint16LEfromhex(parameters.substring(1*2, 3*2)) & 0xFFF;
+  result.AppKeyIndex = utils.getUint16LEfromhex(parameters.substring(2*2, 4*2)) >> 4;
+
+  console.log('AppKey_Status result : ' + JSON.stringify(result));
 
   //
   var Status_Code_obj = STATUS_CODE.FindByID(status);
@@ -46,6 +47,50 @@ Config.OUT.AppKey_Status = function (obj, parameters){
   Config.std_callback(obj.callback, status);
 }
 
+//4.3.2.42 Config AppKey List
+Config.OUT.AppKey_List = function (obj, parameters){
+  var result = {
+  }
+  var status = parseInt(parameters.substring(0, 1*2), 16);
+  result.NetKeyIndex = utils.getUint16LEfromhex(parameters.substring(1*2, 3*2)) & 0xFFF;
+
+  data = data.substring(3*2);
+
+  while (data.length) {
+    if(data.length >= 2*2){
+      var AppKeyIndex = utils.getUint16LEfromhex(data.substring(0, 2*2)) & 0xFFF;
+      result.AppKeyIndexes.push(AppKeyIndex);
+      if(data.length >= 3*2){
+        var AppKeyIndex = utils.getUint16LEfromhex(data.substring(1*2, 3*2)) >> 4;
+        result.AppKeyIndexes.push(AppKeyIndex);
+        data = data.substring(3*2);
+      }else{
+        data = data.substring(2*2);
+      }
+    }
+  }
+
+  console.log('AppKey_List result: ' + JSON.stringify(result));
+
+  //Delete key entry if it index does not exist on the node;
+  Node.SelectedNode.configuration.appKeys.forEach(function(AppKey, index, object) {
+    var AppKeyIndexFound = result.find(function(AppKeyIndex) {
+      return  (AppKeyIndex === AppKey.index);
+    })
+    if(AppKeyIndexFound >= 0){
+      console.log('This AppKey index exist for this Node');
+    } else {
+      console.log('Delete this AppKey entry');
+      object.splice(index, 1);
+    }
+  });
+
+  //
+  var Status_Code_obj = STATUS_CODE.FindByID(status);
+  console.log('AppKey_List status : ' + JSON.stringify(Status_Code_obj));
+
+  Config.std_callback(obj.callback, status);
+}
 
 //4.3.2.5 Config Composition Data Status
 Config.OUT.Composition_Data_Status = function (obj, parameters){
@@ -553,9 +598,32 @@ Config.IN.Composition_Data_Get = function (page){
   });
 }
 
+
+//4.3.2.41 Config AppKey Get
+Config.IN.AppKey_Get = function (NetKeyIndex){
+  //Set callback on "Config AppKey Status"
+  return new Promise((resolve, reject) => {
+
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_AppKey_List');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_AppKey_Get');
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.SWAPhex(utils.toHex(NetKeyIndex, 2));
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
+
 //4.3.2.37 Config AppKey Add
-Config.IN.AppKeyAdd = function (NetKeyIndex, AppKeyIndex, AppKey){
-  //3.8.6.4 Global key indexes
+Config.IN.AppKeyAdd = function (AppKey){
   return new Promise((resolve, reject) => {
 
     var callback = {};
@@ -566,11 +634,33 @@ Config.IN.AppKeyAdd = function (NetKeyIndex, AppKeyIndex, AppKey){
     opcode_obj_out.callback = callback;
 
     var opcode_obj = OPCODE.FindByName('Config_AppKey_Add');
-    var NetKeyIndexAndAppKeyIndex = ((NetKeyIndex & 0xFFF) << 12) + (AppKeyIndex & 0xFFF);
+    var NetKeyIndexAndAppKeyIndex = ((AppKey.boundNetKey & 0xFFF) << 12) + (AppKey.index & 0xFFF);
 
     var access_payload = '';
     access_payload += OPCODE.ToHexID(opcode_obj);
-    access_payload += utils.toHex(NetKeyIndexAndAppKeyIndex, 3) + AppKey;
+    access_payload += utils.toHex(NetKeyIndexAndAppKeyIndex, 3) + AppKey.key;
+
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+  });
+}
+
+//4.3.2.38 Config AppKey Update
+Config.IN.AppKeyUpdate = function (AppKey){
+  return new Promise((resolve, reject) => {
+
+    var callback = {};
+    callback.Success = resolve;
+    callback.Fail = reject;
+
+    var opcode_obj_out = OPCODE.FindByName('Config_AppKey_Status');
+    opcode_obj_out.callback = callback;
+
+    var opcode_obj = OPCODE.FindByName('Config_AppKey_Update');
+    var NetKeyIndexAndAppKeyIndex = ((AppKey.boundNetKey & 0xFFF) << 12) + (AppKey.index & 0xFFF);
+
+    var access_payload = '';
+    access_payload += OPCODE.ToHexID(opcode_obj);
+    access_payload += utils.toHex(NetKeyIndexAndAppKeyIndex, 3) + AppKey.key;
 
     UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
   });

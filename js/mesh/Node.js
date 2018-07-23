@@ -76,33 +76,34 @@ Node.Add_Node = function (device) {
   return;
 }
 
-Node.Add_NetKey = function (onNode, NetKey) {
+Node.Add_NetKey = function (onNode, NetKeyToAdd) {
 
-  var index = onNode.configuration.netKeys.findIndex(function(obj) {
-    return  JSON.stringify(obj) === JSON.stringify(NetKey) ;
+  var NetKeyFound = onNode.configuration.NetKeys.find(function(NetKey) {
+    return  NetKey.index === NetKeyToAdd.index;
   })
 
-  if(index >= 0){
-    console.log('This NetKey already exist for this Node');
+  if(NetKeyFound >= 0){
+    console.log('This NetKey index already exist for this Node');
     return;
   }
 
-  onNode.configuration.netKeys.push(NetKey);
+  onNode.configuration.netKeys.push(NetKeyToAdd);
   db.Save();
 }
 
-Node.Add_AppKey = function (onNode, AppKey) {
+Node.Add_AppKey = function (onNode, AppKeyToAdd) {
 
-  var index = onNode.configuration.appKeys.findIndex(function(obj) {
-    return  JSON.stringify(obj) === JSON.stringify(AppKey) ;
+  var AppKeyFound = onNode.configuration.appKeys.find(function(AppKey) {
+    return  AppKey.index === AppKeyToAdd.index ;
   })
 
-  if(index >= 0){
-    console.log('This AppKey already exist for this Node');
+  if(AppKeyFound >= 0){
+    console.log('This AppKey index already exist for this Node');
+    AppKeyFound = AppKeyToAdd;
     return;
   }
 
-  onNode.configuration.appKeys.push(AppKey);
+  onNode.configuration.appKeys.push(AppKeyToAdd);
   db.Save();
 }
 
