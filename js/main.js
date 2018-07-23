@@ -35,10 +35,10 @@ addEventListener('DOMContentLoaded', function() {
     btn_connection.addEventListener('click', function() {
         connection.connection();
     });
-    var btn_AppKey = document.getElementById('btn_AppKey');
-    btn_AppKey.addEventListener('click', function() {
-        app.SendAppKey();
-    });
+    // var btn_AppKey = document.getElementById('btn_AppKey');
+    // btn_AppKey.addEventListener('click', function() {
+    //     app.SendAppKey();
+    // });
 
     // var btn_DisplayNodeModels = document.getElementById('btn_DisplayNodeModels');
     // btn_DisplayNodeModels.addEventListener('click', function() {
@@ -54,7 +54,7 @@ addEventListener('DOMContentLoaded', function() {
     // btn_SubscriptionAdd.addEventListener('click', function() {
     //     app.SubscriptionAdd();
     // });
-    // 
+    //
     // var btn_AppBind = document.getElementById('btn_AppBind');
     // btn_AppBind.addEventListener('click', function() {
     //     app.AppBind();
