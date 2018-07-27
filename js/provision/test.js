@@ -140,44 +140,44 @@ test.EDCH = function() {
 
 
 
-
-
-
-        window.crypto.subtle.setPrivateKey
-        console.log('setPrivateKey');
-        ProvKeyObj.setPrivateKey(Prov_Private_Key, 'hex');
-
-        var Prov_Public_Key_With_Tag = Buffer.alloc(65);
-        Prov_Public_Key_With_Tag[0] = 0x04 //Tag PubKey
-        Prov_Public_Key_With_Tag.fill(Prov_Public_Key, 1);
-        //Get Public Key
-        var Calc_Prov_Public_Key = ProvKeyObj.getPublicKey();
-        //Test Calc_ProvEDCHSecret
-        if (Buffer.compare(Calc_Prov_Public_Key, Prov_Public_Key_With_Tag) != 0) {
-            console.log('Error : Calc_Prov_Public_Key is diff! ');
-            return;
-        } else {
-            console.log('Calc_Prov_Public_Key : OK');
-            console.log('Calc_Prov_Public_Key: \n' + Calc_Prov_Public_Key.toString('hex'));
-        }
         //
-        console.log('computeSecret');
-
-        var PubKey = Buffer.alloc(65);
-        PubKey[0] = 0x04 //Tag PubKey
-        PubKey.fill(Device_Public_Key, 1);
-
-        var Calc_ProvEDCHSecret = ProvKeyObj.computeSecret(PubKey);
-        console.log('Calc_ProvEDCHSecret : ' + Calc_ProvEDCHSecret.toString('hex'));
-
-        //Test Calc_ProvEDCHSecret
-        if (Buffer.compare(Calc_ProvEDCHSecret, Prov_ECDH) != 0) {
-            console.log('Error : Calc_ProvEDCHSecret is diff! ');
-            return;
-        } else {
-            console.log('Calc_ProvEDCHSecret : OK');
-            console.log('Calc_ProvEDCHSecret: \n' + Calc_ProvEDCHSecret.toString('hex'));
-        }
+        //
+        //
+        // window.crypto.subtle.setPrivateKey
+        // console.log('setPrivateKey');
+        // ProvKeyObj.setPrivateKey(Prov_Private_Key, 'hex');
+        //
+        // var Prov_Public_Key_With_Tag = Buffer.alloc(65);
+        // Prov_Public_Key_With_Tag[0] = 0x04 //Tag PubKey
+        // Prov_Public_Key_With_Tag.fill(Prov_Public_Key, 1);
+        // //Get Public Key
+        // var Calc_Prov_Public_Key = ProvKeyObj.getPublicKey();
+        // //Test Calc_ProvEDCHSecret
+        // if (Buffer.compare(Calc_Prov_Public_Key, Prov_Public_Key_With_Tag) != 0) {
+        //     console.log('Error : Calc_Prov_Public_Key is diff! ');
+        //     return;
+        // } else {
+        //     console.log('Calc_Prov_Public_Key : OK');
+        //     console.log('Calc_Prov_Public_Key: \n' + Calc_Prov_Public_Key.toString('hex'));
+        // }
+        // //
+        // console.log('computeSecret');
+        //
+        // var PubKey = Buffer.alloc(65);
+        // PubKey[0] = 0x04 //Tag PubKey
+        // PubKey.fill(Device_Public_Key, 1);
+        //
+        // var Calc_ProvEDCHSecret = ProvKeyObj.computeSecret(PubKey);
+        // console.log('Calc_ProvEDCHSecret : ' + Calc_ProvEDCHSecret.toString('hex'));
+        //
+        // //Test Calc_ProvEDCHSecret
+        // if (Buffer.compare(Calc_ProvEDCHSecret, Prov_ECDH) != 0) {
+        //     console.log('Error : Calc_ProvEDCHSecret is diff! ');
+        //     return;
+        // } else {
+        //     console.log('Calc_ProvEDCHSecret : OK');
+        //     console.log('Calc_ProvEDCHSecret: \n' + Calc_ProvEDCHSecret.toString('hex'));
+        // }
 
 };
 

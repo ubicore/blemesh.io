@@ -96,7 +96,6 @@ class Ecc {
               console.log(err)
               reject(err);
             });
-            console.log('ComputeSecret Finished\n\n');
           });
         };
 
