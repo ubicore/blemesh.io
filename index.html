@@ -46,11 +46,22 @@
 
  <body onload="app.start();">
 
-<button onclick="test.start()">Test</button>
+<!-- <button onclick="test.start()">Test</button> -->
+
 <button onclick="db.Load()">DB_Load</button>
 <button onclick="db.Save()">DB_Save</button>
 <button onclick="db.Reset()">DB_Reset</button>
 <button onclick="db.Export()">DB_Export</button>
+
+<div>
+    <label for="avatar">DB_Import:</label>
+    <input type="file"
+           id="fileinput"
+           accept=".json"
+           onchange="db.Import()" />
+</div>
+<div id="editor">
+</div>
 
 
     <!-- MAIN PAGE -->

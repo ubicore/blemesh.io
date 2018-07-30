@@ -72,6 +72,40 @@ db.Load = function () {
   }
 }
 
+db.Import = function () {
+  console.log("Import");
+
+   if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+     alert('The File APIs are not fully supported in this browser.');
+     return;
+   }
+
+   input = document.getElementById('fileinput');
+   if (!input) {
+     alert("Um, couldn't find the fileinput element.");
+   }
+   else if (!input.files) {
+     alert("This browser doesn't seem to support the `files` property of file inputs.");
+   }
+   else if (!input.files[0]) {
+     alert("Please select a file before clicking 'Load'");
+   }
+   else {
+     file = input.files[0];
+     reader = new FileReader();
+     reader.onload = onReaderLoad;
+     reader.readAsText(file);
+   }
+ }
+
+ function onReaderLoad(event) {
+  console.log(event.target.result);
+  db.data = JSON.parse(event.target.result);
+  console.log("db.data : \n" + JSON.stringify(db.data));
+ }
+
+
+
 db.Export = function () {
 
     exportToJsonFile(db.data);
