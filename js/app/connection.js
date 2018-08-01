@@ -24,7 +24,7 @@ var has_mesh_proxy_data_out = false;
 var has_mesh_proxy_data_in = false;
 var valid_pdu = false;
 
-var src = "";
+var Own_SRC = "";
 
 
 var Provisioner;

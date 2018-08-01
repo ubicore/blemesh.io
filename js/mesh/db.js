@@ -21,8 +21,8 @@ db.initialize = function () {
   //TODO : select provisioner
   {
     Provisioner = db.data.provisioners[0];
-    src = Provisioner.unicastAddress;
-    console.log('Select Provisioner: ' + Provisioner.provisionerName + ' @' + src);
+    Own_SRC = Provisioner.unicastAddress;
+    console.log('Select Provisioner: ' + Provisioner.provisionerName + ' @' + Own_SRC);
     //
     Security.Load();
   }

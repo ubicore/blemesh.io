@@ -5,20 +5,67 @@ LowerTransport_LOG =  function() {}
 var LowerTransport = {};
 LowerTransport.OUT = {};
 
-var seg = 0;
-var akf = 0;
-var aid = 0;
+LowerTransport.Send_Unsegmented = function (upper_transport_pdu_obj, parameters) {
+  return new Promise((resolve, reject) => {
+    if((upper_transport_pdu.EncAccessPayload.length + upper_transport_pdu.TransMIC.length) > 15){
+      reject('Payload exced max size');
+      return;
+    }
 
-LowerTransport.derive = function (upper_transport_pdu) {
     lower_transport_pdu = "";
     // seg (1 bit), akf (1 bit), aid (6 bits) already derived from k4
-    seg_int = parseInt(seg, 16);
-    akf_int = parseInt(akf, 16);
-    aid_int = parseInt(aid, 16);
-    ltpdu1 = (seg_int << 7) | (akf_int << 6) | aid_int;
-    lower_transport_pdu = utils.intToHex(ltpdu1) + upper_transport_pdu.EncAccessPayload + upper_transport_pdu.TransMIC;
-    return lower_transport_pdu;
+    ltpdu0 = (parameters.SEG << 7) | (parameters.AKF << 6) | parameters.AID;
+    lower_transport_pdu = utils.intToHex(ltpdu0) + upper_transport_pdu.EncAccessPayload + upper_transport_pdu.TransMIC;
+
+    Network.Send(lower_transport_pdu, parameters)
+    .then(() => {
+      resolve();
+    })
+    .catch(error => {
+      reject(error);
+    });
+  });
 };
+
+LowerTransport.Send_Segmented = function (upper_transport_pdu_obj, parameters) {
+  return new Promise((resolve, reject) => {
+    reject('LowerTransport.Send_Segmented Not implemented');
+
+
+    lower_transport_pdu = "";
+    // seg (1 bit), akf (1 bit), aid (6 bits) already derived from k4
+    ltpdu0 = (parameters.SEG << 7) | (parameters.AKF << 6) | parameters.AID;
+
+    SZMIC
+    SeqZero
+    SegO
+    SegN
+
+    lower_transport_pdu = utils.intToHex(ltpdu0) + upper_transport_pdu.EncAccessPayload + upper_transport_pdu.TransMIC;
+
+    Network.Send(lower_transport_pdu, parameters)
+    .then(() => {
+      resolve();
+    })
+    .catch(error => {
+      reject(error);
+    });
+  });
+};
+
+
+
+LowerTransport.Send = function (upper_transport_pdu_obj, parameters) {
+  parameters.CTL = 0;
+
+  if(parameters.SEG == 0){
+    LowerTransport.Send_Unsegmented(upper_transport_pdu_obj, parameters);
+  }else{
+    LowerTransport.Send_Segmented(upper_transport_pdu_obj, parameters);
+  }
+};
+
+
 
 LowerTransport.Segment_Acknowledgment_message = function(Access_message, BlockAck){
   return new Promise((resolve, reject) => {
@@ -39,9 +86,16 @@ LowerTransport.Segment_Acknowledgment_message = function(Access_message, BlockAc
 
     LowerTransport_LOG('Segment_Acknowledgment_message : ' + Segment_Acknowledgment_message);
     var lower_transport_pdu = Segment_Acknowledgment_message;
-    ctl = 1;
 
-    Network.Send(lower_transport_pdu)
+    var parameters = {
+      CTL: 1,
+      SEQ: utils.toHex(seq, 3),
+      SRC: Own_SRC,
+      DST: Node.dst,
+      iv_index: utils.toHex(db.data.IVindex, 4),
+    }
+
+    Network.Send(lower_transport_pdu, parameters)
     .then(() => {
       resolve();
     })

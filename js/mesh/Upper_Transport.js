@@ -1,46 +1,65 @@
 var UpperTransport = {};
 
-UpperTransport.deriveSecure_DeviceKey = function (access_payload) {
+const ENCRYPTED_ACCESS_PAYLOAD_MAX_SIZE = 380;
+
+
+UpperTransport.deriveSecure = function (access_payload, parameters) {
     upper_trans_pdu = {};
+    // Nonce (ref 3.8.5)
+    nonce = parameters.Nonce_Type + parameters.ASZMIC_and_Pad + parameters.SEQ + parameters.SRC + parameters.DST + parameters.iv_index;
+    console.log('nonce len : ' + nonce.length + ' : ' + nonce);
 
-    aid = 0;
-    akf = 0;
-
-    iv_index = utils.toHex(db.data.IVindex, 4);
-
-    // derive Application Nonce (ref 3.8.5.2)
-    app_nonce = "0200" + utils.toHex(seq, 3) + src + Node.dst + iv_index;
-    upper_trans_pdu = crypto.meshAuthEncAccessPayload(Node.SelectedNode.deviceKey, app_nonce, access_payload);
+    upper_trans_pdu = crypto.meshAuthEncAccessPayload(parameters.KEY, nonce, access_payload);
     return upper_trans_pdu;
 }
 
 
-UpperTransport.deriveSecure_AppKey = function (access_payload) {
-    upper_trans_pdu = {};
-
-    aid = Selected_AppKey.aid;
-    akf = 1;
-    iv_index = utils.toHex(db.data.IVindex, 4);
-
-    // derive Application Nonce (ref 3.8.5.2)
-    app_nonce = "0100" + utils.toHex(seq, 3) + src + Node.dst + iv_index;
-    upper_trans_pdu = crypto.meshAuthEncAccessPayload(Selected_AppKey.key, app_nonce, access_payload);
-    return upper_trans_pdu;
-}
-
-UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payload) {
+UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payload, TransMIC_size, UseAppKey) {
   return new Promise((resolve, reject) => {
-    console.log("UpperTransport.Send_With_DeviceKey");
+
+    if(access_payload.length > (ENCRYPTED_ACCESS_PAYLOAD_MAX_SIZE + 4 -  TransMIC_size)){
+      reject('Payload exced max size');
+      return;
+    }
+
+    var parameters = {
+      SEG: (access_payload.length > 11)?1:0,
+      AKF: UseAppKey?1:0,
+      AID: UseAppKey?parseInt(Selected_AppKey.aid, 16):0,
+      //SZMIC:0,
+      //
+      KEY: UseAppKey?Selected_AppKey:Node.SelectedNode.deviceKey,
+      //nonce param
+      Nonce_Type: UseAppKey?'01':'02',
+      //ASZMIC_and_Pad:'00',
+      SEQ: utils.toHex(seq, 3),
+      SRC: Own_SRC,
+      DST: Node.dst,
+      iv_index: utils.toHex(db.data.IVindex, 4),
+    }
+
+    //
+    if(parameters.SEG == 0){
+        TransMIC_size = 4; //force TransMIC size to 4 only for unsegmented data message
+    }
+
+    parameters.SZMIC = (TransMIC_size == 8)?1:0;
+    var ASZMIC = parameters.SEG?SZMIC:0;
+    parameters.ASZMIC_and_Pad = ASZMIC?'80':'00';
+
+
     // access payload
     console.log("access_payload=" + access_payload);
     // upper transport PDU
-    upper_transport_pdu_obj = UpperTransport.deriveSecure_DeviceKey(access_payload);
+    upper_transport_pdu_obj = UpperTransport.deriveSecure(access_payload, parameters);
     console.log('upper_transport_pdu_obj : ' + JSON.stringify(upper_transport_pdu_obj));
-    // derive lower transport PDU
-    lower_transport_pdu = LowerTransport.derive(upper_transport_pdu_obj);
-    console.log('lower_transport_pdu : ' + JSON.stringify(lower_transport_pdu));
-    ctl = 0;
-    Network.Send(lower_transport_pdu)
+
+
+    // //lower transport PDU
+    // lower_transport_pdu = LowerTransport.derive(upper_transport_pdu_obj);
+    // console.log('lower_transport_pdu : ' + JSON.stringify(lower_transport_pdu));
+
+    LowerTransport.Send(upper_transport_pdu_obj, parameters)
     .then(() => {
       resolve();
     })
@@ -49,6 +68,8 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
     });
   });
 }
+
+
 
 
 UpperTransport.OUT_ProcessAccessPDU  = function (Access_message) {

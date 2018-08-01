@@ -22,10 +22,14 @@ prov_app.start = function () {
 
 	console.log('Requesting Bluetooth Devices...');
 	bluetooth.requestDevice({
-		filters: [{ services: [0x1827] }]
+//		filters: [{ services: [0x1827] }],
+		acceptAllDevices: true,
+		optionalServices: [0x1827],
 	})
 	.then(device => {
-		console.log('Found device: ' + device.name + ', id: ' + device.id);
+		console.log('> Name: ' + device.name);
+		console.log('> Id: ' + device.id);
+		console.log('> Connected: ' + device.gatt.connected);
 		prov_device = device;
 		return device.gatt.connect()
 	})
