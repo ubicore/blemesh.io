@@ -7,7 +7,7 @@ LowerTransport.OUT = {};
 
 LowerTransport.Send_Unsegmented = function (upper_transport_pdu_obj, parameters) {
   return new Promise((resolve, reject) => {
-    if((upper_transport_pdu.EncAccessPayload.length + upper_transport_pdu.TransMIC.length) > 15){
+    if((upper_transport_pdu_obj.EncAccessPayload.length + upper_transport_pdu_obj.TransMIC.length) > 15*2){
       reject('Payload exced max size');
       return;
     }
@@ -15,7 +15,7 @@ LowerTransport.Send_Unsegmented = function (upper_transport_pdu_obj, parameters)
     lower_transport_pdu = "";
     // seg (1 bit), akf (1 bit), aid (6 bits) already derived from k4
     ltpdu0 = (parameters.SEG << 7) | (parameters.AKF << 6) | parameters.AID;
-    lower_transport_pdu = utils.intToHex(ltpdu0) + upper_transport_pdu.EncAccessPayload + upper_transport_pdu.TransMIC;
+    lower_transport_pdu = utils.intToHex(ltpdu0) + upper_transport_pdu_obj.EncAccessPayload + upper_transport_pdu_obj.TransMIC;
 
     Network.Send(lower_transport_pdu, parameters)
     .then(() => {
@@ -41,7 +41,7 @@ LowerTransport.Send_Segmented = function (upper_transport_pdu_obj, parameters) {
     SegO
     SegN
 
-    lower_transport_pdu = utils.intToHex(ltpdu0) + upper_transport_pdu.EncAccessPayload + upper_transport_pdu.TransMIC;
+    lower_transport_pdu = utils.intToHex(ltpdu0) + upper_transport_pdu_obj.EncAccessPayload + upper_transport_pdu_obj.TransMIC;
 
     Network.Send(lower_transport_pdu, parameters)
     .then(() => {
@@ -59,9 +59,9 @@ LowerTransport.Send = function (upper_transport_pdu_obj, parameters) {
   parameters.CTL = 0;
 
   if(parameters.SEG == 0){
-    LowerTransport.Send_Unsegmented(upper_transport_pdu_obj, parameters);
+    return LowerTransport.Send_Unsegmented(upper_transport_pdu_obj, parameters);
   }else{
-    LowerTransport.Send_Segmented(upper_transport_pdu_obj, parameters);
+    return LowerTransport.Send_Segmented(upper_transport_pdu_obj, parameters);
   }
 };
 

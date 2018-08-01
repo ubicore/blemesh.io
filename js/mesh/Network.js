@@ -10,7 +10,7 @@ Network.ttl = 0x03;
 
 /*********************************/
 //IN
-Network.deriveSecure = function (hex_dst, lower_transport_pdu, parameters) {
+Network.deriveSecure = function (lower_transport_pdu, parameters) {
     var network_pdu = "";
     var ctl_ttl = (parameters.CTL << 7) + (Network.ttl & 0x7F);
     var npdu1 = utils.intToHex(ctl_ttl);
@@ -35,7 +35,7 @@ Network.obfuscate = function (network_pdu, parameters) {
     return obfuscated;
 };
 
-Network.finalise = function ( nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_transport_pdu, netmic) {
+Network.finalise = function ( nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_transport_pdu, netmic, parameters) {
     nid_int = parseInt(nid, 16);
     ivi = (parameters.iv_index << 7);
     npdu0 = utils.intToHex(ivi | nid_int);
@@ -54,7 +54,8 @@ Network.Send = function(lower_transport_pdu, parameters){
     Network_LOG("obfuscated: " + JSON.stringify(obfuscated));
 
     // finalise network PDU
-    finalised_network_pdu = Network.finalise( Selected_NetKey.NID, obfuscated.obfuscated_ctl_ttl_seq_src, secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, network_pdu.NetMIC);
+    finalised_network_pdu = Network.finalise( Selected_NetKey.NID, obfuscated.obfuscated_ctl_ttl_seq_src,
+       secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, secured_network_pdu.NetMIC, parameters);
     Network_LOG("finalised_network_pdu: " + finalised_network_pdu);
 
     proxy_pdu_bytes = utils.hexToBytes('00' + finalised_network_pdu);

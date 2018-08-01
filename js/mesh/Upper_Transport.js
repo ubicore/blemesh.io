@@ -17,13 +17,13 @@ UpperTransport.deriveSecure = function (access_payload, parameters) {
 UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payload, TransMIC_size, UseAppKey) {
   return new Promise((resolve, reject) => {
 
-    if(access_payload.length > (ENCRYPTED_ACCESS_PAYLOAD_MAX_SIZE + 4 -  TransMIC_size)){
+    if(access_payload.length > (ENCRYPTED_ACCESS_PAYLOAD_MAX_SIZE*2 + 4*2 -  TransMIC_size*2)){
       reject('Payload exced max size');
       return;
     }
 
     var parameters = {
-      SEG: (access_payload.length > 11)?1:0,
+      SEG: (access_payload.length > 11*2)?1:0,
       AKF: UseAppKey?1:0,
       AID: UseAppKey?parseInt(Selected_AppKey.aid, 16):0,
       //SZMIC:0,
@@ -44,7 +44,7 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
     }
 
     parameters.SZMIC = (TransMIC_size == 8)?1:0;
-    var ASZMIC = parameters.SEG?SZMIC:0;
+    var ASZMIC = parameters.SEG?parameters.SZMIC:0;
     parameters.ASZMIC_and_Pad = ASZMIC?'80':'00';
 
 

@@ -22,9 +22,9 @@ prov_app.start = function () {
 
 	console.log('Requesting Bluetooth Devices...');
 	bluetooth.requestDevice({
-//		filters: [{ services: [0x1827] }],
-		acceptAllDevices: true,
-		optionalServices: [0x1827],
+		filters: [{ services: [0x1827] }],
+		// acceptAllDevices: true,
+		// optionalServices: [0x1827],
 	})
 	.then(device => {
 		console.log('> Name: ' + device.name);
