@@ -93,10 +93,10 @@ app.CheckAndUpdateAppKeyOnNode = function () {
         .then( () => {
           resolve();
         })
-        // .catch(error => {
-        //   console.log('ERROR: ' + error);
-        //   reject(error);
-        // });
+        .catch(error => {
+          console.log('ERROR: ' + error);
+          reject(error);
+        });
       }
     })
     .catch(error => {

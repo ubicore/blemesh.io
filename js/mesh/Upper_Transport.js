@@ -1,3 +1,6 @@
+UpperTransport_LOG = console.log;
+//UpperTransport_LOG =  function() {}
+
 var UpperTransport = {};
 
 const ENCRYPTED_ACCESS_PAYLOAD_MAX_SIZE = 380;
@@ -29,6 +32,10 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
       //SZMIC:0,
       //
       KEY: UseAppKey?Selected_AppKey:Node.SelectedNode.deviceKey,
+
+      SeqAuth: ((db.data.IVindex << 24) | (seq & 0xFFF)),
+//      SeqZero: ,
+
       //nonce param
       Nonce_Type: UseAppKey?'01':'02',
       //ASZMIC_and_Pad:'00',
@@ -37,6 +44,8 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
       DST: Node.dst,
       iv_index: utils.toHex(db.data.IVindex, 4),
     }
+
+    parameters.SeqZero = (parameters.SeqAuth & 0x1FFF);
 
     //
     if(parameters.SEG == 0){
@@ -54,13 +63,13 @@ UpperTransport.Send_With_DeviceKey = function (mesh_proxy_data_in, access_payloa
     upper_transport_pdu_obj = UpperTransport.deriveSecure(access_payload, parameters);
     console.log('upper_transport_pdu_obj : ' + JSON.stringify(upper_transport_pdu_obj));
 
-
     // //lower transport PDU
     // lower_transport_pdu = LowerTransport.derive(upper_transport_pdu_obj);
     // console.log('lower_transport_pdu : ' + JSON.stringify(lower_transport_pdu));
 
     LowerTransport.Send(upper_transport_pdu_obj, parameters)
     .then(() => {
+      UpperTransport_LOG("UpperTransport.Send_With_DeviceKey OK");
       resolve();
     })
     .catch(error => {

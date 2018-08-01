@@ -1,6 +1,6 @@
 
-//Network_LOG = console.log;
-Network_LOG =  function() {}
+Network_LOG = console.log;
+//Network_LOG =  function() {}
 
 
 var Network = {};
@@ -43,8 +43,12 @@ Network.finalise = function ( nid, obfuscated_ctl_ttl_seq_src, enc_dst, enc_tran
     return netpdu;
 };
 
+
 Network.Send = function(lower_transport_pdu, parameters){
   return new Promise((resolve, reject) => {
+
+    Network_LOG("Network parameters: " + JSON.stringify(parameters));
+  
     // encrypt network PDU
     secured_network_pdu = Network.deriveSecure(lower_transport_pdu, parameters);
     Network_LOG("secured_network_pdu: " + JSON.stringify(secured_network_pdu));
@@ -58,7 +62,8 @@ Network.Send = function(lower_transport_pdu, parameters){
        secured_network_pdu.EncDST, secured_network_pdu.EncTransportPDU, secured_network_pdu.NetMIC, parameters);
     Network_LOG("finalised_network_pdu: " + finalised_network_pdu);
 
-    proxy_pdu_bytes = utils.hexToBytes('00' + finalised_network_pdu);
+    Type = '00'; //PROXY_NETWORK_PDU
+    proxy_pdu_bytes = utils.hexToBytes(Type + finalised_network_pdu);
     proxy_pdu_data = new Uint8Array(proxy_pdu_bytes)
 
     connection.ProxyPDU_IN.Send(proxy_pdu_data)
