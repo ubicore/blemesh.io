@@ -60,16 +60,16 @@ addEventListener('DOMContentLoaded', function() {
     //     app.AppBind();
     // });
 
-    var btn_GroupAddress_addItem = document.getElementById('btn_GroupAddress_addItem');
-    btn_GroupAddress_addItem.addEventListener('click', function() {
-        GroupView.addItem();
-    });
-    var btn_GroupAddress_removeItem = document.getElementById('btn_GroupAddress_removeItem');
-    btn_GroupAddress_removeItem.addEventListener('click', function() {
-        GroupView.removeItem();
-    });
-    var btn_GroupAddress_reset = document.getElementById('btn_GroupAddress_reset');
-    btn_GroupAddress_reset.addEventListener('click', function() {
-        GroupView.reset();
-    });
+    // var btn_GroupAddress_addItem = document.getElementById('btn_GroupAddress_addItem');
+    // btn_GroupAddress_addItem.addEventListener('click', function() {
+    //     GroupView.addItem();
+    // });
+    // var btn_GroupAddress_removeItem = document.getElementById('btn_GroupAddress_removeItem');
+    // btn_GroupAddress_removeItem.addEventListener('click', function() {
+    //     GroupView.removeItem();
+    // });
+    // var btn_GroupAddress_reset = document.getElementById('btn_GroupAddress_reset');
+    // btn_GroupAddress_reset.addEventListener('click', function() {
+    //     GroupView.reset();
+    // });
 })
