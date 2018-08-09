@@ -175,7 +175,7 @@ AppListView.prototype.AddUpdateButton = function ($model) {
             context.ModelFound.AppKeyIndexes.push(context.lastSend);
             db.Save();
           }
-          console.log("AppKeyIndexes update FINISH WITH SUCCESS ! " + JSON.stringify(AppKeyList));
+          console.log("AppKeyIndexes update FINISH WITH SUCCESS ! " + JSON.stringify(AppKeyIndexes));
         })
         .catch(error => {
           HMI.showMessageRed(error);
