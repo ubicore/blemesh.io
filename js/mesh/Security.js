@@ -10,12 +10,6 @@ Security.NetKey = {};
 Security.AppKey = {};
 
 Security.Load = function () {
-  // Get saved data from sessionStorage
-  // devkey = sessionStorage.getItem('devkey');
-  // if(!devkey){
-  //   console.log("No provision data ");
-  //   return;
-  // }
   seq = sessionStorage.getItem('seq');
   if(!seq){
     seq = 0;
