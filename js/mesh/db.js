@@ -15,7 +15,8 @@ db.initialize = function () {
   if(db.data == null){
     db.Create();
   } else {
-    console.log("Loaded db : \n" + JSON.stringify(db.data));
+//    console.log("Loaded db : \n" + JSON.stringify(db.data));
+    console.log("Loaded db");
   }
 
   //TODO : select provisioner
@@ -194,7 +195,8 @@ db.Reset_GroupAddress = function () {
 
 
 db.Save = function () {
-  console.log("Save db.data : \n" + JSON.stringify(db.data));
+  console.log("Save db.data");
+//  console.log("Save db.data : \n" + JSON.stringify(db.data));
   localStorage.setItem(localStorageName, JSON.stringify(db.data));
 }
 
