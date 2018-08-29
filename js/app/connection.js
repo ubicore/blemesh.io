@@ -1,5 +1,4 @@
 var connected = false;
-var connected_server;
 
 // cached characteristics
 var mesh_proxy_data_in;
@@ -29,6 +28,7 @@ var Own_SRC = "";
 
 var Provisioner;
 var selected_device = null;
+var NodeServer = null;
 
 
 
@@ -70,9 +70,8 @@ connection.connect = function () {
         .then(
             function (server) {
                 NodeServer = server;
-                console.log("Connected to " + server.device.id);
+                console.log("Connected to " + NodeServer.device.id);
                 connected = true;
-                connected_server = server;
                 HMI.displayConnectionStatus();
                 HMI.setBluetoothButtons();
                 selected_device.addEventListener('gattserverdisconnected', connection.onDisconnected);
@@ -143,14 +142,14 @@ connection.connection = function () {
 
 connection.discoverSvcsAndChars = function () {
   return new Promise(function (resolve, reject) {
-    console.log("discoverSvcsAndChars on " + connected_server.device.name + ', ' + connected_server.device.id);
-    connected_server.getPrimaryService(MESH_ProxyService_UUID)
+    console.log("discoverSvcsAndChars on " + NodeServer.device.name + ', ' + NodeServer.device.id);
+    NodeServer.getPrimaryService(MESH_ProxyService_UUID)
     .then(service => {
       NodeService = service;
       console.log('Primary service: ' + NodeService.uuid);
 
       //Get Out
-      return service.getCharacteristic(MESH_ProxyDATA_OUT_UUID)
+      return NodeService.getCharacteristic(MESH_ProxyDATA_OUT_UUID)
     })
     .then(characteristic => {
       characteristicOut = characteristic;
@@ -174,7 +173,7 @@ connection.discoverSvcsAndChars = function () {
     .catch(error => {
       console.log('The error is: ' + error);
       if (NodeServer != null) {
-        prov_device.gatt.disconnect();
+        selected_device.gatt.disconnect();
       }
 
       if (NodeServer != null) {
