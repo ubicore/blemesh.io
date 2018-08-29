@@ -110,15 +110,6 @@ class Provisionner {
     };
 
     OUT_Capabilities(PDU_DATA) {
-        if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-            console.log('error : no CurrentBehaviorResolve Callback');
-            return;
-        }
-        if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-            console.log('error : no CurrentBehaviorReject Callback');
-            return;
-        }
-
         //Check PDU Type
         var PDU_Type = new Uint8Array(PDU_DATA)[0];
         if (PDU_Type != PROV_CAPS) {
@@ -158,15 +149,6 @@ class Provisionner {
     };
 
     OUT_Public_Key(PDU_DATA) {
-        if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-            console.log('error : no CurrentBehaviorResolve Callback');
-            return;
-        }
-        if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-            console.log('error : no CurrentBehaviorReject Callback');
-            return;
-        }
-
         var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
@@ -195,15 +177,6 @@ class Provisionner {
     };
 
     OUT_Confirmation(PDU_DATA) {
-        if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-            console.log('error : no CurrentBehaviorResolve Callback');
-            return;
-        }
-        if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-            console.log('error : no CurrentBehaviorReject Callback');
-            return;
-        }
-
         var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
@@ -222,15 +195,6 @@ class Provisionner {
     };
 
     OUT_PROV_INPUT_OOB(PDU_DATA) {
-        if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-            console.log('error : no CurrentBehaviorResolve Callback');
-            return;
-        }
-        if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-            console.log('error : no CurrentBehaviorReject Callback');
-            return;
-        }
-
         //Check PDU Type
         var PDU_Type = PDU_DATA[0];
         if (PDU_Type != PROV_INP_CMPLT) {
@@ -245,15 +209,6 @@ class Provisionner {
     };
 
     OUT_PROV_RANDOM(PDU_DATA) {
-        if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-            console.log('error : no CurrentBehaviorResolve Callback');
-            return;
-        }
-        if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-            console.log('error : no CurrentBehaviorReject Callback');
-            return;
-        }
-
         var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
@@ -274,15 +229,6 @@ class Provisionner {
     };
 
     OUT_COMPLETE(PDU_DATA) {
-        if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-            console.log('error : no CurrentBehaviorResolve Callback');
-            return;
-        }
-        if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-            console.log('error : no CurrentBehaviorReject Callback');
-            return;
-        }
-
         var PDU_view = new Uint8Array(PDU_DATA);
         //Check PDU Type
         var PDU_Type = PDU_view[0];
@@ -670,9 +616,17 @@ class Provisionner {
         var PDU_DATA = PDU.slice(1);
 
         if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
-            this.CurrentStepProcess(PDU_DATA);
+          if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
+            console.log('error : no CurrentBehaviorResolve Callback');
+            return;
+          }
+          if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
+            console.log('error : no CurrentBehaviorReject Callback');
+            return;
+          }
+          this.CurrentStepProcess(PDU_DATA);
         } else {
-            console.log('error : no CurrentBehaviorProcess Callback');
+          console.log('error : no CurrentBehaviorProcess Callback');
         }
         return;
     };
