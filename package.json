@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "A packaged ble mesh test tool",
   "scripts": {
-    "start": "node_modules/.bin/http-server /srv/data/web/vhosts/default/"
+    "start": "http-server /srv/data/web/vhosts/default/"
   },
   "dependencies": {
     "http-server": "^0.11.1"
