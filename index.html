@@ -2,156 +2,119 @@
 <html>
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-    <title>Bluetooth mesh proxy protocol</title>
-    <link rel="stylesheet" type="text/css" href="css/Node_Model_Tree.css" />
-    <script src="js/lib/jquery.js"></script>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <title>Bluetooth mesh proxy protocol</title>
+  <link rel="stylesheet" type="text/css" href="css/Node_Model_Tree.css" />
+  <script src="js/lib/jquery.js"></script>
   <!--    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>-->
-    <script src="js/lib/utils.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/app/app.js"></script>
-    <script src="js/app/connection.js"></script>
-    <script src="js/HMI/GroupView.js"></script>
-    <script src="js/HMI/HMI.js"></script>
-    <script src="js/HMI/NodeView.js"></script>
-    <script src="js/HMI/ModelView.js"></script>
-    <script src="js/mesh/crypto/crypto-js-ext/cryptojs-aes.min.js"></script>
-    <script src="js/mesh/crypto/crypto-js-ext/all.min.js"></script>
-    <script src="js/mesh/crypto/aes_cmac_adapter.js"></script>
-    <script src="js/mesh/crypto/asmcrypto.all.js"></script>
-    <script src="js/mesh/crypto/BigInteger.min.js"></script>
-    <script src="js/mesh/crypto/crypto.js"></script>
-    <script src="js/mesh/fundation_models/Configuration_messages.js"></script>
-    <script src="js/mesh/fundation_models/Generic_messages.js"></script>
-    <script src="js/mesh/fundation_models/Models.js"></script>
-    <script src="js/mesh/fundation_models/Opcode.js"></script>
-    <script src="js/mesh/fundation_models/Status_Codes.js"></script>
-    <script src="js/mesh/Access.js"></script>
-    <script src="js/mesh/Foundation_Model.js"></script>
-    <script src="js/mesh/Lower_Transport.js"></script>
-    <script src="js/mesh/Network.js"></script>
-    <script src="js/mesh/ProxyPDU.js"></script>
-    <script src="js/mesh/Upper_Transport.js"></script>
-    <script src="js/mesh/Security.js"></script>
-    <script src="js/mesh/db.js"></script>
-    <script src="js/mesh/Model.js"></script>
-    <script src="js/mesh/Node.js"></script>
-    <script src="js/provision/ecc.js"></script>
-    <script src="js/provision/prov_app.js"></script>
-    <script src="js/provision/prov_trace.js"></script>
-    <script src="js/provision/prov.js"></script>
-    <script src="js/provision/test.js"></script>
-    <!--   <link rel="stylesheet" href="https://taniarascia.github.io/primitive/css/main.min.css"> -->
+  <script src="js/lib/utils.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/app/app.js"></script>
+  <script src="js/app/connection.js"></script>
+  <script src="js/HMI/GroupView.js"></script>
+  <script src="js/HMI/HMI.js"></script>
+  <script src="js/HMI/NodeView.js"></script>
+  <script src="js/HMI/ModelView.js"></script>
+  <script src="js/mesh/crypto/crypto-js-ext/cryptojs-aes.min.js"></script>
+  <script src="js/mesh/crypto/crypto-js-ext/all.min.js"></script>
+  <script src="js/mesh/crypto/aes_cmac_adapter.js"></script>
+  <script src="js/mesh/crypto/asmcrypto.all.js"></script>
+  <script src="js/mesh/crypto/BigInteger.min.js"></script>
+  <script src="js/mesh/crypto/crypto.js"></script>
+  <script src="js/mesh/fundation_models/Configuration_messages.js"></script>
+  <script src="js/mesh/fundation_models/Generic_messages.js"></script>
+  <script src="js/mesh/fundation_models/Models.js"></script>
+  <script src="js/mesh/fundation_models/Opcode.js"></script>
+  <script src="js/mesh/fundation_models/Status_Codes.js"></script>
+  <script src="js/mesh/Access.js"></script>
+  <script src="js/mesh/Foundation_Model.js"></script>
+  <script src="js/mesh/Lower_Transport.js"></script>
+  <script src="js/mesh/Network.js"></script>
+  <script src="js/mesh/ProxyPDU.js"></script>
+  <script src="js/mesh/Upper_Transport.js"></script>
+  <script src="js/mesh/Security.js"></script>
+  <script src="js/mesh/db.js"></script>
+  <script src="js/mesh/Model.js"></script>
+  <script src="js/mesh/Node.js"></script>
+  <script src="js/provision/ecc.js"></script>
+  <script src="js/provision/prov_app.js"></script>
+  <script src="js/provision/prov_trace.js"></script>
+  <script src="js/provision/prov.js"></script>
+  <script src="js/provision/test.js"></script>
+  <!--   <link rel="stylesheet" href="https://taniarascia.github.io/primitive/css/main.min.css"> -->
 </head>
 
- <body onload="app.start();">
-
-<!-- <button onclick="test.start()">Test</button> -->
-
-<!-- <button onclick="db.Load()">DB_Load</button>
-<button onclick="db.Save()">DB_Save</button> -->
-<div>
-<button onclick="db.Reset()">DB_Reset</button>
-</div>
-<div>
-<button onclick="db.Export()">DB_Export</button>
-</div>
-
-<div>
-    <label for="avatar">DB_Import:</label>
-    <input type="file"
-           id="fileinput"
-           accept=".json"
-           onchange="db.Import()" />
-</div>
-<div id="editor">
-</div>
+<body onload="app.start();">
 
 
-    <!-- MAIN PAGE -->
+
+  <div>
+    <h2>Database</h2>
     <div>
-        <!-- <h1>Easii-IC BLE Mesh Tool</h1> -->
-        <h3>Node Provision</h3>
-        <table>
-            <tr>
-                <td>
-                    <button id="btn_provision" class="std_button">Provision</button>
-                </td>
-            </tr>
-        </table>
-        <p id="InputOOB"></p>
-        <br>
-        <div class="status" id="provision_message">Ready</div>
-        <h3>Mesh Proxy connection</h3>
-        <table>
-            <tr>
-                <td>
-                    <button id="btn_scan" class="std_button">Scan</button>
-                </td>
-                <td>
-                    <button id="btn_connection" class="std_button">Connect</button>
-                </td>
-            </tr>
-        </table>
-        <br>
-        <div class="status" id="message">Ready</div>
-        <h3>Status</h3>
-        <table>
-            <tr class="centred_row">
-                <td>
-                    <div id="bluetooth_status" class="centred_row">No device selected</div>
-                </td>
-                <td>
-                    <div id="selected_device" class="centred_row"></div>
-                </td>
-            </tr>
-        </table>
-        <!-- <h3>Configure</h3>
-        <table>
-            <tr>
-                <td>
-                    <button id="btn_AppKey" class="std_button">SendAppKey</button>
-                </td>
-                  <td>
-                    <button id="btn_DisplayNodeModels" class="std_button">btn_DisplayNodeModels</button>
-                </td>
-                <td>
-                    <button id="btn_PublicationSet" class="std_button">btn_PublicationSet</button>
-                </td>
-                <td>
-                    <button id="btn_SubscriptionAdd" class="std_button">btn_SubscriptionAdd</button>
-                </td>
-                <td>
-                    <button id="btn_AppBind" class="std_button">btn_AppBind</button>
-                </td>
-            </tr>
-        </table>
-        <br> -->
+      <button onclick="db.Reset()">DB_Reset</button>
+    </div>
+    <div>
+      <button onclick="db.Export()">DB_Export</button>
+    </div>
 
-        <!-- <h3>Group Address</h3>
-        <table>
-        <tr>
-          <input type="text" id="candidate"/>
-          <button id="btn_GroupAddress_addItem">Add</button>
-          <br>
-          <select id="GroupAddress-list" size=10></select>
-          <button id="btn_GroupAddress_removeItem">Remove</button>
-            <br>
-          <button id="btn_GroupAddress_reset">Reset</button>
-        </tr>
-      </table>
-      <br> -->
+    <div>
+      <label for="avatar">DB_Import:</label>
+      <input type="file"
+      id="fileinput"
+      accept=".json"
+      onchange="db.Import()" />
+    </div>
+    <div id="editor">
+    </div>
+  </div>
 
+
+  <div>
+    <h2>Node Provision</h2>
+    <table>
+      <tr>
+        <td>
+          <button id="btn_provision" class="std_button">Provision</button>
+        </td>
+      </tr>
+    </table>
+    <p id="InputOOB"></p>
+    <br>
+    <div class="status" id="provision_message">Ready</div>
+  </div>
+
+
+  <div>
+    <h2>Node Configuration</h2>
+    <table>
+      <tr>
+        <td>
+          <button id="btn_scan" class="std_button">Scan</button>
+        </td>
+        <td>
+          <button id="btn_connection" class="std_button">Connect</button>
+        </td>
+      </tr>
+    </table>
+    <br>
+    <div class="status" id="message">Ready</div>
+    <h3>Status</h3>
+    <table>
+      <tr class="centred_row">
+        <td>
+          <div id="bluetooth_status" class="centred_row">No device selected</div>
+        </td>
+        <td>
+          <div id="selected_device" class="centred_row"></div>
+        </td>
+      </tr>
+    </table>
     <h3>Supported Models & Messages</h3>
-      <ul id="tree"></ul>
+    <ul id="tree"></ul>
     <br>
 
-    <!-- <h3>Command</h3>
-      <div id="Command"></div>
-      <button id="btn_Send">Send</button>
-    <br> -->
 
-    </div>
+  </div>
 
 </body>
 
