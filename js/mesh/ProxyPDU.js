@@ -13,6 +13,7 @@ const GATT_TYPE_INVALID = 0xff;
 const GATT_TYPE_MASK = 0x3f;
 
 const SAR_DataOffset = 1;
+const MTU_Size = 18;
 
 // 0x00 Network PDU The message is a Network PDU as defined in Section 3.4.4.
 // 0x01 Mesh Beacon The message is a mesh beacon as defined in Section 3.9.
@@ -175,7 +176,6 @@ class ProxyPDU_OUT {
 
 }
 
-const MTU = 18;
 
 class ProxyPDU_IN {
     constructor(characteristicIn) {
@@ -191,7 +191,7 @@ class ProxyPDU_IN {
         this.RemainingDATA = PDU.slice(1);
         var Remaining = this.RemainingDATA.length;
 
-        this.ToSend = (Remaining > (MTU-1))? (MTU-1) : Remaining;
+        this.ToSend = (Remaining > (MTU_Size-1))? (MTU_Size-1) : Remaining;
         var SAR = (Remaining > this.ToSend) ? 0b01 : 0;
 
         var proxy_pdu = new Uint8Array(1+this.ToSend)
@@ -211,7 +211,7 @@ class ProxyPDU_IN {
         var Remaining = this.RemainingDATA.length;
 
         if(Remaining > 0){
-          this.ToSend = (Remaining > (MTU-1))? (MTU-1) : Remaining;
+          this.ToSend = (Remaining > (MTU_Size-1))? (MTU_Size-1) : Remaining;
           var SAR = (Remaining > this.ToSend) ? 0b10 : 0b11;
 
           var proxy_pdu = new Uint8Array(1+this.ToSend)
