@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "A packaged ble mesh test tool",
   "scripts": {
-    "start": "node_modules/.bin/ws"
+    "start": "node_modules/.bin/ws --https"
   },
   "dependencies": {
     "local-web-server": "^2.6.0"
-  }
+  },
 }
