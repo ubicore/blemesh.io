@@ -58,9 +58,6 @@ class Ecc {
 
       return new Promise((resolve, reject) => {
 
-        //
-      //  var view = new Uint8Array(this.DevPubKey);
-        console.log('this.DevPubKey : ' + this.DevPubKey);
         var key = new Uint8Array(utils.hexToBytes(this.DevPubKey));
 
         // import Device's public key
