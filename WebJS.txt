@@ -1,0 +1,89 @@
+############################################################################
+### Web server avec NodeJS
+############################################################################
+See :  
+https://github.com/lwsjs/local-web-server/wiki/How-to-launch-a-secure-local-web-server-(HTTPS)
+
+cd '/home/nlantz/WORK/UBICORE/PROJECT/Easii-IC/LED/DEV/JS/www' 
+ws --https
+
+-> Serving at https://mbp.local:8000, https://127.0.0.1:8000, https://192.168.0.82:8000
+open in chrome browser : https://ubicore-gs60-2qe:8000/
+then Ctrl+shift+I
+
+
+############################################################################
+### Start
+############################################################################
+atom
+
+
+
+
+
+
+
+
+############################################################################
+### Gandi
+############################################################################
+
+cd ~/WORK/UBICORE/PROJECT/Easii-IC/LED/DEV/JS/www/
+git remote add gandi git+ssh://731252@git.sd6.gpaas.net/default.git
+git push gandi master
+ssh 731252@git.sd6.gpaas.net deploy default.git
+
+Instance blemesh
+nicosam6621*bm
+
+http://wiki.gandi.net/fr/simple/instance/nodejs#selection_de_la_version_de_nodejs
+
+
+https://www.npmjs.com/package/local-web-server
+https://github.com/lwsjs/local-web-server/wiki/CLI-usage
+
+npm install --save local-web-server
+{
+  "name": "blemeshTestTool",
+  "version": "0.0.0",
+  "description": "A packaged ble mesh test tool",
+  "scripts": {
+    "start": "node_modules/.bin/ws --https"
+  },
+  "dependencies": {
+    "local-web-server": "^2.6.0"
+  }
+}
+
+
+npm install --save http-server
+{
+  "name": "blemeshTestTool",
+  "version": "0.0.0",
+  "description": "A packaged ble mesh test tool",
+  "scripts": {
+    "start": "node_modules/.bin/http-server /srv/data/web/vhosts/default/"
+  },
+  "dependencies": {
+    "http-server": "^0.11.1"
+  }
+}
+
+############################################################################
+
+ssh 731252@console.sd6.gpaas.net
+
+Logs
+Les sorties standard et d'erreur de votre site sont redirigées vers un fichier de log sur votre disque :
+
+    via la console SSH : /srv/data/var/log/www/nodejs.log
+    via SFTP : /lamp0/var/log/www/nodejs.log
+
+Ce fichier de log contient également la sortie du programme NPM chargé d'installer les dépendances de votre site. En complément vous pouvez consulter l'historique des actions effectuées par le programme chargé de démarrer votre site :
+
+    via la console SSH : /srv/data/var/log/www/nodejs-watchd.log
+    via SFTP : /lamp0/var/log/www/nodejs-watchd.log
+
+Vous pourrez surveiller si votre application Node.js a correctement démarré.
+
+
