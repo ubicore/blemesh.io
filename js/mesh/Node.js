@@ -63,6 +63,7 @@ Node.Add_Node = function (device) {
   if(FoundNode !== undefined ){
     console.log('Node already exist in db !');
     index = Node.FindNodeIndex(FoundNode);
+    db.data.nodes[index] = node;
   } else {
     console.log('Create a new entry for this Node');
     index = db.data.nodes.length;
