@@ -58,7 +58,7 @@ const PROV_ERR_RFU = 0X09;
 // ]);
 
 //
-const PROV_Attention_Duration = 0;
+const PROV_Attention_Duration = 5;
 
 
 class Conf_Caps {
