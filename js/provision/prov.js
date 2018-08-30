@@ -20,16 +20,21 @@ const PROV_STATIC_OOB = 1;
 const PROV_OUTPUT_OOB = 2;
 const PROV_INPUT_OOB = 3;
 
-const PROV_ERR_INVALID_PDU = 0x01;
-const PROV_ERR_INVALID_FORMAT = 0x02;
-const PROV_ERR_UNEXPECTED_PDU = 0x03;
-const PROV_ERR_CONFIRM_FAILED = 0x04;
-const PROV_ERR_INSUF_RESOURCE = 0x05;
-const PROV_ERR_DECRYPT_FAILED = 0x06;
-const PROV_ERR_UNEXPECTED_ERR = 0x07;
-const PROV_ERR_CANT_ASSIGN_ADDR = 0x08;
+
 
 const PROVISIONING_CAPABILITIES_PARAM_SIZE = 11;
+
+
+//See "5.4.1.10 Provisioning Failed"
+const PROV_ERR_INVALID_PDU = 0X01;
+const PROV_ERR_INVALID_FORMAT = 0X02;
+const PROV_ERR_UNEXPECTED_PDU = 0X03;
+const PROV_ERR_CONFIRMATION_FAILED = 0X04;
+const PROV_ERR_OUT_OF_RESOURCES = 0X05;
+const PROV_ERR_DECRYPTION_FAILED = 0X06;
+const PROV_ERR_UNEXPECTED_ERROR = 0X07;
+const PROV_ERR_CANNOT_ASSIGN_ADDRESSES = 0X08;
+const PROV_ERR_RFU = 0X09;
 
 //
 // // use it as module
@@ -85,6 +90,8 @@ class Provisionner {
     this.ProxyPDU_OUT = null;
     this.ProxyPDU_IN = null;
 
+    this.Prov_Error = 0x0;
+
     this.ProvisionFinished = function () { };
     this.ProvisionFailed = function () { };
     this.CurrentStepProcess = function () { };
@@ -107,6 +114,16 @@ class Provisionner {
     this.Dev_Confirmation;
 
     this.OOB = null;
+  };
+
+  OUT_Fail(PDU_DATA) {
+    var PDU_view = new Uint8Array(PDU_DATA);
+
+    //Get PDU Parameters
+    this.Prov_Error = PDU_view[0];
+    console.log('Prov_Error : ' +  this.Prov_Error);
+
+    this.CurrentStepReject("error : Provisioning Failed, reason : " + this.Prov_Error);
   };
 
   OUT_Capabilities(PDU_DATA) {
@@ -134,7 +151,7 @@ class Provisionner {
       //  || (this.IN_Conf_Caps.pub_type != 1)
       // || (this.IN_Conf_Caps.static_type != 1)
     ) {
-      this.CurrentStepReject("error : Invalid PDU")
+      this.CurrentStepReject("error : Invalid PDU");
       return;
     }
 
@@ -568,46 +585,54 @@ class Provisionner {
     var PDU_view = new DataView(PDU,0,2);
     var PDU_Type = PDU_view.getUint8(0);
 
-    console.log('ProcessPDU PDU_Type : ' + PDU_Type);
-
     if(PDU_Type != PROXY_PROVISIONING_PDU){
-      console.log('error : Provisionner should process only provisioning PDU');
+      this.ProvisionnerError("Provisionner should process only provisioning PDU");
       return;
     }
 
-    if (this.CurrentStepProcess && typeof (this.CurrentStepProcess) === "function") {
-      if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-        console.log('error : no CurrentBehaviorResolve Callback');
-        return;
-      }
-      if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-        console.log('error : no CurrentBehaviorReject Callback');
-        return;
-      }
-
-      var Provisionning_PDU_Type = PDU_view.getUint8(1);
-      if (Provisionning_PDU_Type != this.CurrentStep_ProvisionningPDUType) {
-        if(Provisionning_PDU_Type >= 0x0A){
-          console.log('warning : PDU_Type is RFU => ignore this PDU');
-        } else {
-          this.CurrentStepReject("error : Invalid PDU_Type: " + Provisionning_PDU_Type)
-        }
-        return;
-      }
-
-      var PDU_Parameters = PDU.slice(2); //skip PDU_Type and Provisionning_PDU_Type
-      this.CurrentStepProcess(PDU_Parameters);
-    } else {
-      console.log('error : no CurrentBehaviorProcess Callback');
+    if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
+      this.ProvisionnerError("no CurrentBehaviorReject Callback");
+      return;
     }
-    return;
+
+    var Provisionning_PDU_Type = PDU_view.getUint8(1);
+    var PDU_Parameters = PDU.slice(2); //skip PDU_Type and Provisionning_PDU_Type
+
+    if(Provisionning_PDU_Type == PROV_FAILED){
+      OUT_Fail(PDU_Parameters);
+      return;
+    }
+
+    if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
+      this.ProvisionnerError(" no CurrentBehaviorResolve Callback");
+      return;
+    }
+
+    if (!this.CurrentStepProcess || !typeof (this.CurrentStepProcess) === "function") {
+      this.ProvisionnerError(" no CurrentBehaviorProcess Callback");
+      return;
+    }
+
+    if (Provisionning_PDU_Type != this.CurrentStep_ProvisionningPDUType) {
+      if(Provisionning_PDU_Type >= 0x0A){
+        console.log('warning : PDU_Type is RFU => ignore this PDU');
+      } else {
+        this.ProvisionnerError(" Unexpected PDU");
+      }
+      return;
+    }
+    //Process PDU
+    this.CurrentStepProcess(PDU_Parameters);
   };
 
-
+  ProvisionnerError(error){
+    this.Provisionning_Reject(`Provision error: ${error}`);
+  }
 
   StartProvision(characteristicIn, characteristicOut) {
 
     return new Promise((resolve, reject) => {
+      this.Provisionning_Reject = reject;
       console.log('Start Provisionning');
       prov_trace.clearMessage();
       prov_trace.appendMessage('STEP : Start Provisionning');
@@ -683,19 +708,15 @@ class Provisionner {
         //Add Node struct in db
         Node.Add_Node(selected_device);
         Node.SelectbyNodeID(selected_device.id);
-        console.log('Added Node: ' + JSON.stringify(Node.SelectedNode));
+        console.log('New Node description: ' + JSON.stringify(Node.SelectedNode));
 
         Node.Add_NetKey(Node.SelectedNode, ProvDATA_NetKey);
         return this.IN_DATA(ProvDATA_NetKey);
       })
       .then(() => {
-        console.log('Device_Key =>');
         this.Ecc_1.Create_Device_Key();
         Node.Add_DevKey(Node.SelectedNode, this.Ecc_1.DeviceKey);
-
-        console.log('End of provision procedure');
         prov_trace.appendMessage('End of provision procedure');
-
         resolve();
       })
       .catch(error => {
