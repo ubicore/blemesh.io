@@ -197,10 +197,11 @@ class ProxyPDU_OUT {
 
 
 class ProxyPDU_IN {
-    constructor(characteristicIn) {
+    constructor() {
+    };
+    SetCharacteristicIn(characteristicIn) {
       this.IN = characteristicIn;
     };
-
     Send(PDU) {
       return new Promise((resolve, reject) => {
         this.CbOnSuccess = resolve;

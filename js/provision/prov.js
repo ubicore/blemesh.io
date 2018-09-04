@@ -86,6 +86,8 @@ class Prov_Start {
 
 class Provisionner {
   constructor() {
+    console.log('constructor Provisionner ');
+
     // this.PDU = [];
     this.ProxyPDU_IN = new ProxyPDU_IN();
     this.ProxyPDU_OUT = new ProxyPDU_OUT();
@@ -640,11 +642,8 @@ class Provisionner {
       sessionStorage.clear();
       console.log('sessionStorage cleared...');
 
-      this.ProxyPDU_IN = new ProxyPDU_IN(characteristicIn);
-
-      //
-      this.ProxyPDU_OUT = new ProxyPDU_OUT();
-      this.ProxyPDU_OUT.SetProvisionnerCb(PDU => this.ProcessPDU(PDU))
+      this.ProxyPDU_IN.SetCharacteristicIn(characteristicIn);
+      this.ProxyPDU_OUT.SetProvisionnerCb(this, this.ProcessPDU)
       this.ProxyPDU_OUT.SetListening(characteristicOut)
       .then(() => {
         //Send Invite
