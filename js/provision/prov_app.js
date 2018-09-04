@@ -24,9 +24,6 @@ prov_app.start = function () {
 		prov_app.disconnect();
 		return;
 	}
-
-	provisionner_1 = new Provisionner;
-
 	console.log("startScan");
 	bluetooth.requestDevice({
 //		filters: [{ services: [0x1827] }],
@@ -64,6 +61,8 @@ prov_app.start = function () {
 	.then(characteristic => {
 		characteristicIn = characteristic;
 		console.log('characteristicIn: ' + characteristicIn.uuid);
+
+		provisionner_1 = new Provisionner;
 		return provisionner_1.StartProvision(characteristicIn, characteristicOut);
 	})
 	.then(() => {
