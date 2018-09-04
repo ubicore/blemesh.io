@@ -41,6 +41,7 @@ prov_app.start = function () {
 		return selected_device.gatt.connect()
 	})
 	.then(server => {
+		connected = true;
 		NodeServer = server;
 		console.log("Connected to " + NodeServer.device.id);
 		selected_device.addEventListener('gattserverdisconnected', prov_app.onDisconnected);
