@@ -725,7 +725,7 @@ class Provisionner {
       console.log('sessionStorage cleared...');
 
       this.ProxyPDU_IN.SetCharacteristicIn(characteristicIn);
-      this.ProxyPDU_OUT.SetProvisionnerCb(this, this.ProcessPDU)
+      this.ProxyPDU_OUT.SetProvisionnerCb(PDU => this.ProcessPDU(PDU))
       this.ProxyPDU_OUT.SetListening(characteristicOut)
       .then(() => {
         //Send Invite
