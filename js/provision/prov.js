@@ -24,9 +24,13 @@ const PROV_INPUT_OOB = 3;
 
 const Output_OOB_Action_Output_Numeric = 0x03;
 const Output_OOB_Action_Output_Alphanumeric = 0x04;
+
+const Input_OOB_Action_Input_Number = 0x02;
+const Input_OOB_Action_Input_Alphanumeric = 0x03;
+
 const MAX_STATIC_OOB_LEN = 16;
 
-
+const OOB_PUBLIC_KEY_SIZE = 64;
 
 const PROVISIONING_CAPABILITIES_PARAM_SIZE = 11;
 
@@ -156,8 +160,6 @@ class Provisionner {
     if (
       (this.IN_Conf_Caps.num_ele == 0)
       || (this.IN_Conf_Caps.algorithms != 1)
-      //  || (this.IN_Conf_Caps.pub_type != 1)
-      // || (this.IN_Conf_Caps.static_type != 1)
     ) {
       this.CurrentStepReject("error : Invalid PDU");
       return;
@@ -176,18 +178,8 @@ class Provisionner {
     }
 
     this.Ecc_1.DevPubKey = '04'+ utils.bytesToHex(key);
-
     console.log('this.Ecc_1.DevPubKey : ' + this.Ecc_1.DevPubKey);
-
-    //Compute ECDH secret
-    this.Ecc_1.ComputeSecret()
-    .then(() => {
-      //Step Finished
-      this.CurrentStepResolve();
-    })
-    .catch(error => {
-      this.CurrentStepReject(`error OUT_Public_Key: ${error}`);
-    });
+    this.CurrentStepResolve();
   };
 
   OUT_Confirmation(PDU_DATA) {
@@ -253,6 +245,9 @@ class Provisionner {
 
       this.ProxyPDU_IN.Send(PDU)
       .then(() => {
+        console.log('Invite ok ');
+        console.log('this.CurrentStep_ProvisionningPDUType '+ this.CurrentStep_ProvisionningPDUType);
+
       })
       .catch(error => {
         reject(error);
@@ -321,7 +316,13 @@ class Provisionner {
       this.CurrentStepProcess = null;
 
       this.Prov_Start.algorithm = 0; //FIPS P-256 Elliptic Curve
-      this.Prov_Start.pub_key = 0; //No OOB Public Key is used
+
+      //OOB Public Key is used if exist
+      if(this.IN_Conf_Caps.pub_type == 0x01){
+        this.Prov_Start.pub_key = 1;
+      }else{
+        this.Prov_Start.pub_key = 0; //No
+      }
 
       //Select OOB Action
       if (this.IN_Conf_Caps.static_type) {
@@ -395,8 +396,15 @@ class Provisionner {
     return new Promise((resolve, reject) => {
       this.CurrentStepResolve = resolve;
       this.CurrentStepReject = reject;
-      this.CurrentStepProcess = this.OUT_Public_Key;
-      this.CurrentStep_ProvisionningPDUType = PROV_PUB_KEY;
+
+      // Without or with public Key OOB
+      if(this.Prov_Start.pub_key == 0){
+        this.CurrentStepProcess = this.OUT_Public_Key;
+        this.CurrentStep_ProvisionningPDUType = PROV_PUB_KEY;
+      }else{
+        this.CurrentStepProcess = null;
+        this.CurrentStep_ProvisionningPDUType = null;
+      }
 
       var PDU = new Uint8Array(1 + 1 + 64);
       var index = 0
@@ -413,6 +421,9 @@ class Provisionner {
 
       this.ProxyPDU_IN.Send(PDU)
       .then(() => {
+        if(this.Prov_Start.pub_key == 1){
+          resolve();
+        }
       })
       .catch(error => {
         reject(error);
@@ -544,6 +555,28 @@ class Provisionner {
     });
   };
 
+  Get_OOB_PublicKey() {
+    console.log('Get_OOB_PublicKey');
+    prov_trace.appendMessage("Get OOB PublicKey");
+
+    var input = prompt("Please enter OOB PublicKey", "");
+
+    if (input.length != (OOB_PUBLIC_KEY_SIZE*2)) {
+      console.log('wrong key size');
+      return 1;
+    }
+
+    if (!this.isHex(input)) {
+      console.log('OOB key is not a hex number');
+      reject();
+      return 1;
+    }
+
+    this.Ecc_1.DevPubKey = '04'+ input;
+    console.log('this.Ecc_1.DevPubKey : ' + this.Ecc_1.DevPubKey);
+    return 0 ;
+  }
+
   isHex(h) {
     var regexp = /^[0-9a-fA-F]+$/;
 
@@ -591,25 +624,48 @@ class Provisionner {
       return;
     }
 
-    if(this.Prov_Start.auth_action <= Output_OOB_Action_Output_Numeric){
-      if (isNaN(input)) {
-        console.log('OOB is not a number');
+    if(this.Prov_Start.auth_method == PROV_OUTPUT_OOB){
+      if(this.Prov_Start.auth_action <= Output_OOB_Action_Output_Numeric){
+        if (isNaN(input)) {
+          console.log('OOB is not a number');
+          reject();
+          return;
+        }
+        this.OOB = parseInt(input);
+      } else if(this.Prov_Start.auth_action == Output_OOB_Action_Output_Alphanumeric){
+        if (!this.isHex(input)) {
+          console.log('OOB is not a hex number');
+          reject();
+          return;
+        }
+        this.OOB = input;
+      } else {
+        console.log('Output OOB Type RFU');
         reject();
         return;
       }
-      this.OOB = parseInt(input);
-    } else if(this.Prov_Start.auth_action == Output_OOB_Action_Output_Alphanumeric){
-      if (!this.isHex(input)) {
-        console.log('OOB is not a hex number');
+    }else if(this.Prov_Start.auth_method == PROV_INPUT_OOB){
+      if(this.Prov_Start.auth_action <= Input_OOB_Action_Input_Number){
+        if (isNaN(input)) {
+          console.log('OOB is not a number');
+          reject();
+          return;
+        }
+        this.OOB = parseInt(input);
+      } else if(this.Prov_Start.auth_action == Input_OOB_Action_Input_Alphanumeric){
+        if (!this.isHex(input)) {
+          console.log('OOB is not a hex number');
+          reject();
+          return;
+        }
+        this.OOB = input;
+      } else {
+        console.log('Input OOB Type RFU');
         reject();
         return;
       }
-      this.OOB = input;
-    } else {
-      console.log('Output OOB Type RFU');
-      reject();
-      return;
     }
+
     resolve();
   }
 
@@ -736,8 +792,18 @@ class Provisionner {
         return this.IN_Start();
       })
       .then(() => {
+        if(this.Prov_Start.pub_key){
+          if(this.Get_OOB_PublicKey() != 0){
+            reject(`Get_OOB_PublicKey error`);
+          }
+        }
+
         //Send Public Key
         return this.IN_Public_Key();
+      })
+      .then(() => {
+        //Compute ECDH secret
+        return this.Ecc_1.ComputeSecret()
       })
       .then(() => {
         //Authentication
