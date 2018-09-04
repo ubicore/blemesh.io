@@ -709,7 +709,11 @@ class Provisionner {
   };
 
   ProvisionnerError(error){
-    this.Provisionning_Reject(`Provision error: ${error}`);
+    console.log('error : ProvisionnerError: ' + error);
+    if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
+      this.Provisionning_Reject(`Provision error: ${error}`);
+      return;
+    }
   }
 
   StartProvision(characteristicIn, characteristicOut) {
