@@ -185,6 +185,9 @@ class Provisionner {
       //Step Finished
       this.CurrentStepResolve();
     })
+    .catch(error => {
+      this.CurrentStepReject(`error OUT_Public_Key: ${error}`);
+    });
   };
 
   OUT_Confirmation(PDU_DATA) {
