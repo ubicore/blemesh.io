@@ -804,7 +804,10 @@ class Provisionner {
         resolve();
       })
       .catch(error => {
-        reject(`Provision error: ${error}`);
+        this.ProxyPDU_OUT.StopListening(characteristicOut)
+        .then(() => {
+          reject(`Provision error: ${error}`);
+        })
       });
     });
   };
