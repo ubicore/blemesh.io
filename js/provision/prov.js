@@ -87,17 +87,17 @@ class Prov_Start {
 class Provisionner {
   constructor() {
     // this.PDU = [];
-    this.ProxyPDU_OUT = null;
-    this.ProxyPDU_IN = null;
+    this.ProxyPDU_IN = new ProxyPDU_IN();
+    this.ProxyPDU_OUT = new ProxyPDU_OUT();
 
     this.Prov_Error = 0x0;
 
-    this.ProvisionFinished = function () { };
-    this.ProvisionFailed = function () { };
-    this.CurrentStepProcess = function () { };
+    this.ProvisionFinished = null;
+    this.ProvisionFailed = null;
+    this.CurrentStepProcess = null;
 
-    this.CurrentStepResolve = function () { };
-    this.CurrentStepReject = function () { };
+    this.CurrentStepResolve = null;
+    this.CurrentStepReject = null;
     this.CurrentStep_ProvisionningPDUType = 0xFF;
 
     //Conf in

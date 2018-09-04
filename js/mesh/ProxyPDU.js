@@ -31,8 +31,7 @@ class ProxyPDU_OUT {
         this.gatt_pkt = new ArrayBuffer(MAX_GATT_SIZE);
         this.gatt_pkt_Uint8view = new Uint8Array(this.gatt_pkt);
         this.size = 0;
-
-        this.ProvisionnerINCb = function(){};
+        this.ProvisionnerINCb = null;
     };
 
     Failed() {

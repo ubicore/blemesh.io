@@ -17,6 +17,7 @@ var selected_device = null;
 var NodeServer = null;
 
 var prov_app = {};
+var provisionner_1 = null;
 
 prov_app.start = function () {
 	if(connected != false){
