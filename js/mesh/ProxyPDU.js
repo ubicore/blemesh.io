@@ -184,6 +184,8 @@ class ProxyPDU_OUT {
             ProxyPDU_LOG("Provisioning PDU");
             if(this.ProvisionnerINCb  && typeof(this.ProvisionnerINCb) === "function"){
               this.ProvisionnerINCb(PDU);
+            } else {
+              console.log("error : bad ProvisionnerINCb");
             }
             break;
           default:
