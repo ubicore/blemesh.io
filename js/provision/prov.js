@@ -798,7 +798,11 @@ class Provisionner {
         this.Ecc_1.Create_Device_Key();
         Node.Add_DevKey(Node.SelectedNode, this.Ecc_1.DeviceKey);
         prov_trace.appendMessage('End of provision procedure');
-        resolve();
+
+        this.ProxyPDU_OUT.StopListening(characteristicOut)
+        .then(() => {
+          resolve();
+        })
       })
       .catch(error => {
         this.ProxyPDU_OUT.StopListening(characteristicOut)
