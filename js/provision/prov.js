@@ -15,10 +15,16 @@ const PROV_DATA = 0x07;
 const PROV_COMPLETE = 0x08;
 const PROV_FAILED = 0x09;
 
+//OOB
 const PROV_NO_OOB = 0;
 const PROV_STATIC_OOB = 1;
 const PROV_OUTPUT_OOB = 2;
 const PROV_INPUT_OOB = 3;
+
+
+const Output_OOB_Action_Output_Numeric = 0x03;
+const Output_OOB_Action_Output_Alphanumeric = 0x04;
+const MAX_STATIC_OOB_LEN = 16;
 
 
 
@@ -193,8 +199,9 @@ class Provisionner {
   };
 
   OUT_PROV_INPUT_OOB(PDU_DATA) {
-    console.log('Get a PROV_INP_CMPLT PDU');
+    var PDU_view = new Uint8Array(PDU_DATA);
 
+    console.log('Get a OUT_PROV_INPUT_OOB PDU');
     //Step Finished
     this.CurrentStepResolve();
   };
@@ -295,7 +302,12 @@ class Provisionner {
     console.log('Input_OOB_Action select : ' + res);
     //console.log(Input_OOB_Action.get(res).value + '=> ' + Input_OOB_Action.get(res).key);
 
-    return res;
+    var id = 0;
+    while (res >>= 1) {
+      id++;
+    }
+    console.log('Input_OOB_Action selected is number : ' + id);
+    return id;
   }
 
   //See 5.4.2 Provisioning behavior
@@ -311,23 +323,26 @@ class Provisionner {
 
       //Select OOB Action
       if (this.IN_Conf_Caps.static_type) {
+        console.log('Select PROV_STATIC_OOB');
         this.Prov_Start.auth_method = PROV_STATIC_OOB; //Static OOB authentication is used
       } else if (this.IN_Conf_Caps.output_size > this.IN_Conf_Caps.input_size) {
+        console.log('Select PROV_OUTPUT_OOB');
         this.Prov_Start.auth_method = PROV_OUTPUT_OOB; //Output OOB authentication is used
         this.Prov_Start.auth_action = this.Select_Ouput_OOB();
         this.Prov_Start.auth_size = this.IN_Conf_Caps.output_size;
       } else if (this.IN_Conf_Caps.input_size > 0) {
+        console.log('Select PROV_INPUT_OOB');
         this.Prov_Start.auth_method = PROV_INPUT_OOB; //Input OOB authentication is used
         this.Prov_Start.auth_action = this.Select_Input_OOB();
         this.Prov_Start.auth_size = this.IN_Conf_Caps.input_size;
       } else {
+        console.log('Select PROV_NO_OOB');
         this.Prov_Start.auth_method = PROV_NO_OOB; //Input OOB authentication is used
-        console.log('PROV_NO_OOB');
       }
 
       //Check
       if (this.Prov_Start.auth_size > 8) {
-        this.CurrentStepReject("error : Prov_Start_1 ")
+        this.CurrentStepReject("error : auth_size > 8")
         return;
       }
 
@@ -527,27 +542,72 @@ class Provisionner {
     });
   };
 
-  Get_OOB_FromUser(resolve, reject) {
-    console.log('Request OOB Number : ');
-    prov_trace.appendMessage("Request OOB Number :");
+  isHex(h) {
+    var regexp = /^[0-9a-fA-F]+$/;
 
-    //        var img = '/to-do-notifications/img/icon-128.png';
-    var text = 'Please enter OOB Number Output from device';
-    //        var notification = new Notification('To do list', { body: text, icon: img });
-    //var notification = new Notification('To do list', { body: text});
-    //ServiceWorkerRegistration.showNotification('To do list', { body: text});
+    if (regexp.test(h))
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
 
-    var input = prompt("Please enter OOB Number", "");
-    if (isNaN(input)) {
-      console.log('This is not a number');
+  Get_STATIC_OOB_FromUser(resolve, reject) {
+    console.log('Request STATIC OOB: ');
+    prov_trace.appendMessage("Request STATIC OOB:");
+
+    var input = prompt("Please enter OOB", "");
+
+    if (input.length > (MAX_STATIC_OOB_LEN*2)) {
+      console.log('OOB is too long');
       reject();
       return;
     }
 
-    prov_trace.appendMessage("Input OOB is : " + input);
+    if (!this.isHex(input)) {
+      console.log('OOB is not a hex number');
+      reject();
+      return;
+    }
 
-    this.OOB = parseInt(input);
-    console.log('This is a number : ' + this.OOB);
+    this.OOB = input;
+    resolve();
+  }
+
+    Get_OOB_FromUser(resolve, reject) {
+    console.log('Request OOB: ');
+    prov_trace.appendMessage("Request OOB:");
+
+    var input = prompt("Please enter OOB", "");
+
+    if (input.length > this.Prov_Start.auth_size) {
+      console.log('OOB is too long');
+      reject();
+      return;
+    }
+
+    if(this.Prov_Start.auth_action <= Output_OOB_Action_Output_Numeric){
+      if (isNaN(input)) {
+        console.log('OOB is not a number');
+        reject();
+        return;
+      }
+      this.OOB = parseInt(input);
+    } else if(this.Prov_Start.auth_action == Output_OOB_Action_Output_Alphanumeric){
+      if (!this.isHex(input)) {
+        console.log('OOB is not a hex number');
+        reject();
+        return;
+      }
+      this.OOB = input;
+    } else {
+      console.log('Output OOB Type RFU');
+      reject();
+      return;
+    }
     resolve();
   }
 
@@ -561,7 +621,7 @@ class Provisionner {
   PROV_STATIC_OOB_Complete() {
     return new Promise((resolve, reject) => {
       console.log('PROV_STATIC_OOB_Complete');
-      this.Get_OOB_FromUser(resolve, reject);
+      this.Get_STATIC_OOB_FromUser(resolve, reject);
     });
   }
 
@@ -572,7 +632,8 @@ class Provisionner {
     });
   }
 
-  PROV_INPUT_OOB_Complete() {
+  //INPUT OOB Step 1
+  PROV_INPUT_OOB_DeviceInputComplete() {
     return new Promise((resolve, reject) => {
       console.log('PROV_INPUT_OOB_Complete');
       this.CurrentStepResolve = resolve;
@@ -583,17 +644,35 @@ class Provisionner {
     });
   };
 
-  ProcessPDU(PDU) {
+  PROV_INPUT_OOB_Complete() {
+    return new Promise((resolve, reject) => {
+        //INPUT OOB Step 1
+        return this.PROV_INPUT_OOB_DeviceInputComplete()
+      .then(() => {
+        //INPUT OOB Step 2
+        console.log('PROV_INPUT_OOB_GetFromUser');
+        this.Get_OOB_FromUser(resolve, reject);
+      })
+      .catch(error => {
+        reject(`INPUT OOB error: ${error}`);
+      });
+    });
+  };
+
+  ProcessPDU(context, PDU) {
     var PDU_view = new DataView(PDU,0,2);
     var PDU_Type = PDU_view.getUint8(0);
 
+    console.log('ProcessPDU !!! ');
+
+
     if(PDU_Type != PROXY_PROVISIONING_PDU){
-      this.ProvisionnerError("Provisionner should process only provisioning PDU");
+      context.ProvisionnerError("Provisionner should process only provisioning PDU");
       return;
     }
 
-    if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-      this.ProvisionnerError("no CurrentBehaviorReject Callback");
+    if (!context.CurrentStepReject || !typeof (context.CurrentStepReject) === "function") {
+      context.ProvisionnerError("no CurrentBehaviorReject Callback");
       return;
     }
 
