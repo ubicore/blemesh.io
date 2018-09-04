@@ -153,9 +153,8 @@ class ProxyPDU_OUT {
         });
     };
 
-    SetProvisionnerCb(context, Callback){
+    SetProvisionnerCb(Callback){
       ProxyPDU_LOG("SetProvisionnerCb");
-      this.ProvisionnerINCb_context = context;
       this.ProvisionnerINCb = Callback;
     }
 

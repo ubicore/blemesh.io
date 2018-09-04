@@ -661,20 +661,17 @@ class Provisionner {
     });
   };
 
-  ProcessPDU(context, PDU) {
+  ProcessPDU(PDU) {
     var PDU_view = new DataView(PDU,0,2);
     var PDU_Type = PDU_view.getUint8(0);
 
-    console.log('ProcessPDU !!! ');
-
-
     if(PDU_Type != PROXY_PROVISIONING_PDU){
-      context.ProvisionnerError("Provisionner should process only provisioning PDU");
+      this.ProvisionnerError("Provisionner should process only provisioning PDU");
       return;
     }
 
-    if (!context.CurrentStepReject || !typeof (context.CurrentStepReject) === "function") {
-      context.ProvisionnerError("no CurrentBehaviorReject Callback");
+    if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
+      this.ProvisionnerError("no CurrentBehaviorReject Callback");
       return;
     }
 
