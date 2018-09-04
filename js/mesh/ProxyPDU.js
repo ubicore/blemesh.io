@@ -137,7 +137,6 @@ class ProxyPDU_OUT {
         });
     };
 
-    SetProvisionnerCb(Callback){
     StopListening(characteristic) {
         ProxyPDU_LOG('StopListening');
         characteristic.removeEventListener("characteristicvaluechanged", this.EventListener);
@@ -153,6 +152,10 @@ class ProxyPDU_OUT {
                 });
         });
     };
+
+    SetProvisionnerCb(context, Callback){
+      ProxyPDU_LOG("SetProvisionnerCb");
+      this.ProvisionnerINCb_context = context;
       this.ProvisionnerINCb = Callback;
     }
 
