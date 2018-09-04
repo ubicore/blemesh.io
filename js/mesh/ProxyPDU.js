@@ -138,6 +138,21 @@ class ProxyPDU_OUT {
     };
 
     SetProvisionnerCb(Callback){
+    StopListening(characteristic) {
+        ProxyPDU_LOG('StopListening');
+        characteristic.removeEventListener("characteristicvaluechanged", this.EventListener);
+
+        return new Promise((resolve, reject) => {
+            return characteristic.stopNotifications()
+                .then(characteristic => {
+                    ProxyPDU_LOG('Notifications stoped');
+                    resolve();
+                })
+                .catch(error => {
+                    reject(`Notifications error: ${error}`);
+                });
+        });
+    };
       this.ProvisionnerINCb = Callback;
     }
 
