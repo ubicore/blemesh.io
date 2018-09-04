@@ -697,7 +697,7 @@ class Provisionner {
       if(Provisionning_PDU_Type >= 0x0A){
         console.log('warning : PDU_Type is RFU => ignore this PDU');
       } else {
-        this.ProvisionnerError(" Unexpected PDU");
+        this.ProvisionnerError(" Unexpected PDU Type " + Provisionning_PDU_Type + ' instead of ' + this.CurrentStep_ProvisionningPDUType);
       }
       return;
     }
