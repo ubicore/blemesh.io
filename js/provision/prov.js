@@ -215,14 +215,13 @@ class Provisionner {
     //Get PDU Parameters
     this.Ecc_1.Dev_Random = utils.bytesToHex(PDU_view);
     console.log('this.Ecc_1.Dev_RandomBuff : ' + this.Ecc_1.Dev_Random);
-    console.log('Get a PROV_INP_CMPLT PDU');
 
+    console.log('Get a OUT_PROV_RANDOM PDU');
     //Step Finished
     this.CurrentStepResolve();
   };
 
   OUT_COMPLETE(PDU_DATA) {
-
     //Get PDU Parameters
     //NO parameters for this PDU
     console.log('Get a PROV_COMPLETE PDU');
