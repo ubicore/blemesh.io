@@ -663,11 +663,6 @@ class Provisionner {
         this.OOB = parseInt(input).toString(16);
         this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
       } else if(this.Prov_Start.auth_action == Output_OOB_Action_Output_Alphanumeric){
-        // if (!this.isHex(input)) {
-        //   console.log('OOB is not a hex number');
-        //   reject();
-        //   return;
-        // }
         this.OOB = input.hexEncode();
         this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
       } else {
@@ -685,11 +680,6 @@ class Provisionner {
         this.OOB = parseInt(input).toString(16);
         this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
       } else if(this.Prov_Start.auth_action == Input_OOB_Action_Input_Alphanumeric){
-        // if (!this.isHex(input)) {
-        //   console.log('OOB is not a hex number');
-        //   reject();
-        //   return;
-        // }
         this.OOB = input.hexEncode();
         this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
       } else {
