@@ -67,6 +67,18 @@ const PROV_ERR_RFU = 0X09;
 //     'Input_OOB_Action_Input_Alphanumeric',
 // ]);
 
+String.prototype.hexEncode = function(){
+    var hex, i;
+
+    var result = "";
+    for (i=0; i<this.length; i++) {
+        hex = this.charCodeAt(i).toString(16);
+        result += ("0"+hex).slice(-2);
+    }
+
+    return result
+}
+
 //
 const PROV_Attention_Duration = 5;
 
@@ -110,7 +122,7 @@ class Provisionner {
 
     this.CurrentStepResolve = null;
     this.CurrentStepReject = null;
-    this.CurrentStep_ProvisionningPDUType = 0xFF;
+    this.CurrentStep_ProvisionningPDUType = null;
 
     //Conf in
     this.IN_Conf_Caps = new Conf_Caps();
@@ -457,7 +469,7 @@ class Provisionner {
       console.log('ConfirmationInputsHex len :' + ConfirmationInputs.length);
       console.log('ConfirmationInputsHex :' + ConfirmationInputsHex);
 
-      this.Ecc_1.Set_AuthValue(this.OOB);
+      this.Ecc_1.Set_AuthValue(this.AuthValue);
       this.Ecc_1.CreateRandomProvisionner();
       this.Ecc_1.CreateConfirmationKey(ConfirmationInputsHex);
 
@@ -590,14 +602,30 @@ class Provisionner {
     }
   }
 
+  FormatAuthValue_Number(hex, length) {
+      //var r = num;
+      while (hex.length < length) {
+          hex = "0" + hex;
+      }
+      return hex;
+  };
+
+  FormatAuthValue_Alphanumeric(hex, length) {
+      //var r = num;
+      while (hex.length < length) {
+          hex = hex + "0";
+      }
+      return hex;
+  };
+
   Get_STATIC_OOB_FromUser(resolve, reject) {
     console.log('Request STATIC OOB: ');
     prov_trace.appendMessage("Request STATIC OOB:");
 
     var input = prompt("Please enter OOB", "");
 
-    if (input.length > (MAX_STATIC_OOB_LEN*2)) {
-      console.log('OOB is too long');
+    if (input.length != (MAX_STATIC_OOB_LEN*2)) {
+      console.log('OOB is bad size');
       reject();
       return;
     }
@@ -609,6 +637,7 @@ class Provisionner {
     }
 
     this.OOB = input;
+    this.AuthValue = this.OOB;
     resolve();
   }
 
@@ -631,14 +660,16 @@ class Provisionner {
           reject();
           return;
         }
-        this.OOB = parseInt(input);
+        this.OOB = parseInt(input).toString(16);
+        this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
       } else if(this.Prov_Start.auth_action == Output_OOB_Action_Output_Alphanumeric){
-        if (!this.isHex(input)) {
-          console.log('OOB is not a hex number');
-          reject();
-          return;
-        }
-        this.OOB = input;
+        // if (!this.isHex(input)) {
+        //   console.log('OOB is not a hex number');
+        //   reject();
+        //   return;
+        // }
+        this.OOB = input.hexEncode();
+        this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
       } else {
         console.log('Output OOB Type RFU');
         reject();
@@ -651,14 +682,16 @@ class Provisionner {
           reject();
           return;
         }
-        this.OOB = parseInt(input);
+        this.OOB = parseInt(input).toString(16);
+        this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
       } else if(this.Prov_Start.auth_action == Input_OOB_Action_Input_Alphanumeric){
-        if (!this.isHex(input)) {
-          console.log('OOB is not a hex number');
-          reject();
-          return;
-        }
-        this.OOB = input;
+        // if (!this.isHex(input)) {
+        //   console.log('OOB is not a hex number');
+        //   reject();
+        //   return;
+        // }
+        this.OOB = input.hexEncode();
+        this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
       } else {
         console.log('Input OOB Type RFU');
         reject();
@@ -672,6 +705,8 @@ class Provisionner {
   PROV_NO_OOB_Complete() {
     return new Promise((resolve, reject) => {
       console.log('PROV_NO_OOB_Complete');
+      this.OOB = null;
+      this.AuthValue = "00000000000000000000000000000000"
       resolve();
     });
   }

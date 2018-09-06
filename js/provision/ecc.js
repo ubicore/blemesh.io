@@ -37,7 +37,7 @@ class Ecc {
 
         //Other
         this.ConfirmationKey;
-        this.OOBhexstring;
+        this.AuthValue;
 
         //Random
         this.Prov_Random;
@@ -119,31 +119,15 @@ class Ecc {
     };
 
 
-    FormatNumberLength(num, length) {
-        //var r = num;
-        while (num.length < length) {
-            num = "0" + num;
-        }
-        return num;
-    };
-
-    Set_AuthValue(OOB) {
-        console.log('this.OOB : ' + OOB);
-        var OOBhexstring = "";
-
-        if(OOB){
-          OOBhexstring = OOB.toString(16);
-        }
-
-        console.log('OOBhexstring : ' + OOBhexstring + ' len: ' + OOBhexstring.length);
-        this.OOBhexstring = this.FormatNumberLength(OOBhexstring, 32);
-        console.log('this.OOBhexstring : ' + this.OOBhexstring + ' len: ' + this.OOBhexstring.length);
+    Set_AuthValue(AuthValue) {
+        this.AuthValue = AuthValue;
+        console.log('this.AuthValue : ' + this.AuthValue + ' len: ' + this.AuthValue.length);
         return;
     };
 
     ConfirmationProvisioner() {
         console.log('ConfirmationProvisioner');
-        var message = this.Prov_Random + this.OOBhexstring;
+        var message = this.Prov_Random + this.AuthValue;
         console.log('message: ' + message);
         var ConfirmationProvisioner = crypto.getAesCmac(this.ConfirmationKey, message);
         console.log('ConfirmationProvisioner: ' + ConfirmationProvisioner.toString());
@@ -152,7 +136,7 @@ class Ecc {
 
     ConfirmationDevice() {
         console.log('ConfirmationDevice');
-        var message = this.Dev_Random + this.OOBhexstring;
+        var message = this.Dev_Random + this.AuthValue;
         console.log('message: ' + message);
         var ConfirmationDevice = crypto.getAesCmac(this.ConfirmationKey, message);
         console.log('ConfirmationDevice: ' + ConfirmationDevice.toString());
