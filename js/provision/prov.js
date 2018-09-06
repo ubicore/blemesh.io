@@ -752,17 +752,26 @@ class Provisionner {
     });
   };
 
+
+  Provision_Process_STOP(error){
+    console.log('StopListening');
+    this.ProxyPDU_OUT.StopListening(characteristicOut)
+    .then(() => {
+        this.Provisionning_Reject(error);
+    });
+  }
+
   ProcessPDU(PDU) {
     var PDU_view = new DataView(PDU,0,2);
     var PDU_Type = PDU_view.getUint8(0);
 
     if(PDU_Type != PROXY_PROVISIONING_PDU){
-      this.ProvisionnerError("Provisionner should process only provisioning PDU");
+      console.log("error: Provisionner should process only provisioning PDU");
       return;
     }
 
     if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-      this.ProvisionnerError("no CurrentBehaviorReject Callback");
+      this.Provision_Process_STOP("no CurrentBehaviorReject Callback");
       return;
     }
 
@@ -775,12 +784,12 @@ class Provisionner {
     }
 
     if (!this.CurrentStepResolve || !typeof (this.CurrentStepResolve) === "function") {
-      this.ProvisionnerError(" no CurrentBehaviorResolve Callback");
+      this.CurrentStepReject(`no CurrentBehaviorResolve Callback`);
       return;
     }
 
     if (!this.CurrentStepProcess || !typeof (this.CurrentStepProcess) === "function") {
-      this.ProvisionnerError(" no CurrentBehaviorProcess Callback");
+      this.CurrentStepReject(`no CurrentBehaviorProcess Callback`);
       return;
     }
 
@@ -788,24 +797,20 @@ class Provisionner {
       if(Provisionning_PDU_Type >= 0x0A){
         console.log('warning : PDU_Type is RFU => ignore this PDU');
       } else {
-        this.ProvisionnerError(" Unexpected PDU Type " + Provisionning_PDU_Type + ' instead of ' + this.CurrentStep_ProvisionningPDUType);
+        this.CurrentStepReject(" Unexpected PDU Type " + Provisionning_PDU_Type + ' instead of ' + this.CurrentStep_ProvisionningPDUType);
+        return;
       }
-      return;
     }
     //Process PDU
     this.CurrentStepProcess(PDU_Parameters);
+
+    this.CurrentStep_ProvisionningPDUType = null;
+    this.CurrentStepReject = null;
+    this.CurrentStepResolve = null;
+    this.CurrentStepProcess = null;
   };
 
-  ProvisionnerError(error){
-    console.log('error : ProvisionnerError: ' + error);
-    if (!this.CurrentStepReject || !typeof (this.CurrentStepReject) === "function") {
-      this.Provisionning_Reject(`Provision error: ${error}`);
-      return;
-    }
-  }
-
   StartProvision(characteristicIn, characteristicOut) {
-
     return new Promise((resolve, reject) => {
       this.Provisionning_Reject = reject;
       console.log('Start Provisionning');
@@ -906,10 +911,7 @@ class Provisionner {
         })
       })
       .catch(error => {
-        this.ProxyPDU_OUT.StopListening(characteristicOut)
-        .then(() => {
-          reject(`Provision error: ${error}`);
-        })
+        this.Provision_Process_STOP(error);
       });
     });
   };
