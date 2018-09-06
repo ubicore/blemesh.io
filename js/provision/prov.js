@@ -46,26 +46,24 @@ const PROV_ERR_UNEXPECTED_ERROR = 0X07;
 const PROV_ERR_CANNOT_ASSIGN_ADDRESSES = 0X08;
 const PROV_ERR_RFU = 0X09;
 
-//
-// // use it as module
-// var Enum = require('enum');
-// //Output OOB
-// var Output_OOB_Action = new Enum([
-//     'Output_OOB_Action_Blink',
-//     'Output_OOB_Action_Beep',
-//     'Output_OOB_Action_Vibrate',
-//     'Output_OOB_Action_Output_Numeric',
-//     'Output_OOB_Action_Output_Alphanumeric',
-// ]);
-//
-//
-// //Input OOB
-// var Input_OOB_Action = new Enum([
-//     'Input_OOB_Action_Push',
-//     'Input_OOB_Action_Twist',
-//     'Input_OOB_Action_Input_Number',
-//     'Input_OOB_Action_Input_Alphanumeric',
-// ]);
+
+//Output OOB
+var Output_OOB_Action = [
+    'Blink ',
+    'Beep',
+    'Vibrate',
+    'Output Numeric',
+    'Output Alphanumeric',
+];
+
+
+//Input OOB
+var Input_OOB_Action = [
+    'Push',
+    'Twist',
+    'Input Number',
+    'Input Alphanumeric',
+];
 
 String.prototype.hexEncode = function(){
     var hex, i;
@@ -620,18 +618,17 @@ class Provisionner {
 
   Get_STATIC_OOB_FromUser(resolve, reject) {
     console.log('Request STATIC OOB: ');
-    prov_trace.appendMessage("Request STATIC OOB:");
-
-    var input = prompt("Please enter OOB", "");
+    prov_trace.appendMessage("Request STATIC OOB");
+    var input = prompt("Please enter STATIC hex OOB string of 16 bytes", "");
 
     if (input.length != (MAX_STATIC_OOB_LEN*2)) {
-      console.log('OOB is bad size');
+      console.log('error: OOB is bad size');
       reject();
       return;
     }
 
     if (!this.isHex(input)) {
-      console.log('OOB is not a hex number');
+      console.log('error: OOB is not a hex number');
       reject();
       return;
     }
@@ -641,11 +638,11 @@ class Provisionner {
     resolve();
   }
 
-    Get_OOB_FromUser(resolve, reject) {
-    console.log('Request OOB: ');
-    prov_trace.appendMessage("Request OOB:");
+    Get_OUTPUT_OOB_FromUser(resolve, reject) {
+    console.log('Request OUPUT OOB');
+    prov_trace.appendMessage("Request OUPUT OOB");
 
-    var input = prompt("Please enter OOB", "");
+    var input = prompt("Please enter OUPUT OOB: " + Output_OOB_Action[this.Prov_Start.auth_action] + " of max size: " + this.Prov_Start.auth_size, "");
 
     if (input.length > this.Prov_Start.auth_size) {
       console.log('OOB is too long');
@@ -653,44 +650,57 @@ class Provisionner {
       return;
     }
 
-    if(this.Prov_Start.auth_method == PROV_OUTPUT_OOB){
-      if(this.Prov_Start.auth_action <= Output_OOB_Action_Output_Numeric){
-        if (isNaN(input)) {
-          console.log('OOB is not a number');
-          reject();
-          return;
-        }
-        this.OOB = parseInt(input).toString(16);
-        this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
-      } else if(this.Prov_Start.auth_action == Output_OOB_Action_Output_Alphanumeric){
-        this.OOB = input.hexEncode();
-        this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
-      } else {
-        console.log('Output OOB Type RFU');
+    if(this.Prov_Start.auth_action <= Output_OOB_Action_Output_Numeric){
+      if (isNaN(input)) {
+        console.log('OOB is not a number');
         reject();
         return;
       }
-    }else if(this.Prov_Start.auth_method == PROV_INPUT_OOB){
-      if(this.Prov_Start.auth_action <= Input_OOB_Action_Input_Number){
-        if (isNaN(input)) {
-          console.log('OOB is not a number');
-          reject();
-          return;
-        }
-        this.OOB = parseInt(input).toString(16);
-        this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
-      } else if(this.Prov_Start.auth_action == Input_OOB_Action_Input_Alphanumeric){
-        this.OOB = input.hexEncode();
-        this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
-      } else {
-        console.log('Input OOB Type RFU');
-        reject();
-        return;
-      }
+      this.OOB = parseInt(input).toString(16);
+      this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
+    } else if(this.Prov_Start.auth_action == Output_OOB_Action_Output_Alphanumeric){
+      this.OOB = input.hexEncode();
+      this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
+    } else {
+      console.log('Output OOB Type RFU');
+      reject();
+      return;
     }
 
     resolve();
   }
+
+  Get_INPUT_OOB_FromUser(resolve, reject) {
+  console.log('Request INPUT OOB');
+  prov_trace.appendMessage("Request INPUT OOB:");
+
+  var input = prompt("Please enter INPUT OOB: " + Input_OOB_Action[this.Prov_Start.auth_action] + " of max size: " + this.Prov_Start.auth_size, "");
+
+  if (input.length > this.Prov_Start.auth_size) {
+    console.log('OOB is too long');
+    reject();
+    return;
+  }
+
+  if(this.Prov_Start.auth_action <= Input_OOB_Action_Input_Number){
+    if (isNaN(input)) {
+      console.log('OOB is not a number');
+      reject();
+      return;
+    }
+    this.OOB = parseInt(input).toString(16);
+    this.AuthValue = this.FormatAuthValue_Number(this.OOB, 32);
+  } else if(this.Prov_Start.auth_action == Input_OOB_Action_Input_Alphanumeric){
+    this.OOB = input.hexEncode();
+    this.AuthValue = this.FormatAuthValue_Alphanumeric(this.OOB, 32);
+  } else {
+    console.log('Input OOB Type RFU');
+    reject();
+    return;
+  }
+
+  resolve();
+}
 
   PROV_NO_OOB_Complete() {
     return new Promise((resolve, reject) => {
@@ -711,7 +721,7 @@ class Provisionner {
   PROV_OUTPUT_OOB_Complete() {
     return new Promise((resolve, reject) => {
       console.log('PROV_OUTPUT_OOB_Complete');
-      this.Get_OOB_FromUser(resolve, reject);
+      this.Get_OUTPUT_OOB_FromUser(resolve, reject);
     });
   }
 
@@ -734,7 +744,7 @@ class Provisionner {
       .then(() => {
         //INPUT OOB Step 2
         console.log('PROV_INPUT_OOB_GetFromUser');
-        this.Get_OOB_FromUser(resolve, reject);
+        this.Get_INPUT_OOB_FromUser(resolve, reject);
       })
       .catch(error => {
         reject(`INPUT OOB error: ${error}`);
