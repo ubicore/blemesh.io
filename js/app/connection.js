@@ -91,12 +91,13 @@ connection.connect = function () {
                   HMI.showMessageRed("ERROR: connected device does not have the required GATT service and characteristic");
                   return;
                 }
-
-                this.ProxyPDU_OUT = new ProxyPDU_OUT;
-                return this.ProxyPDU_OUT.SetListening(mesh_proxy_data_out)
+                connection.ProxyPDU_IN = new ProxyPDU_IN();
+                connection.ProxyPDU_OUT = new ProxyPDU_OUT;
+                connection.ProxyPDU_IN.SetCharacteristicIn(mesh_proxy_data_in);
+                connection.ProxyPDU_OUT.SetProvisionnerCb(PDU => this.ProcessPDU(PDU))
+                return connection.ProxyPDU_OUT.SetListening(mesh_proxy_data_out)
             })
             .then( () => {
-                connection.ProxyPDU_IN = new ProxyPDU_IN(mesh_proxy_data_in);
                 HMI.clearMessage();
                 HMI.setBluetoothButtons();
                 //
