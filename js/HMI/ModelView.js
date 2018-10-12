@@ -235,12 +235,10 @@ PublicationView.prototype.AddUpdateButton = function ($model) {
         var Publication = JSON.parse(  $($textarea).val() );
 
         var parameters = {};
-        for(var k in parameters) Message[k]=parameters[k];
+        for(var k in Publication) parameters[k]=Publication[k];
 
         var ElementAddress = parseInt(Node.dst , 16) + parseInt(ElementIndex , 16);
         parameters.ElementAddress = utils.toHex(ElementAddress, 2);
-        parameters.PublishAddress = Publication.PublishAddress;
-        parameters.AppKeyIndex = Selected_AppKey.index;
         parameters.ModelIdentifier = ModelFound.ModelIdentifier;
 
         Config.IN.Model_Publication_Set(parameters)
