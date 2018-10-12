@@ -48,7 +48,7 @@ Network.Send = function(lower_transport_pdu, parameters){
   return new Promise((resolve, reject) => {
 
     Network_LOG("Network parameters: " + JSON.stringify(parameters));
-  
+
     // encrypt network PDU
     secured_network_pdu = Network.deriveSecure(lower_transport_pdu, parameters);
     Network_LOG("secured_network_pdu: " + JSON.stringify(secured_network_pdu));
@@ -130,11 +130,6 @@ Network.receive = function (netpduhex) {
   NetworkPDU.SEQ = (octet0 << 16) + (octet1 << 8) + octet2;
 //  NetworkPDU.SEQ =  ctl_ttl_seq_src_hex.substring(1*2, 4*2);
   NetworkPDU.SRC =  ctl_ttl_seq_src_hex.substring(4*2, 6*2);
-
-  if(NetworkPDU.SEQ > seq){
-    seq = NetworkPDU.SEQ;
-    sessionStorage.setItem('seq', seq);
-  }
 
   //Decode Network
   K = utils.normaliseHex(Selected_NetKey.EncryptionKey);
