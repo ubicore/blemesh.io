@@ -292,6 +292,13 @@ LowerTransport.receive_ControlMessage = function (NetworkPDU) {
       Control_message.SeqZero = (((octet1 & 0x7F) << 8) + octet2) >> 2;
       Control_message.BlockAck = TransportPDU.substring(3*2, 7*2);
       LowerTransport_LOG('Segment Acknowledgment message : ' + JSON.stringify(Control_message));
+
+      if(Control_message.BlockAck == 1){
+            if(LowerTransport.SegParam.CbOnSuccess  && typeof(LowerTransport.SegParam.CbOnSuccess) === "function"){
+               LowerTransport_LOG('LowerTransport.SegParam.CbOnSuccess ');
+               LowerTransport.SegParam.CbOnSuccess();
+            }
+      }
     }
     return;
   }
