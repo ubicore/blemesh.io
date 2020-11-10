@@ -27,7 +27,7 @@ https://github.com/lwsjs/local-web-server/wiki/How-to-launch-a-secure-local-web-
 .. code-block:: sh
 
     sudo npm install -g local-web-server
-    cd 'www' 
+    cd 'webapp' 
     ws --https
 
 
