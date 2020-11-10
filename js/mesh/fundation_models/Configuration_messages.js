@@ -641,7 +641,16 @@ Config.IN.AppKeyAdd = function (AppKey){
     access_payload += OPCODE.ToHexID(opcode_obj);
     access_payload += utils.toHex(NetKeyIndexAndAppKeyIndex, 3) + AppKey.key;
 
-    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload);
+    UpperTransport.Send_With_DeviceKey(mesh_proxy_data_in, access_payload)
+    .then(() =>{
+      UpperTransport_LOG("UpperTransport.Send_With_DeviceKey OK");
+      resolve();
+    })
+    .catch(error => {
+      HMI.showMessageRed(error);
+      console.log('ERROR: ' + error);
+      reject(error);
+    });
   });
 }
 
