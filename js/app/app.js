@@ -91,6 +91,7 @@ app.CheckAndUpdateAppKeyOnNode = function () {
         console.log('Add Selected_AppKey on the node');
         return app.AppKeyAdd()
         .then( () => {
+          console.log('Added');
           resolve();
         })
         .catch(error => {
