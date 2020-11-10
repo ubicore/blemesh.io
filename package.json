@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "A packaged ble mesh test tool",
   "scripts": {
-    "start": "http-server-with-auth --username ubicore --password meshdemo /srv/data/web/vhosts/default/"
+    "start": "http-server-with-auth --username linkio --password meshdemo /srv/data/web/vhosts/default/"
   },
   "dependencies": {
     "http-server-with-auth": "^0.10.2",
